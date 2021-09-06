@@ -8,6 +8,8 @@
 #ifndef MENU_H_
 #define MENU_H_
 
+extern KeyPadRX *keyPadRx;
+
 // STATES
 enum MenuState {
 	ST_MENU_IDLE = 0,

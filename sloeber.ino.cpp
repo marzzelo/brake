@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-09-06 12:54:50
+//This file has been generated on 2021-09-06 14:44:11
 
 #include "Arduino.h"
 #define debug
@@ -10,7 +10,6 @@
 #include "Rx.h"
 #include "CmdSplitter.h"
 #include "Streaming.h"
-#include "SuperLed.h"
 #include "TimerOne.h"
 #include "KeyPadRx.h"
 #include "MyTasker.h"
@@ -20,17 +19,13 @@
 #include "BankLeds.h"
 #include "Bank.h"
 #include "BankAnalogInputs.h"
+#include "BankKeyPad.h"
 extern Bank bank;
 extern BankButtons bankButtons;
 extern BankLeds bankLeds;
 extern BankAnalogInputs bankInputs;
-#define KP_ROW0		A9
-#define KP_ROW1		A12
-#define KP_ROW2		A11
-#define KP_ROW3		A14
-#define KP_COL0		A8
-#define KP_COL1		A10
-#define KP_COL2		A13
+extern BankKeyPad bankKp;
+extern KeyPadRX* keyPadRx;
 #define T250MS 	25
 #define T500MS 	50
 #define T1S 	100
@@ -41,15 +36,6 @@ extern BankAnalogInputs bankInputs;
 extern char str[];
 extern Rx* keyboard;
 extern volatile bool dataReady;
-extern char keyBuff[];
-extern const byte ROWS;
-extern const byte COLS;
-extern char keys[];
-extern char keys[];
-extern byte rowPins[];
-extern byte colPins[];
-extern Keypad* keypad;
-extern KeyPadRX* keyPadRx;
 extern bool keyPadEnabled;
 extern volatile bool keypad_data_ready;
 extern char _t250ms;
@@ -87,7 +73,6 @@ void Task10ms() ;
 void Task100ms() ;
 void T1_ISR(void) ;
 void state_reset() ;
-void ledsOff() ;
 
 
 #include "brake.ino"

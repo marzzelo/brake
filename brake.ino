@@ -24,6 +24,7 @@
 #include "BankLeds.h"
 #include "Bank.h"
 #include "BankAnalogInputs.h"
+#include "BankKeyPad.h"
 
 void onBtn0();
 void onBtn1();
@@ -38,17 +39,10 @@ BankLeds bankLeds;
 
 BankAnalogInputs bankInputs(200);
 
-/*********************************
- * PIN DEFINITIONS
- *********************************/
+BankKeyPad bankKp;
 
-#define KP_ROW0		A9
-#define KP_ROW1		A12
-#define KP_ROW2		A11
-#define KP_ROW3		A14
-#define KP_COL0		A8
-#define KP_COL1		A10
-#define KP_COL2		A13
+KeyPadRX *keyPadRx = bankKp.getKeyPadRX();
+
 
 /*********************************
  * TIMER ACCUMULATORS
@@ -69,21 +63,6 @@ char str[40];  // comandos desde keyboard o Processing
 Rx *keyboard = new Rx(str, 40);
 volatile bool dataReady = false;
 
-/***************************
- * KEY PAD
- ***************************/
-char keyBuff[40];
-
-const byte ROWS = 4; //four rows
-const byte COLS = 3; //three columns
-char keys[ROWS * COLS] = { '1', '2', '3', '4', '5', '6', '7', '8', '9', '*',
-		'0', '#' };
-
-byte rowPins[ROWS] = { KP_ROW0, KP_ROW1, KP_ROW2, KP_ROW3 }; //connect to the row pinouts of the keypad
-byte colPins[COLS] = { KP_COL0, KP_COL1, KP_COL2 }; //connect to the column pinouts of the keypad
-
-Keypad *keypad = new Keypad(keys, rowPins, colPins, ROWS, COLS); // keyPad
-KeyPadRX *keyPadRx = new KeyPadRX(keyBuff, 40, keypad); // Buffer-controller serial for keyPad
 
 bool keyPadEnabled = true;
 volatile bool keypad_data_ready;
@@ -262,7 +241,7 @@ void checkKeyPad() {
 	if (keyPadRx->dataReady()) {
 		bankLeds.beep(10, 1, 1);
 
-		int cc = getCmd(keyBuff, cmdTable);
+		int cc = getCmd(bankKp.getBuff(), cmdTable);
 
 		if (cc < 10) {
 			Serial << "\nkey: " << cc;
