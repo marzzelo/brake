@@ -15,6 +15,7 @@
 
 extern void state_reset();
 extern void setTimeOut(unsigned long dt);
+extern BankAnalogInputs bankInputs;
 
 // STATE LEAVING
 
@@ -85,8 +86,9 @@ void ent_idle() {
 }
 
 void ent_checking_cond() {
-	daq_enabled = true;
-	daq_ready = false;
+//	daq_enabled = true;
+//	daq_ready = false;
+	bankInputs.start();
 
 	led[7]->start();  // preset ERROR LAMP
 	buzz->start();
@@ -112,7 +114,7 @@ void ent_speeding() {
 	buzz->start();
 	led[0]->start();
 
-	Serial << F("\n\nST_SPEEDING... [Esperando Mv >= ") << _DEC(testParms.max_mass_vel)
+	Serial << F("\n\nST_SPEEDING... [Esperando Mv >= ") << _DEC(bank.testParms.max_mass_vel)
 			<< F(" rpm]");
 
 //	lcd.setCursor(0, 1);
@@ -125,7 +127,7 @@ void ent_max_vel() {
 	led[0]->stop();
 	led[1]->start();
 
-	Serial << F("\n\nST_MAX_VEL... [Esperando Wv > ") << _DEC(testParms.landing_wheel_vel)
+	Serial << F("\n\nST_MAX_VEL... [Esperando Wv > ") << _DEC(bank.testParms.landing_wheel_vel)
 			<< F(" m/s]");
 }
 
@@ -135,7 +137,7 @@ void ent_landing() {
 	led[1]->stop();
 	led[2]->start();
 
-	Serial << F("\n\nST_LANDING... [Esperando PH >= ") << _DEC(testParms.ph_threshold)
+	Serial << F("\n\nST_LANDING... [Esperando PH >= ") << _DEC(bank.testParms.ph_threshold)
 			<< F(" bar]");
 }
 
@@ -145,8 +147,8 @@ void ent_landed() {
 	led[2]->stop();
 	led[3]->start();
 
-	Serial << F("\n\nST_LANDED... [Esperando ") << _DEC(testParms.brake_mass_vel_min)
-			<< " < Mv < " << _DEC(testParms.brake_mass_vel_max) << "]";
+	Serial << F("\n\nST_LANDED... [Esperando ") << _DEC(bank.testParms.brake_mass_vel_min)
+			<< " < Mv < " << _DEC(bank.testParms.brake_mass_vel_max) << "]";
 }
 
 void ent_braking_vel() {
@@ -154,7 +156,7 @@ void ent_braking_vel() {
 
 	led[3]->stop();
 	led[4]->start();
-	Serial << F("\n\nST_BRAKING_VEL... [Esperando PF >= ") << _DEC(testParms.pf_threshold)
+	Serial << F("\n\nST_BRAKING_VEL... [Esperando PF >= ") << _DEC(bank.testParms.pf_threshold)
 			<< F(" bar]");
 }
 
@@ -208,18 +210,18 @@ void setupFSM() {
 
 		if (Wv_gt_0) {
 			cond_ok = false;
-			Serial << F("\n** DETENER RUEDA (") << _FLOAT(wheel_daq_value*calFactors.ka_wheel, 3) << F(" rpm)");
+			Serial << F("\n** DETENER RUEDA (") << _FLOAT(bankInputs.wheel_daq_value*bank.calFactors.ka_wheel, 3) << F(" rpm)");
 }
 
 		if (Ph_gt_0) {
 			cond_ok = false;
-			Serial << F("\n** REDUCIR PH (") << _FLOAT(ph_daq_value*calFactors.ka_ph, 3)
+			Serial << F("\n** REDUCIR PH (") << _FLOAT(bankInputs.ph_daq_value*bank.calFactors.ka_ph, 3)
 					<< F(" bar)");
 		}
 
 		if (Pf_gt_0) {
 			cond_ok = false;
-			Serial << F("\n** REDUCIR PF (") << _FLOAT(pf_daq_value*calFactors.ka_pf, 3)
+			Serial << F("\n** REDUCIR PF (") << _FLOAT(bankInputs.pf_daq_value*bank.calFactors.ka_pf, 3)
 					<< F(" bar)");
 		}
 
@@ -278,7 +280,7 @@ void setupFSM() {
 	FSM.AddTransition(ST_MAX_VEL, ST_LANDING,
 			[]() {
 				Serial << F("\nST_MAX_VEL> Mv: ") << _FLOAT(Mv, 3) << F(", Wv: ")
-						<< _FLOAT(wheel_daq_value*calFactors.ka_wheel, 3)
+						<< _FLOAT(bankInputs.wheel_daq_value*bank.calFactors.ka_wheel, 3)
 						<< F(" ** ATERRIZAR RUEDA ***");
 				return Wv_ge_LANDINGv;
 			});
@@ -295,9 +297,9 @@ void setupFSM() {
 	FSM.AddTransition(ST_LANDING, ST_LANDED,
 			[]() {
 				Serial << F("\nLANDING> Mv: ") << _FLOAT(Mv, 3) << F(", Wv: ")
-						<< _FLOAT(wheel_daq_value*calFactors.ka_wheel, 3) << F(", PH: ")
-						<< _FLOAT(ph_daq_value*calFactors.ka_ph, 3) << F(" ** AUMENTAR Ph a ")
-						<< _FLOAT(testParms.ph_threshold, 3) << " ***";
+						<< _FLOAT(bankInputs.wheel_daq_value*bank.calFactors.ka_wheel, 3) << F(", PH: ")
+						<< _FLOAT(bankInputs.ph_daq_value*bank.calFactors.ka_ph, 3) << F(" ** AUMENTAR Ph a ")
+						<< _FLOAT(bank.testParms.ph_threshold, 3) << " ***";
 				return Ph_ge_Ph1;
 			});
 
@@ -330,7 +332,7 @@ void setupFSM() {
 	//---------------------------------------------------------------------------
 	FSM.AddTransition(ST_BRAKING_VEL, ST_BRAKING,
 			[]() {
-				Serial << F("\nST_BRAKING_VEL> PF: ") << _FLOAT(pf_daq_value*calFactors.ka_pf, 3)
+				Serial << F("\nST_BRAKING_VEL> PF: ") << _FLOAT(bankInputs.pf_daq_value*bank.calFactors.ka_pf, 3)
 						<< " ***### APLICAR FRENO ###***";
 
 				return Pf_ge_Pf1;
@@ -353,7 +355,7 @@ void setupFSM() {
 	FSM.AddTransition(ST_BRAKING, ST_TEST_COMPLETE,
 			[]() {
 				Serial << F("\nST_BRAKING> Mv: ") << _FLOAT(Mv, 3) << ", Wv: "
-						<< _FLOAT(wheel_daq_value*calFactors.ka_wheel, 3)
+						<< _FLOAT(bankInputs.wheel_daq_value*bank.calFactors.ka_wheel, 3)
 						<< " ** MANTENER Pf HASTA DETENER ** ";
 
 				return (Mv_eq_0 && Wv_eq_0);

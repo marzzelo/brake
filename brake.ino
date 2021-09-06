@@ -11,11 +11,13 @@
 #define debug
 #define fadea
 
+
+
 #include "Rx.h"
 #include "CmdSplitter.h"
 #include "Streaming.h"
 #include "SuperLed.h"
-#include "Button.h"
+
 #include "TimerOne.h"
 #include "KeyPadRx.h"
 #include "FreqCount.h"  // contador de pulsos  [+0V --> +5V]
@@ -26,28 +28,165 @@
 
 #include "LiquidCrystal.h"
 
-#include "Brake.h"
+#include "BankButtons.h"
+#include "Bank.h"
+#include "BankAnalogInputs.h"
 
-void saveSettings() {
-	int eeAddress = 0;  // Bank 0/3 : Cell 0x000/0x3FF
-	EEPROM.put(eeAddress, calFactors);
+void onBtn0();
+void onBtn1();
+void onBtn2();
+void onBtn3();
 
-	eeAddress += sizeof(calFactors);
-	EEPROM.put(eeAddress, testParms);
-}
 
-void loadSettings() {
-	int eeAddress = 0;
-	EEPROM.get(0, calFactors);
+Bank bank;
 
-	eeAddress += sizeof(calFactors);
-	EEPROM.get(eeAddress, testParms);
-}
+BankButtons bankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
+
+BankAnalogInputs bankInputs;
+
+
+/*********************************
+ * PIN DEFINITIONS
+ *********************************/
+#define INPUT_MASS		47	// Frequency Counter
+//#define INPUT_PF		A0	// Analog input
+//#define INPUT_WHEEL		A1	// Analog input
+//#define INPUT_PH		A2	// Analog input
+
+#define LED0	22
+#define LED1	24
+#define LED2	26
+#define LED3	28
+#define LED4	30
+#define LED5	32
+#define LED6	34
+#define LED7	36
+
+#define BUZZ	38
+
+#define KP_ROW0		A9
+#define KP_ROW1		A12
+#define KP_ROW2		A11
+#define KP_ROW3		A14
+#define KP_COL0		A8
+#define KP_COL1		A10
+#define KP_COL2		A13
+
+/*********************************
+ * TIMER ACCUMULATORS
+ *********************************/
+#define T250MS 	25
+#define T500MS 	50
+#define T1S 	100
+
+
+#define ZERO_PH				5
+#define ZERO_PF				5
+#define ZERO_MASS_VEL		5
+#define ZERO_WHEEL_VEL		5
+
+/*********************************
+ * RX - PC KEYBOARD OR PROCESSING
+ *********************************/
+char str[40];  // comandos desde keyboard o Processing
+Rx *keyboard = new Rx(str, 40);
+volatile bool dataReady = false;
+
+/***************************
+ * KEY PAD
+ ***************************/
+char keyBuff[40];
+
+const byte ROWS = 4; //four rows
+const byte COLS = 3; //three columns
+char keys[ROWS * COLS] = { '1', '2', '3', '4', '5', '6', '7', '8', '9', '*',
+		'0', '#' };
+
+byte rowPins[ROWS] = { KP_ROW0, KP_ROW1, KP_ROW2, KP_ROW3 }; //connect to the row pinouts of the keypad
+byte colPins[COLS] = { KP_COL0, KP_COL1, KP_COL2 }; //connect to the column pinouts of the keypad
+
+Keypad *keypad = new Keypad(keys, rowPins, colPins, ROWS, COLS); // keyPad
+KeyPadRX *keyPadRx = new KeyPadRX(keyBuff, 40, keypad); // Buffer-controller serial for keyPad
+
+bool keyPadEnabled = true;
+volatile bool keypad_data_ready;
+
+/***************************
+ * FREQUENCY METER
+ ***************************/
+const int PERIOD = 200; // Periodo de muestreo de pulsos (FreqCount.h)
+
+/***************************
+ * ANALOG INPUT
+ ***************************/
+//volatile bool daq_ready;
+//volatile bool daq_enabled;
+
+volatile uint16_t Mv;  // Mass velocity
+//volatile uint16_t wheel_daq_value;
+//volatile uint16_t ph_daq_value;
+//volatile uint16_t pf_daq_value;
+
+/***************************
+ * TIMERS
+ ***************************/
+char _t250ms, _t500ms, _t1s;
+unsigned long _t0, _dt;
+
+
+
+/***************************
+ * DIGITAL LEDS (OUTPUT)
+ ***************************/
+SuperLed *led[8];
+SuperLed *buzz;
+
+/***************************
+ * TASKER
+ ***************************/
+MyTasker *tasker;
+
+/***************************
+ * COMMAND TABLE
+ ***************************/
+
+// @formatter:off
+char const *cmdTable[] = {
+		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+		"*0", "*1", "*2", "*3", "*4", "*5", "*6", "*7", "*8", "*9" };
+
+enum _cmdEnum {
+	KEY0, KEY1, KEY2, KEY3, KEY4, KEY5, KEY6, KEY7, KEY8, KEY9,
+	CMD0, CMD1, CMD2, CMD3, CMD4, CMD5, CMD6, CMD7, CMD8, CMD9,
+	_END
+} cmdEnum;                  // @formatter:on
+//
+//
+bool cmd_menu_sent;
+
+bool btn0_pressed = false;
+bool btn1_pressed = false;
+bool btn2_pressed = false;
+bool btn3_pressed = false;
+
+
+LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
+
+/******************************************************************
+ * 								F S M
+ ******************************************************************/
+
+#include "FSM.h"
+
+#include "MENU.h"
+
+
 
 /*********************************************************************************
  * 										SETUP
  *********************************************************************************/
 void setup() {
+
 	Serial.begin(115200);
 	while (!Serial) {
 	}
@@ -76,12 +215,13 @@ void setup() {
 	buzz = new SuperLed(BUZZ, 6, 1, 0);
 	buzz->setCycles(1);
 
-	// Buttons
-	// @formatter:off
-	btn[0] = new Button(BTN0, []() { btn0_pressed = true; }, onBtn0Long);
-	btn[1] = new Button(BTN1, []() { btn1_pressed = true; }, onBtn1Long);
-	btn[2] = new Button(BTN2, []() { btn2_pressed = true; }, onBtn2Long);
-	btn[3] = new Button(BTN3, []() { btn3_pressed = true; }, onBtn3Long);	// @formatter:on
+
+//	// Buttons
+//	// @formatter:off
+//	btn[0] = new Button(BTN0, []() { btn0_pressed = true; }, onBtn0Long);
+//	btn[1] = new Button(BTN1, []() { btn1_pressed = true; }, onBtn1Long);
+//	btn[2] = new Button(BTN2, []() { btn2_pressed = true; }, onBtn2Long);
+//	btn[3] = new Button(BTN3, []() { btn3_pressed = true; }, onBtn3Long);	// @formatter:on
 
 	// Timer
 	Timer1.stop();
@@ -99,11 +239,10 @@ void setup() {
 	digitalWrite(LED_BUILTIN, LOW);
 
 	// Analog input
-	analogReference(DEFAULT);  // 5.0V
+//	analogReference(DEFAULT);  // 5.0V
 
 	FreqCount.begin(PERIOD);
 
-	//state_reset();
 	Serial.println(F("\n\nBrake Test"));
 
 	setupFSM();
@@ -138,10 +277,7 @@ void setup() {
 //	eeAddress += sizeof(calFactors);
 //	EEPROM.put(eeAddress, testParms);
 
-	TestParms testParms1;
-	CalFactors calFactors1;
-
-	loadSettings();
+	bank.loadSettings();
 
 //	EEpromPlus::EEshow(32, 1, 'm');
 
@@ -168,24 +304,27 @@ void checkEvents() {
 
 	Mv_eq_0 = Mv <= ZERO_MASS_VEL;
 	Mv_gt_0 = Mv > ZERO_MASS_VEL;
-	Mv_gt_MAX = Mv >= testParms.max_mass_vel;
-	Mv_le_BRAKEv_max = Mv <= testParms.brake_mass_vel_max;
-	Mv_ge_BRAKEv_min = Mv >= testParms.brake_mass_vel_min;
+	Mv_gt_MAX = Mv >= bank.testParms.max_mass_vel;
+	Mv_le_BRAKEv_max = Mv <= bank.testParms.brake_mass_vel_max;
+	Mv_ge_BRAKEv_min = Mv >= bank.testParms.brake_mass_vel_min;
 
-	Wv_eq_0 = wheel_daq_value <= ZERO_WHEEL_VEL;
-	Wv_ge_LANDINGv = wheel_daq_value
-			>= testParms.landing_wheel_vel / calFactors.ka_wheel;
-	Wv_gt_0 = wheel_daq_value > ZERO_WHEEL_VEL;
+	Wv_eq_0 = bankInputs.wheel_daq_value <= ZERO_WHEEL_VEL;
+	Wv_ge_LANDINGv = bankInputs.wheel_daq_value
+			>= bank.testParms.landing_wheel_vel / bank.calFactors.ka_wheel;
+	Wv_gt_0 = bankInputs.wheel_daq_value > ZERO_WHEEL_VEL;
 
-	Ph_gt_0 = ph_daq_value >= ZERO_PH;
-	Ph_ge_Ph1 = ph_daq_value >= testParms.ph_threshold / calFactors.ka_ph;
+	Ph_gt_0 = bankInputs.ph_daq_value >= ZERO_PH;
+	Ph_ge_Ph1 = bankInputs.ph_daq_value
+			>= bank.testParms.ph_threshold / bank.calFactors.ka_ph;
 
-	Pf_gt_0 = pf_daq_value > ZERO_PF;
-	Pf_ge_Pf1 = pf_daq_value >= testParms.pf_threshold / calFactors.ka_pf;
+	Pf_gt_0 = bankInputs.pf_daq_value > ZERO_PF;
+	Pf_ge_Pf1 = bankInputs.pf_daq_value
+			>= bank.testParms.pf_threshold / bank.calFactors.ka_pf;
 
 	timeOut = (millis() - _t0) > _dt;
 
-	daq_ready = false;  // data read flag
+	//daq_ready = false;  // data read flag
+	bankInputs.start();
 }
 
 // TODO: Convert to macro
@@ -203,7 +342,7 @@ void loop() {
 
 	MENU.Update();
 
-	if (FreqCount.available() && daq_ready) {
+	if (FreqCount.available() && bankInputs.ready()) {
 		checkEvents();
 
 		FSM.Update();
@@ -284,25 +423,42 @@ int getCmd(char *strCmd, const char *table[]) {
 /******************************************
  * BUTTONS Callbacks
  ******************************************/
-void onBtn0Long() {
-	Serial << F("\nButton0 Long Pressed!");
-	led[0]->start();
+void onBtn0() {
+	 btn0_pressed = true;
 }
 
-void onBtn1Long() {
-	Serial << F("\nButton1 Long Pressed!");
-	led[1]->start();
+void onBtn1() {
+	 btn1_pressed = true;
 }
 
-void onBtn2Long() {
-	Serial << F("\nButton2 Long Pressed!");
-	led[2]->start();
+void onBtn2() {
+	 btn2_pressed = true;
 }
 
-void onBtn3Long() {
-	Serial << F("\nButton3 Long Pressed!");
-	led[3]->start();
+void onBtn3() {
+	 btn3_pressed = true;
 }
+
+
+//void onBtn0Long() {
+//	Serial << F("\nButton0 Long Pressed!");
+//	led[0]->start();
+//}
+//
+//void onBtn1Long() {
+//	Serial << F("\nButton1 Long Pressed!");
+//	led[1]->start();
+//}
+//
+//void onBtn2Long() {
+//	Serial << F("\nButton2 Long Pressed!");
+//	led[2]->start();
+//}
+//
+//void onBtn3Long() {
+//	Serial << F("\nButton3 Long Pressed!");
+//	led[3]->start();
+//}
 
 /******************************************
  * PC KEYBOARD Callbacks
@@ -332,9 +488,11 @@ void keyPadPressedHandler(char key) {
  * TASKER Callbacks
  ******************************************/
 void Task1ms() {
-	for (int btnIndex = 0; btnIndex < 4; ++btnIndex) {
-		btn[btnIndex]->update();
-	}
+//	for (int btnIndex = 0; btnIndex < 4; ++btnIndex) {
+//		btn[btnIndex]->update();
+//	}
+
+	bankButtons.update();
 }
 
 void Task10ms() {
@@ -346,13 +504,15 @@ void Task10ms() {
 }
 
 void Task100ms() {
-	if (daq_enabled) {
-		wheel_daq_value = analogRead(INPUT_WHEEL);
-		ph_daq_value = analogRead(INPUT_PH);
-		pf_daq_value = analogRead(INPUT_PF);
+//	if (daq_enabled) {
+//		wheel_daq_value = analogRead(INPUT_WHEEL);
+//		ph_daq_value = analogRead(INPUT_PH);
+//		pf_daq_value = analogRead(INPUT_PF);
+//
+//		daq_ready = true;
+//	}
 
-		daq_ready = true;
-	}
+	bankInputs.update();
 }
 
 /******************************************
@@ -368,9 +528,11 @@ void T1_ISR(void) {
  * ROUTINES
  ******************************************/
 void state_reset() {
-	daq_ready = false;
+//	daq_ready = false;
+//	daq_enabled = true;
+	bankInputs.start();
 	eventsChecked = false;
-	daq_enabled = true;
+
 	keypad_data_ready = false;
 
 	btn0_pressed = false;

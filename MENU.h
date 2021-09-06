@@ -8,7 +8,7 @@
 #ifndef MENU_H_
 #define MENU_H_
 
-void saveSettings();
+//void saveSettings();
 
 // STATES
 enum MenuState {
@@ -47,7 +47,7 @@ bool updateParam(double &param, uint16_t daqValue) {
 		double dblReadVal = String(keyPadRx->buffer()).toDouble();	// convierte entrada a Double
 		param = dblReadVal / daqValue;	// calcula el factor de calibración para param
 		Serial << "\n-------\nNew Value: " << _FLOAT(param, 3);
-		saveSettings();
+		bank.saveSettings();
 		return true;  // --> to main menu
 	}
 	return false;  // keep reading keypad
@@ -86,35 +86,35 @@ void setupMENU() {
 
 
 	MENU.AddTransition(ST_MENU_WHEEL_CAL, ST_MENU_MAIN, []() {
-		return updateParam(calFactors.ka_wheel, wheel_daq_value);
+		return updateParam(bank.calFactors.ka_wheel, bankInputs.wheel_daq_value);
 	});
 
 	MENU.AddTransition(ST_MENU_PH_CAL, ST_MENU_MAIN, []() {
-		return updateParam(calFactors.ka_ph, ph_daq_value);
+		return updateParam(bank.calFactors.ka_ph, bankInputs.ph_daq_value);
 	});
 
 	MENU.AddTransition(ST_MENU_PF_CAL, ST_MENU_MAIN, []() {
-		return updateParam(calFactors.ka_pf, pf_daq_value);
+		return updateParam(bank.calFactors.ka_pf, bankInputs.pf_daq_value);
 	});
 
 	MENU.AddTransition(ST_MENU_MVMAX_PAR, ST_MENU_MAIN, []() {
-		return updateParam(testParms.max_mass_vel, 1);
+		return updateParam(bank.testParms.max_mass_vel, 1);
 	});
 
 	MENU.AddTransition(ST_MENU_BVMAX_PAR, ST_MENU_MAIN, []() {
-		return updateParam(testParms.brake_mass_vel_max, 1);
+		return updateParam(bank.testParms.brake_mass_vel_max, 1);
 	});
 
 	MENU.AddTransition(ST_MENU_BVMIN_PAR, ST_MENU_MAIN, []() {
-		return updateParam(testParms.brake_mass_vel_min, 1);
+		return updateParam(bank.testParms.brake_mass_vel_min, 1);
 	});
 
 	MENU.AddTransition(ST_MENU_PH_PAR, ST_MENU_MAIN, []() {
-		return updateParam(testParms.ph_threshold, 1);
+		return updateParam(bank.testParms.ph_threshold, 1);
 	});
 
 	MENU.AddTransition(ST_MENU_PF_PAR, ST_MENU_MAIN, []() {
-		return updateParam(testParms.pf_threshold, 1);
+		return updateParam(bank.testParms.pf_threshold, 1);
 	});
 
 	//////////////////////////////////////////////////////////////////
@@ -137,16 +137,16 @@ void setupMENU() {
 
 		Serial << F("\n\nMENU PRINCIPAL");
 		Serial << F("\n\nCALIBRACIÓN");
-		Serial << F("\n1. Calibrar Vel Rueda [k = ") << _FLOAT(calFactors.ka_wheel, 3) << "]";
-		Serial << F("\n2. Calibrar Ph [k = ") << _FLOAT(calFactors.ka_ph, 3) << "]";
-		Serial << F("\n3. Calibrar Pf [k = ") << _FLOAT(calFactors.ka_pf, 3) << "]";
+		Serial << F("\n1. Calibrar Vel Rueda [k = ") << _FLOAT(bank.calFactors.ka_wheel, 3) << "]";
+		Serial << F("\n2. Calibrar Ph [k = ") << _FLOAT(bank.calFactors.ka_ph, 3) << "]";
+		Serial << F("\n3. Calibrar Pf [k = ") << _FLOAT(bank.calFactors.ka_pf, 3) << "]";
 
 		Serial << F("\n\nPARÁMETROS DE ENSAYO");
-		Serial << F("\n4. Vel Max de Masa: ") << _FLOAT(testParms.max_mass_vel, 3);
-		Serial << F("\n5. Vel Lím Sup de Frenado: ") << _FLOAT(testParms.brake_mass_vel_max, 3);
-		Serial << F("\n6. Vel Lím Inf de Frenado: ") << _FLOAT(testParms.brake_mass_vel_min, 3);
-		Serial << F("\n7. Presión Nom de Horquilla: ") << _FLOAT(testParms.ph_threshold, 3);
-		Serial << F("\n8. Presión Nom de Freno: ")  << _FLOAT(testParms.pf_threshold, 3);
+		Serial << F("\n4. Vel Max de Masa: ") << _FLOAT(bank.testParms.max_mass_vel, 3);
+		Serial << F("\n5. Vel Lím Sup de Frenado: ") << _FLOAT(bank.testParms.brake_mass_vel_max, 3);
+		Serial << F("\n6. Vel Lím Inf de Frenado: ") << _FLOAT(bank.testParms.brake_mass_vel_min, 3);
+		Serial << F("\n7. Presión Nom de Horquilla: ") << _FLOAT(bank.testParms.ph_threshold, 3);
+		Serial << F("\n8. Presión Nom de Freno: ")  << _FLOAT(bank.testParms.pf_threshold, 3);
 
 		Serial << F("\n0. Salir del Menú");
 		Serial << F("\n\n==>");
@@ -185,7 +185,7 @@ void setupMENU() {
 
 	MENU.SetOnEntering(ST_MENU_MVMAX_PAR, []() {
 
-		Serial << F("\n\nVELOCIDAD MÁXIMA DE MASA - Actual: ") << _FLOAT(testParms.max_mass_vel, 3);
+		Serial << F("\n\nVELOCIDAD MÁXIMA DE MASA - Actual: ") << _FLOAT(bank.testParms.max_mass_vel, 3);
 		Serial << F("\n\nVelocidad máxima [rpm] ==> ");
 
 		keyPadEnabled = false;  // handle keypad here
@@ -194,7 +194,7 @@ void setupMENU() {
 
 	MENU.SetOnEntering(ST_MENU_BVMAX_PAR, []() {
 
-		Serial << F("\n\nLIM SUPERIOR VEL DE FRENO - Actual: ") << _FLOAT(testParms.brake_mass_vel_max, 3);
+		Serial << F("\n\nLIM SUPERIOR VEL DE FRENO - Actual: ") << _FLOAT(bank.testParms.brake_mass_vel_max, 3);
 		Serial << F("\n\nLímite superior [rpm] ==> ");
 
 		keyPadEnabled = false;  // handle keypad here
@@ -203,7 +203,7 @@ void setupMENU() {
 
 	MENU.SetOnEntering(ST_MENU_BVMIN_PAR, []() {
 
-		Serial << F("\n\nLIM INFERIOR VEL DE FRENO - Actual: ") << _FLOAT(testParms.brake_mass_vel_min, 3);
+		Serial << F("\n\nLIM INFERIOR VEL DE FRENO - Actual: ") << _FLOAT(bank.testParms.brake_mass_vel_min, 3);
 		Serial << F("\n\nLímite inferior [rpm] ==> ");
 
 		keyPadEnabled = false;  // handle keypad here
@@ -212,7 +212,7 @@ void setupMENU() {
 
 	MENU.SetOnEntering(ST_MENU_PH_PAR, []() {
 
-		Serial << F("\n\nPRESIÓN DE HORQUILLA NOMINAL - Actual: ") << _FLOAT(testParms.ph_threshold, 3);
+		Serial << F("\n\nPRESIÓN DE HORQUILLA NOMINAL - Actual: ") << _FLOAT(bank.testParms.ph_threshold, 3);
 		Serial << F("\n\nPresión nominal [bar] ==> ");
 
 		keyPadEnabled = false;  // handle keypad here
@@ -221,7 +221,7 @@ void setupMENU() {
 
 	MENU.SetOnEntering(ST_MENU_PF_PAR, []() {
 
-		Serial << F("\n\nPRESIÓN DE FRENO NOMINAL - Actual: ") << _FLOAT(testParms.pf_threshold, 3);
+		Serial << F("\n\nPRESIÓN DE FRENO NOMINAL - Actual: ") << _FLOAT(bank.testParms.pf_threshold, 3);
 		Serial << F("\n\nPresión nominal [bar] ==> ");
 
 		keyPadEnabled = false;  // handle keypad here
