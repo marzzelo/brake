@@ -7,13 +7,14 @@
 
 #include "BankAnalogInputs.h"
 
-BankAnalogInputs::BankAnalogInputs() {
+BankAnalogInputs::BankAnalogInputs(int period = 200) : _PERIOD(period) {
 	analogReference(DEFAULT);  // 5.0V
-
+	FreqCount.begin(period);
 }
 
 void BankAnalogInputs::update() {
 	if (_daq_enabled) {
+
 		wheel_daq_value = analogRead(INPUT_WHEEL);
 		ph_daq_value = analogRead(INPUT_PH);
 		pf_daq_value = analogRead(INPUT_PF);

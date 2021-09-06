@@ -20,9 +20,8 @@
 
 #include "TimerOne.h"
 #include "KeyPadRx.h"
-#include "FreqCount.h"  // contador de pulsos  [+0V --> +5V]
 #include "MyTasker.h"
-#include "EEPROM.h"
+//#include "EEPROM.h"
 #include "EEpromPlus.h"
 #include "StateMachineLib.h"
 
@@ -42,13 +41,13 @@ Bank bank;
 
 BankButtons bankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
 
-BankAnalogInputs bankInputs;
+BankAnalogInputs bankInputs(200);
 
 
 /*********************************
  * PIN DEFINITIONS
  *********************************/
-#define INPUT_MASS		47	// Frequency Counter
+//#define INPUT_MASS		47	// Frequency Counter
 //#define INPUT_PF		A0	// Analog input
 //#define INPUT_WHEEL		A1	// Analog input
 //#define INPUT_PH		A2	// Analog input
@@ -114,7 +113,7 @@ volatile bool keypad_data_ready;
 /***************************
  * FREQUENCY METER
  ***************************/
-const int PERIOD = 200; // Periodo de muestreo de pulsos (FreqCount.h)
+//const int PERIOD = 200; // Periodo de muestreo de pulsos (FreqCount.h)
 
 /***************************
  * ANALOG INPUT
@@ -122,7 +121,7 @@ const int PERIOD = 200; // Periodo de muestreo de pulsos (FreqCount.h)
 //volatile bool daq_ready;
 //volatile bool daq_enabled;
 
-volatile uint16_t Mv;  // Mass velocity
+//volatile uint16_t Mv;  // Mass velocity
 //volatile uint16_t wheel_daq_value;
 //volatile uint16_t ph_daq_value;
 //volatile uint16_t pf_daq_value;
@@ -168,6 +167,8 @@ bool btn0_pressed = false;
 bool btn1_pressed = false;
 bool btn2_pressed = false;
 bool btn3_pressed = false;
+
+uint16_t Mv;
 
 
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
@@ -241,7 +242,7 @@ void setup() {
 	// Analog input
 //	analogReference(DEFAULT);  // 5.0V
 
-	FreqCount.begin(PERIOD);
+//	FreqCount.begin(PERIOD);
 
 	Serial.println(F("\n\nBrake Test"));
 
@@ -300,7 +301,7 @@ void checkEvents() {
 	btn3_p = btn3_pressed;
 	btn3_pressed = false;
 
-	Mv = FreqCount.read() * 1000 / PERIOD;
+	Mv = bankInputs.getRpm();  // available() already checked!
 
 	Mv_eq_0 = Mv <= ZERO_MASS_VEL;
 	Mv_gt_0 = Mv > ZERO_MASS_VEL;
@@ -342,7 +343,7 @@ void loop() {
 
 	MENU.Update();
 
-	if (FreqCount.available() && bankInputs.ready()) {
+	if (bankInputs.ready()) {
 		checkEvents();
 
 		FSM.Update();
@@ -377,35 +378,38 @@ void checkKeyPad() {
 
 /***************************
  * Keyboard COMMAND available
- ***************************/
-//	if (keyboard->dataReady()) {
-//
-//		int cc = getCmd(str, cmdTable);
-//
-//		switch (cc) {
-//		case READ:
-//			//Serial << "Reading...\n\n";
-//			daqEnabled = true;
-//			break;
-//		case WRITE:
-//			Serial << "Writing...";
-//			break;
-//
-//		case START:
-//			Serial << "Starting...";
-//			break;
-//
-//		case STOP:
-//			Serial << "Stopping...";
-//			break;
-//
-//		default:
-//			Serial << "Unknown command";
-//			break;
-//		}
-//
-//		keyboard->start();
-//	}
+ ***************************
+	if (keyboard->dataReady()) {
+
+		int cc = getCmd(str, cmdTable);
+
+		switch (cc) {
+		case READ:
+			//Serial << "Reading...\n\n";
+			daqEnabled = true;
+			break;
+		case WRITE:
+			Serial << "Writing...";
+			break;
+
+		case START:
+			Serial << "Starting...";
+			break;
+
+		case STOP:
+			Serial << "Stopping...";
+			break;
+
+		default:
+			Serial << "Unknown command";
+			break;
+		}
+
+		keyboard->start();
+	}
+
+*/
+
 /***************************
  * Obtain command offset
  ***************************/
@@ -440,25 +444,6 @@ void onBtn3() {
 }
 
 
-//void onBtn0Long() {
-//	Serial << F("\nButton0 Long Pressed!");
-//	led[0]->start();
-//}
-//
-//void onBtn1Long() {
-//	Serial << F("\nButton1 Long Pressed!");
-//	led[1]->start();
-//}
-//
-//void onBtn2Long() {
-//	Serial << F("\nButton2 Long Pressed!");
-//	led[2]->start();
-//}
-//
-//void onBtn3Long() {
-//	Serial << F("\nButton3 Long Pressed!");
-//	led[3]->start();
-//}
 
 /******************************************
  * PC KEYBOARD Callbacks
@@ -481,16 +466,12 @@ void keyPadDataReadyHandler() {
 void keyPadPressedHandler(char key) {
 	Serial << ((key == '*') ? keyPadRx->getAsterisk() : key);
 	buzz->start(2, 1, 1);
-	//Serial << F("\nkeypressed: ") << key;
 }
 
 /******************************************
  * TASKER Callbacks
  ******************************************/
 void Task1ms() {
-//	for (int btnIndex = 0; btnIndex < 4; ++btnIndex) {
-//		btn[btnIndex]->update();
-//	}
 
 	bankButtons.update();
 }
@@ -530,6 +511,7 @@ void T1_ISR(void) {
 void state_reset() {
 //	daq_ready = false;
 //	daq_enabled = true;
+
 	bankInputs.start();
 	eventsChecked = false;
 
@@ -546,7 +528,7 @@ void state_reset() {
 //keyboard->start();
 	keyPadRx->start();
 
-	FreqCount.begin(PERIOD);
+//	FreqCount.begin(PERIOD);
 
 }
 

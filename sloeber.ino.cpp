@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-09-06 10:48:43
+//This file has been generated on 2021-09-06 11:59:44
 
 #include "Arduino.h"
 #define debug
@@ -13,7 +13,6 @@
 #include "SuperLed.h"
 #include "TimerOne.h"
 #include "KeyPadRx.h"
-#include "FreqCount.h"
 #include "MyTasker.h"
 #include "EEPROM.h"
 #include "EEpromPlus.h"
@@ -24,7 +23,7 @@
 #include "BankAnalogInputs.h"
 extern Bank bank;
 extern BankButtons bankButtons;
-#define INPUT_MASS		47
+extern BankAnalogInputs bankInputs;
 #define LED0	22
 #define LED1	24
 #define LED2	26
@@ -62,8 +61,6 @@ extern Keypad* keypad;
 extern KeyPadRX* keyPadRx;
 extern bool keyPadEnabled;
 extern volatile bool keypad_data_ready;
-extern const int PERIOD;
-extern volatile uint16_t Mv;
 extern char _t250ms;
 extern unsigned long _t0;
 extern SuperLed* led[];
