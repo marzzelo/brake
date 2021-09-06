@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-09-06 11:59:44
+//This file has been generated on 2021-09-06 12:54:50
 
 #include "Arduino.h"
 #define debug
@@ -14,25 +14,16 @@
 #include "TimerOne.h"
 #include "KeyPadRx.h"
 #include "MyTasker.h"
-#include "EEPROM.h"
-#include "EEpromPlus.h"
 #include "StateMachineLib.h"
 #include "LiquidCrystal.h"
 #include "BankButtons.h"
+#include "BankLeds.h"
 #include "Bank.h"
 #include "BankAnalogInputs.h"
 extern Bank bank;
 extern BankButtons bankButtons;
+extern BankLeds bankLeds;
 extern BankAnalogInputs bankInputs;
-#define LED0	22
-#define LED1	24
-#define LED2	26
-#define LED3	28
-#define LED4	30
-#define LED5	32
-#define LED6	34
-#define LED7	36
-#define BUZZ	38
 #define KP_ROW0		A9
 #define KP_ROW1		A12
 #define KP_ROW2		A11
@@ -63,8 +54,6 @@ extern bool keyPadEnabled;
 extern volatile bool keypad_data_ready;
 extern char _t250ms;
 extern unsigned long _t0;
-extern SuperLed* led[];
-extern SuperLed* buzz;
 extern MyTasker* tasker;
 extern const char* cmdTable[];
 extern const char* cmdTable[];
@@ -74,6 +63,7 @@ extern bool btn0_pressed;
 extern bool btn1_pressed;
 extern bool btn2_pressed;
 extern bool btn3_pressed;
+extern uint16_t Mv;
 extern LiquidCrystal lcd;
 #include "FSM.h"
 #include "MENU.h"

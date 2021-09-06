@@ -11,23 +11,17 @@
 #define debug
 #define fadea
 
-
-
 #include "Rx.h"
 #include "CmdSplitter.h"
 #include "Streaming.h"
-#include "SuperLed.h"
-
 #include "TimerOne.h"
 #include "KeyPadRx.h"
 #include "MyTasker.h"
-//#include "EEPROM.h"
-#include "EEpromPlus.h"
 #include "StateMachineLib.h"
-
 #include "LiquidCrystal.h"
 
 #include "BankButtons.h"
+#include "BankLeds.h"
 #include "Bank.h"
 #include "BankAnalogInputs.h"
 
@@ -36,32 +30,17 @@ void onBtn1();
 void onBtn2();
 void onBtn3();
 
-
 Bank bank;
 
 BankButtons bankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
 
-BankAnalogInputs bankInputs(200);
+BankLeds bankLeds;
 
+BankAnalogInputs bankInputs(200);
 
 /*********************************
  * PIN DEFINITIONS
  *********************************/
-//#define INPUT_MASS		47	// Frequency Counter
-//#define INPUT_PF		A0	// Analog input
-//#define INPUT_WHEEL		A1	// Analog input
-//#define INPUT_PH		A2	// Analog input
-
-#define LED0	22
-#define LED1	24
-#define LED2	26
-#define LED3	28
-#define LED4	30
-#define LED5	32
-#define LED6	34
-#define LED7	36
-
-#define BUZZ	38
 
 #define KP_ROW0		A9
 #define KP_ROW1		A12
@@ -77,7 +56,6 @@ BankAnalogInputs bankInputs(200);
 #define T250MS 	25
 #define T500MS 	50
 #define T1S 	100
-
 
 #define ZERO_PH				5
 #define ZERO_PF				5
@@ -111,34 +89,10 @@ bool keyPadEnabled = true;
 volatile bool keypad_data_ready;
 
 /***************************
- * FREQUENCY METER
- ***************************/
-//const int PERIOD = 200; // Periodo de muestreo de pulsos (FreqCount.h)
-
-/***************************
- * ANALOG INPUT
- ***************************/
-//volatile bool daq_ready;
-//volatile bool daq_enabled;
-
-//volatile uint16_t Mv;  // Mass velocity
-//volatile uint16_t wheel_daq_value;
-//volatile uint16_t ph_daq_value;
-//volatile uint16_t pf_daq_value;
-
-/***************************
  * TIMERS
  ***************************/
 char _t250ms, _t500ms, _t1s;
 unsigned long _t0, _dt;
-
-
-
-/***************************
- * DIGITAL LEDS (OUTPUT)
- ***************************/
-SuperLed *led[8];
-SuperLed *buzz;
 
 /***************************
  * TASKER
@@ -158,7 +112,7 @@ enum _cmdEnum {
 	KEY0, KEY1, KEY2, KEY3, KEY4, KEY5, KEY6, KEY7, KEY8, KEY9,
 	CMD0, CMD1, CMD2, CMD3, CMD4, CMD5, CMD6, CMD7, CMD8, CMD9,
 	_END
-} cmdEnum;                  // @formatter:on
+} cmdEnum;                   // @formatter:on
 //
 //
 bool cmd_menu_sent;
@@ -170,7 +124,6 @@ bool btn3_pressed = false;
 
 uint16_t Mv;
 
-
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 
 /******************************************************************
@@ -180,8 +133,6 @@ LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 #include "FSM.h"
 
 #include "MENU.h"
-
-
 
 /*********************************************************************************
  * 										SETUP
@@ -202,28 +153,6 @@ void setup() {
 	keyPadRx->setDataReadyHandler(keyPadDataReadyHandler);
 	keyPadRx->setKeyPressedHandler(keyPadPressedHandler);
 
-	// SuperLeds - el Timer debe iniciarse DESPUES de iniciar SuperLeds.
-
-	led[0] = new SuperLed(LED0, 10, 40, 0);
-	led[1] = new SuperLed(LED1, 10, 40, 0);
-	led[2] = new SuperLed(LED2, 10, 40, 0);
-	led[3] = new SuperLed(LED3, 10, 40, 0);
-	led[4] = new SuperLed(LED4, 10, 40, 0);
-	led[5] = new SuperLed(LED5, 10, 40, 0);
-	led[6] = new SuperLed(LED6, 10, 40, 0);
-	led[7] = new SuperLed(LED7, 10, 40, 0);
-
-	buzz = new SuperLed(BUZZ, 6, 1, 0);
-	buzz->setCycles(1);
-
-
-//	// Buttons
-//	// @formatter:off
-//	btn[0] = new Button(BTN0, []() { btn0_pressed = true; }, onBtn0Long);
-//	btn[1] = new Button(BTN1, []() { btn1_pressed = true; }, onBtn1Long);
-//	btn[2] = new Button(BTN2, []() { btn2_pressed = true; }, onBtn2Long);
-//	btn[3] = new Button(BTN3, []() { btn3_pressed = true; }, onBtn3Long);	// @formatter:on
-
 	// Timer
 	Timer1.stop();
 	Timer1.initialize(1000);
@@ -239,11 +168,6 @@ void setup() {
 	pinMode(LED_BUILTIN, OUTPUT);
 	digitalWrite(LED_BUILTIN, LOW);
 
-	// Analog input
-//	analogReference(DEFAULT);  // 5.0V
-
-//	FreqCount.begin(PERIOD);
-
 	Serial.println(F("\n\nBrake Test"));
 
 	setupFSM();
@@ -257,30 +181,8 @@ void setup() {
 //	lcd.setCursor(0, 0);
 //	lcd.print(F("TEST 123"));
 
-	/*********************************
-	 * CALIBRATION
-	 *********************************/
-//	testParms.max_mass_vel = 500.28f;  // 500 rpm
-//	testParms.brake_mass_vel_min = 410.28f;  // 420 rpm nominal
-//	testParms.brake_mass_vel_max = 430.28f;
-//	testParms.landing_wheel_vel = 500.2f;
-//	testParms.ph_threshold = 512.28f;
-//	testParms.pf_threshold = 100.28f;
-//
-//	calFactors.ka_mass = 1.0f;		// ka_mass = 1 rpm/Hz
-//	calFactors.ka_wheel = 1.0f;
-//	calFactors.ka_ph = 1.0f;
-//	calFactors.ka_pf = 1.0f;
-//
-//	int eeAddress = 0;  // Bank 0/3 : Cell 0x000/0x3FF
-//	EEPROM.put(eeAddress, calFactors);
-//
-//	eeAddress += sizeof(calFactors);
-//	EEPROM.put(eeAddress, testParms);
 
 	bank.loadSettings();
-
-//	EEpromPlus::EEshow(32, 1, 'm');
 
 }
 
@@ -324,7 +226,6 @@ void checkEvents() {
 
 	timeOut = (millis() - _t0) > _dt;
 
-	//daq_ready = false;  // data read flag
 	bankInputs.start();
 }
 
@@ -359,7 +260,7 @@ void checkKeyPad() {
 		return;
 
 	if (keyPadRx->dataReady()) {
-		buzz->start(10, 1, 1);
+		bankLeds.beep(10, 1, 1);
 
 		int cc = getCmd(keyBuff, cmdTable);
 
@@ -379,36 +280,36 @@ void checkKeyPad() {
 /***************************
  * Keyboard COMMAND available
  ***************************
-	if (keyboard->dataReady()) {
+ if (keyboard->dataReady()) {
 
-		int cc = getCmd(str, cmdTable);
+ int cc = getCmd(str, cmdTable);
 
-		switch (cc) {
-		case READ:
-			//Serial << "Reading...\n\n";
-			daqEnabled = true;
-			break;
-		case WRITE:
-			Serial << "Writing...";
-			break;
+ switch (cc) {
+ case READ:
+ //Serial << "Reading...\n\n";
+ daqEnabled = true;
+ break;
+ case WRITE:
+ Serial << "Writing...";
+ break;
 
-		case START:
-			Serial << "Starting...";
-			break;
+ case START:
+ Serial << "Starting...";
+ break;
 
-		case STOP:
-			Serial << "Stopping...";
-			break;
+ case STOP:
+ Serial << "Stopping...";
+ break;
 
-		default:
-			Serial << "Unknown command";
-			break;
-		}
+ default:
+ Serial << "Unknown command";
+ break;
+ }
 
-		keyboard->start();
-	}
+ keyboard->start();
+ }
 
-*/
+ */
 
 /***************************
  * Obtain command offset
@@ -428,22 +329,20 @@ int getCmd(char *strCmd, const char *table[]) {
  * BUTTONS Callbacks
  ******************************************/
 void onBtn0() {
-	 btn0_pressed = true;
+	btn0_pressed = true;
 }
 
 void onBtn1() {
-	 btn1_pressed = true;
+	btn1_pressed = true;
 }
 
 void onBtn2() {
-	 btn2_pressed = true;
+	btn2_pressed = true;
 }
 
 void onBtn3() {
-	 btn3_pressed = true;
+	btn3_pressed = true;
 }
-
-
 
 /******************************************
  * PC KEYBOARD Callbacks
@@ -465,7 +364,7 @@ void keyPadDataReadyHandler() {
 
 void keyPadPressedHandler(char key) {
 	Serial << ((key == '*') ? keyPadRx->getAsterisk() : key);
-	buzz->start(2, 1, 1);
+	bankLeds.beep(2, 1, 1);
 }
 
 /******************************************
@@ -477,22 +376,10 @@ void Task1ms() {
 }
 
 void Task10ms() {
-	for (int ledIndex = 0; ledIndex < 8; ++ledIndex) {
-		led[ledIndex]->update();
-	}
-
-	buzz->update();
+	bankLeds.update();
 }
 
 void Task100ms() {
-//	if (daq_enabled) {
-//		wheel_daq_value = analogRead(INPUT_WHEEL);
-//		ph_daq_value = analogRead(INPUT_PH);
-//		pf_daq_value = analogRead(INPUT_PF);
-//
-//		daq_ready = true;
-//	}
-
 	bankInputs.update();
 }
 
@@ -509,9 +396,6 @@ void T1_ISR(void) {
  * ROUTINES
  ******************************************/
 void state_reset() {
-//	daq_ready = false;
-//	daq_enabled = true;
-
 	bankInputs.start();
 	eventsChecked = false;
 
@@ -522,18 +406,10 @@ void state_reset() {
 	btn2_pressed = false;
 	btn3_pressed = false;
 
-	ledsOff();
-	led[0]->set(HIGH);
+	bankLeds.ledOffAll();
+	bankLeds.ledOn(0);
 
 //keyboard->start();
 	keyPadRx->start();
-
-//	FreqCount.begin(PERIOD);
-
 }
 
-void ledsOff() {
-	for (int ledIndex = 0; ledIndex < 8; ++ledIndex) {
-		led[ledIndex]->set(LOW);
-	}
-}

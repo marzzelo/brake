@@ -8,8 +8,6 @@
 #ifndef MENU_H_
 #define MENU_H_
 
-//void saveSettings();
-
 // STATES
 enum MenuState {
 	ST_MENU_IDLE = 0,
@@ -43,7 +41,7 @@ bool ev_cmd[10] = { false };
 
 bool updateParam(double &param, uint16_t daqValue) {
 	if (keyPadRx->dataReady()) {	// espera comando terminado en #
-		buzz->start(10, 1, 1);
+		bankLeds.beep(10, 1, 1);
 		double dblReadVal = String(keyPadRx->buffer()).toDouble();	// convierte entrada a Double
 		param = dblReadVal / daqValue;	// calcula el factor de calibración para param
 		Serial << "\n-------\nNew Value: " << _FLOAT(param, 3);
@@ -232,9 +230,9 @@ void setupMENU() {
 	// ON_LEAVING
 	//////////////////////////////////////////////////////////////////
 
-//	MENU.SetOnLeaving(ST_MENU_MAIN, []() {
-//		FSM.SetState(ST_IDLE, false, true);
-//	});
+	MENU.SetOnLeaving(ST_MENU_MAIN, []() {
+		keyPadRx->start();
+	});
 
 	for (st_menu = ST_MENU_WHEEL_CAL; st_menu <= ST_MENU_PF_PAR; ++st_menu) {
 		MENU.SetOnLeaving(st_menu, []() {

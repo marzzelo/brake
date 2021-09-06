@@ -16,6 +16,7 @@
 extern void state_reset();
 extern void setTimeOut(unsigned long dt);
 extern BankAnalogInputs bankInputs;
+extern BankLeds bankLeds;
 extern uint16_t Mv;
 
 // STATE LEAVING
@@ -75,78 +76,60 @@ bool eventsChecked;
 // STATES ON_ENTERING
 //////////////////////////////////////////////////////////////////
 void ent_idle() {
-// Flags preset
-	buzz->start();
+	bankLeds.beep();
 	state_reset();
 	keyPadEnabled = true;
 	Serial << F("\n\n**************************************");
 	Serial << F("\n*  IDLE <Press START para comenzar>  *");
 	Serial << F("\n**************************************\n\n");
-//	lcd.setCursor(0, 1);
-//	lcd.print("IDLE            ");
 }
 
 void ent_checking_cond() {
-//	daq_enabled = true;
-//	daq_ready = false;
 	bankInputs.start();
+	bankLeds.ledStart(7);
+	bankLeds.beep();
 
-	led[7]->start();  // preset ERROR LAMP
-	buzz->start();
 	Serial
 			<< F(
 					"\nST_CHECKING_COND... [Esperando condiciones de inicio: Mv=0, Wv=0, Ph=0, Pf=0]");
-
-//	lcd.setCursor(0, 1);
-//	lcd.print("ST_CHECKING_COND");
 }
 
 void ent_cond_ok() {
-	led[7]->set(LOW);
-
+	bankLeds.ledOff(7);
 	Serial << F("\nST_COND_OK... [Esperando Mv > 0]");
-	buzz->start();
-
-//	lcd.setCursor(0, 1);
-//	lcd.print("ST_COND_OK      ");
+	bankLeds.beep();
 }
 
 void ent_speeding() {
-	buzz->start();
-	led[0]->start();
+	bankLeds.beep();
+	bankLeds.ledStart(0);
 
 	Serial << F("\n\nST_SPEEDING... [Esperando Mv >= ")
 			<< _DEC(bank.testParms.max_mass_vel) << F(" rpm]");
-
-//	lcd.setCursor(0, 1);
-//	lcd.print("ST_SPEEDING    ");
 }
 
 void ent_max_vel() {
-	buzz->start();
-
-	led[0]->stop();
-	led[1]->start();
+	bankLeds.beep();
+	bankLeds.ledStop(0);
+	bankLeds.ledStart(1);
 
 	Serial << F("\n\nST_MAX_VEL... [Esperando Wv > ")
 			<< _DEC(bank.testParms.landing_wheel_vel) << F(" m/s]");
 }
 
 void ent_landing() {
-	buzz->start();
-
-	led[1]->stop();
-	led[2]->start();
+	bankLeds.beep();
+	bankLeds.ledStop(1);
+	bankLeds.ledStart(2);
 
 	Serial << F("\n\nST_LANDING... [Esperando PH >= ")
 			<< _DEC(bank.testParms.ph_threshold) << F(" bar]");
 }
 
 void ent_landed() {
-	buzz->start();
-
-	led[2]->stop();
-	led[3]->start();
+	bankLeds.beep();
+	bankLeds.ledStop(2);
+	bankLeds.ledStart(3);
 
 	Serial << F("\n\nST_LANDED... [Esperando ")
 			<< _DEC(bank.testParms.brake_mass_vel_min) << " < Mv < "
@@ -154,37 +137,32 @@ void ent_landed() {
 }
 
 void ent_braking_vel() {
-	buzz->start();
-
-	led[3]->stop();
-	led[4]->start();
+	bankLeds.beep();
+	bankLeds.ledStop(3);
+	bankLeds.ledStart(4);
 	Serial << F("\n\nST_BRAKING_VEL... [Esperando PF >= ")
 			<< _DEC(bank.testParms.pf_threshold) << F(" bar]");
 }
 
 void ent_braking() {
-	buzz->start();
+	bankLeds.beep();
+	bankLeds.ledStop(4);
+	bankLeds.ledStart(5);
 
-	led[4]->stop();
-	led[5]->start();
 	Serial << F("\n\nST_BRAKING... [Esperando Wv = 0 & Mv = 0]");
 }
 
 void ent_test_error() {
-	buzz->start();
+	bankLeds.beep();
+	bankLeds.ledOnAll();
 
-	for (int ledIndex = 0; ledIndex < 8; ++ledIndex) {
-		led[ledIndex]->set(HIGH);
-	}
 	Serial << F("\n**TEST ERROR** <RESET> para REINICIAR");
 }
 
 void ent_test_complete() {
-	buzz->start();
+	bankLeds.beep();
+	bankLeds.ledStartAll();
 
-	for (int ledIndex = 0; ledIndex < 8; ++ledIndex) {
-		led[ledIndex]->start();
-	}
 	Serial << F("\n**TEST FINALIZADO** <RESET> para REINICIAR");
 }
 
@@ -206,7 +184,7 @@ void setupFSM() {
 
 		if (Mv_gt_0) {
 			cond_ok = false;
-			Serial << F("\n** DETENER MASA (") << _FLOAT(bankInputs.getRpm(), 3) << F(" rpm)");
+			Serial << F("\n** DETENER MASA (") << _FLOAT(bankInputs.getRpm(), 3)<< F(" rpm)");
 }
 
 		if (Wv_gt_0) {
@@ -306,8 +284,7 @@ void setupFSM() {
 	//---------------------------------------------------------------------------
 	FSM.AddTransition(ST_LANDING, ST_LANDED,
 			[]() {
-				Serial << F("\nLANDING> Mv: ")
-						<< _FLOAT(Mv, 3) << F(", Wv: ")
+				Serial << F("\nLANDING> Mv: ") << _FLOAT(Mv, 3) << F(", Wv: ")
 						<< _FLOAT(
 								bankInputs.wheel_daq_value
 										* bank.calFactors.ka_wheel, 3)
@@ -328,16 +305,18 @@ void setupFSM() {
 	});
 
 	//---------------------------------------------------------------------------
-	FSM.AddTransition(ST_LANDED, ST_BRAKING_VEL, []() {
-		if (!Mv_le_BRAKEv_max) {
-			Serial << F("\nST_LANDED> Mv: ") << _FLOAT(Mv, 3) << F(" ** DISMINUIR VELOCIDAD **");
-}
-		if (!Mv_ge_BRAKEv_min) {
-			Serial << F("\nST_LANDED> Mv: ") << _FLOAT(Mv, 3)
-					<< F(" ** ACELERAR **");
-		}
-		return (Mv_le_BRAKEv_max && Mv_ge_BRAKEv_min);
-	});
+	FSM.AddTransition(ST_LANDED, ST_BRAKING_VEL,
+			[]() {
+				if (!Mv_le_BRAKEv_max) {
+					Serial << F("\nST_LANDED> Mv: ") << _FLOAT(Mv, 3)
+							<< F(" ** DISMINUIR VELOCIDAD **");
+				}
+				if (!Mv_ge_BRAKEv_min) {
+					Serial << F("\nST_LANDED> Mv: ") << _FLOAT(Mv, 3)
+							<< F(" ** ACELERAR **");
+				}
+				return (Mv_le_BRAKEv_max && Mv_ge_BRAKEv_min);
+			});
 
 	FSM.AddTransition(ST_LANDED, ST_IDLE, []() {
 		return btn3_p;
@@ -357,7 +336,7 @@ void setupFSM() {
 	FSM.AddTransition(ST_BRAKING_VEL, ST_LANDED, []() {
 
 		if (!(Mv_le_BRAKEv_max && Mv_ge_BRAKEv_min)) {
-			buzz->start();
+			bankLeds.beep();
 			return true;
 		}
 		return false;
