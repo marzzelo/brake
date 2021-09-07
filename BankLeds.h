@@ -9,6 +9,7 @@
 #define BANKLEDS_H_
 
 #include "SuperLed.h"
+#include "MyLed7.h"
 
 #define LED0	22
 #define LED1	24
@@ -28,22 +29,39 @@ private:
 	SuperLed *led[8];
 	SuperLed *buzz;
 
+	MyLed7 *led7s;
+
 public:
 	BankLeds();
 
 	void update();
 
-	void beep() { buzz->start(); };
+	void beep() {
+		buzz->start();
+	}
+	;
 
 	void beep(unsigned long ton, unsigned long toff, unsigned long nCycles);
 
-	void ledStart(int ledIndex) { led[ledIndex]->start(); };
+	void ledStart(int ledIndex) {
+		led[ledIndex]->start();
+	}
+	;
 
-	void ledStop(int ledIndex) { led[ledIndex]->stop(); };
+	void ledStop(int ledIndex) {
+		led[ledIndex]->stop();
+	}
+	;
 
-	void ledOff(int ledIndex) { led[ledIndex]->set(LOW); };
+	void ledOff(int ledIndex) {
+		led[ledIndex]->set(LOW);
+	}
+	;
 
-	void ledOn(int ledIndex) { led[ledIndex]->set(HIGH); };
+	void ledOn(int ledIndex) {
+		led[ledIndex]->set(HIGH);
+	}
+	;
 
 	void ledOnAll(int = HIGH);
 
@@ -52,6 +70,11 @@ public:
 	void ledStartAll();
 
 	void ledStopAll();
+
+	void display(int symbol, bool dp = false) {
+		led7s->display(symbol, dp);
+	}
+	;
 };
 
 #endif /* BANKLEDS_H_ */

@@ -5,11 +5,22 @@
  *      Author: valdez
  */
 
+#include "Arduino.h"
 #include "Bank.h"
 #include "EEPROM.h"
 
 Bank::Bank() {
 
+}
+
+void Bank::setup() {
+	// STARTUP ACTIONS
+
+	// turn built-in led off
+	pinMode(LED_BUILTIN, OUTPUT);
+	digitalWrite(LED_BUILTIN, LOW);
+
+	Serial.println(F("\n\nBrake Test"));
 }
 
 void Bank::saveSettings() {

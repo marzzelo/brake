@@ -23,6 +23,11 @@
 #define ROWS  	4 //four rows
 #define COLS	3 //three columns
 
+
+/**
+ * Se encarga de la configuración e instanciación del pad numérico a partir de la clase MyLib::KeyPadRX y
+ * la clase de la biblioteca extendida de Arduino Keypad.
+ */
 class BankKeyPad {
 
 private:

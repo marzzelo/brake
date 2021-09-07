@@ -10,21 +10,23 @@
 
 extern KeyPadRX *keyPadRx;
 
-// STATES
+/**
+ * # Estados para la FSM de Menu del sistema
+ */
 enum MenuState {
-	ST_MENU_IDLE = 0,
-	ST_MENU_MAIN,
+	ST_MENU_IDLE = 0,		//!< Menú oculto
+	ST_MENU_MAIN,			//!< Menú principal
 
-	ST_MENU_WHEEL_CAL,
-	ST_MENU_PH_CAL,
-	ST_MENU_PF_CAL,
-	ST_MENU_MVMAX_PAR,
-	ST_MENU_BVMAX_PAR,
-	ST_MENU_BVMIN_PAR,
-	ST_MENU_PH_PAR,
-	ST_MENU_PF_PAR,
+	ST_MENU_WHEEL_CAL,		//!< Submenú para calibración de velocidad de rueda
+	ST_MENU_PH_CAL,			//!< Submenú para calibración de presión de horquilla
+	ST_MENU_PF_CAL,			//!< Submenú para calibración de presión de freno
+	ST_MENU_MVMAX_PAR,		//!< Submenú para establecer velocidad máxima de masa
+	ST_MENU_BVMAX_PAR,		//!< Submenú para establecer velocidad máxima de frenado
+	ST_MENU_BVMIN_PAR,		//!< Submenú para establecer velocidad mínima de frenado
+	ST_MENU_PH_PAR,			//!< Submenú para establecer presión de horquilla nominal
+	ST_MENU_PF_PAR,			//!< Submenú para establecer presión nominal de freno
 
-	ST_MENU_COUNT
+	ST_MENU_COUNT			//!< reserved
 };
 
 int st_menu;

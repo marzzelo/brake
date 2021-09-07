@@ -19,6 +19,8 @@ BankLeds::BankLeds() {
 
 	buzz = new SuperLed(BUZZ, 6, 1, 0);
 	buzz->setCycles(1);
+
+	led7s = new MyLed7(22, 24, 26, 28, 30, 32, 34, 36);
 }
 
 void BankLeds::beep(unsigned long ton, unsigned long toff, unsigned long nCycles) {

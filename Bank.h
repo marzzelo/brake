@@ -36,6 +36,8 @@ public:
 
 	Bank();
 
+	void setup();
+
 	void saveSettings();
 
 	void loadSettings();

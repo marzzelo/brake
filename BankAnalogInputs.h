@@ -16,19 +16,29 @@
 #define INPUT_WHEEL		A1	// Analog input
 #define INPUT_PH		A2	// Analog input
 
+
+/**
+ * Controla todas las entradas analógicas del Banco de Freno, incluyendo:
+ * - Velocidad de la rueda
+ * - Presión de horquilla
+ * - Presión de freno
+ *
+ * Controla también las entradas de pulsos, incluyendo:
+ * - Velocidad de Masa (lector óptico)
+ */
 class BankAnalogInputs {
 
 private:
-	int _PERIOD; // Periodo de muestreo de pulsos (FreqCount.h)
+	int _PERIOD; //!< Periodo de muestreo de pulsos (FreqCount.h)
 
 	volatile bool _daq_ready;
 	volatile bool _daq_enabled;
 
 public:
 
-	volatile uint16_t wheel_daq_value;
-	volatile uint16_t ph_daq_value;
-	volatile uint16_t pf_daq_value;
+	volatile uint16_t wheel_daq_value;	//<! Velocidad de rueda (calibrar mediante menú)
+	volatile uint16_t ph_daq_value;		//<! Presión de horquilla (calibrar mediante menú)
+	volatile uint16_t pf_daq_value;		//<! Presión de freno (calibrar mediante menú)
 
 	BankAnalogInputs(int period = 200);
 

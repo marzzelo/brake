@@ -43,7 +43,6 @@ BankKeyPad bankKp;
 
 KeyPadRX *keyPadRx = bankKp.getKeyPadRX();
 
-
 /*********************************
  * TIMER ACCUMULATORS
  *********************************/
@@ -62,7 +61,6 @@ KeyPadRX *keyPadRx = bankKp.getKeyPadRX();
 char str[40];  // comandos desde keyboard o Processing
 Rx *keyboard = new Rx(str, 40);
 volatile bool dataReady = false;
-
 
 bool keyPadEnabled = true;
 volatile bool keypad_data_ready;
@@ -91,7 +89,7 @@ enum _cmdEnum {
 	KEY0, KEY1, KEY2, KEY3, KEY4, KEY5, KEY6, KEY7, KEY8, KEY9,
 	CMD0, CMD1, CMD2, CMD3, CMD4, CMD5, CMD6, CMD7, CMD8, CMD9,
 	_END
-} cmdEnum;                   // @formatter:on
+} cmdEnum;                       // @formatter:on
 //
 //
 bool cmd_menu_sent;
@@ -128,10 +126,6 @@ void setup() {
 	keyboard->setDataReadyHandler(dataReadyHandler);
 	keyboard->setKeyPressedHandler(keyPressedHandler);
 
-	// KeyPad handlers
-	keyPadRx->setDataReadyHandler(keyPadDataReadyHandler);
-	keyPadRx->setKeyPressedHandler(keyPadPressedHandler);
-
 	// Timer
 	Timer1.stop();
 	Timer1.initialize(1000);
@@ -143,23 +137,18 @@ void setup() {
 	_t500ms = T500MS;
 	_t1s = T1S;
 
-	// turn built-in led off
-	pinMode(LED_BUILTIN, OUTPUT);
-	digitalWrite(LED_BUILTIN, LOW);
-
-	Serial.println(F("\n\nBrake Test"));
+	bank.setup();
 
 	setupFSM();
 	setupMENU();
 
 	FSM.SetState(ST_IDLE, false, true);
-	MENU.SetState(ST_MENU_IDLE, false, true);
+	MENU.SetState(ST_MENU_IDLE, false, false);
 
 //	lcd.begin(16, 2);
 //
 //	lcd.setCursor(0, 0);
 //	lcd.print(F("TEST 123"));
-
 
 	bank.loadSettings();
 
@@ -291,7 +280,7 @@ void checkKeyPad() {
  */
 
 /***************************
- * Obtain command offset
+ * Obtain command offset (keyboard)
  ***************************/
 int getCmd(char *strCmd, const char *table[]) {
 	int p;
@@ -343,6 +332,7 @@ void keyPadDataReadyHandler() {
 
 void keyPadPressedHandler(char key) {
 	Serial << ((key == '*') ? keyPadRx->getAsterisk() : key);
+	bankLeds.display(key);
 	bankLeds.beep(2, 1, 1);
 }
 
@@ -350,7 +340,6 @@ void keyPadPressedHandler(char key) {
  * TASKER Callbacks
  ******************************************/
 void Task1ms() {
-
 	bankButtons.update();
 }
 
@@ -386,7 +375,6 @@ void state_reset() {
 	btn3_pressed = false;
 
 	bankLeds.ledOffAll();
-	bankLeds.ledOn(0);
 
 //keyboard->start();
 	keyPadRx->start();
