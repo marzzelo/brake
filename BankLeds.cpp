@@ -8,16 +8,16 @@
 #include "BankLeds.h"
 
 BankLeds::BankLeds() {
-	led[0] = new SuperLed(LED0, 10, 40, 0);
-	led[1] = new SuperLed(LED1, 10, 40, 0);
-	led[2] = new SuperLed(LED2, 10, 40, 0);
-	led[3] = new SuperLed(LED3, 10, 40, 0);
-	led[4] = new SuperLed(LED4, 10, 40, 0);
-	led[5] = new SuperLed(LED5, 10, 40, 0);
-	led[6] = new SuperLed(LED6, 10, 40, 0);
-	led[7] = new SuperLed(LED7, 10, 40, 0);
+	led[0] = new SuperLed(LED0, 100, 400, 0);
+	led[1] = new SuperLed(LED1, 100, 400, 0);
+	led[2] = new SuperLed(LED2, 100, 400, 0);
+	led[3] = new SuperLed(LED3, 100, 400, 0);
+	led[4] = new SuperLed(LED4, 100, 400, 0);
+	led[5] = new SuperLed(LED5, 100, 400, 0);
+	led[6] = new SuperLed(LED6, 100, 400, 0);
+	led[7] = new SuperLed(LED7, 100, 400, 0);
 
-	buzz = new SuperLed(BUZZ, 6, 1, 0);
+	buzz = new SuperLed(BUZZ, 60, 1, 0);
 	buzz->setCycles(1);
 
 	led7s = new MyLed7(22, 24, 26, 28, 30, 32, 34, 36);
@@ -33,6 +33,8 @@ void BankLeds::update() {
 	}
 
 	buzz->update();
+
+	led7s->update();
 }
 
 void BankLeds::ledOnAll(int on = HIGH) {

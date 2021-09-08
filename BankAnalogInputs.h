@@ -15,6 +15,8 @@
 #define INPUT_PF		A0	// Analog input
 #define INPUT_WHEEL		A1	// Analog input
 #define INPUT_PH		A2	// Analog input
+#define INPUT_T1		A3	// Temp 1
+#define INPUT_T2		A4	// Temp 2
 
 
 /**
@@ -39,6 +41,8 @@ public:
 	volatile uint16_t wheel_daq_value;	//<! Velocidad de rueda (calibrar mediante menú)
 	volatile uint16_t ph_daq_value;		//<! Presión de horquilla (calibrar mediante menú)
 	volatile uint16_t pf_daq_value;		//<! Presión de freno (calibrar mediante menú)
+	volatile uint16_t t1_daq_value;		//<! Temperatura 1
+	volatile uint16_t t2_daq_value;		//<! Temperatura 2
 
 	BankAnalogInputs(int period = 200);
 

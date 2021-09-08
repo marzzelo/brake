@@ -1,15 +1,49 @@
 /* ===============================================================================================
  * 					       BANCO DE FRENO - FIRMWARE ARDUINO MEGA 2560
- * ===============================================================================================
+ * ===============================================================================================*/
+/**
+ * # OPERACIÓN
  *
+ * ## DISPLAY: P (IDLE)
+ * - Presionar START para comenzar el ensayo
  *
+ * ## DISPLAY: E (ST_CHECKING_COND)
+ * - Verificar las siguientes condiciones:
+ *   - Velocidad de masa nula
+ *   - Velocidad de rueda nula
+ *   - Presiones de horquilla y freno nulas
+ *   - Temperaturas por debajo del límite caliente
  *
+ * ## DISPLAY: 0 (ST_COND_OK)
+ * - Arrancar masa
  *
+ * ## DISPLAY: 1 (ST_SPEEDING)
+ * - Acelerar masa hasta alcanzar Vmax
+ *
+ * ## DISPLAY: 2 (ST_MAX_VEL)
+ * - Aterrizar rueda
+ *
+ * ## DISPLAY: 3 (ST_LANDING)
+ * - Aumentar presión de horquilla hasta la presión nominal del ensayo (simula peso del avión)
+ * - ERROR: si la velocidad de masa disminuye por debajo de la velocidad de frenado antes de aplicar el freno.
+ *
+ * ## DISPLAY: 4 (ST_LANDED)
+ * - Disminuir o Aumentar velocidad de masa hasta ingresar al rango de frenado MvBmin < Mv < MvBmax
+ *
+ * ## DISPLAY: 5 (ST_BRAKING_VEL)
+ * - Aplicar freno
+ * - REGRESO A [4]: si la velocidad de masa sale del rango de frenado antes de que la presión de freno alcance la presión nominal
+ *
+ * ## DISPLAY: 6 (ST_BRAKING)
+ * - Esperar la detención total de la masa y la rueda
+ * - ERROR: si la presión de freno disminuye demasiado antes de la detención total de la rueda y masa
+ *
+ * ## DISPLAY: F (ST_TEST_COMPLETE)
+ * - Fin del ensayo, presionar Start para reiniciar.
  *
  *************************************************************************************************/
-
-#define debug
 #define fadea
+#define debug
 
 #include "Rx.h"
 #include "CmdSplitter.h"
@@ -82,11 +116,11 @@ MyTasker *tasker;
 
 // @formatter:off
 char const *cmdTable[] = {
-		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
 		"*0", "*1", "*2", "*3", "*4", "*5", "*6", "*7", "*8", "*9" };
 
 enum _cmdEnum {
-	KEY0, KEY1, KEY2, KEY3, KEY4, KEY5, KEY6, KEY7, KEY8, KEY9,
+	KEY0, KEY1, KEY2, KEY3, KEY4, KEY5, KEY6, KEY7, KEY8, KEY9, KEY10, KEY11, KEY12, KEY13, KEY14, KEY15,
 	CMD0, CMD1, CMD2, CMD3, CMD4, CMD5, CMD6, CMD7, CMD8, CMD9,
 	_END
 } cmdEnum;                       // @formatter:on
@@ -150,6 +184,8 @@ void setup() {
 //	lcd.setCursor(0, 0);
 //	lcd.print(F("TEST 123"));
 
+//	bank.eePreset();
+
 	bank.loadSettings();
 
 }
@@ -180,17 +216,17 @@ void checkEvents() {
 	Mv_ge_BRAKEv_min = Mv >= bank.testParms.brake_mass_vel_min;
 
 	Wv_eq_0 = bankInputs.wheel_daq_value <= ZERO_WHEEL_VEL;
-	Wv_ge_LANDINGv = bankInputs.wheel_daq_value
-			>= bank.testParms.landing_wheel_vel / bank.calFactors.ka_wheel;
+	Wv_ge_LANDINGv = bankInputs.wheel_daq_value	>= bank.testParms.landing_wheel_vel / bank.calFactors.ka_wheel;
 	Wv_gt_0 = bankInputs.wheel_daq_value > ZERO_WHEEL_VEL;
 
 	Ph_gt_0 = bankInputs.ph_daq_value >= ZERO_PH;
-	Ph_ge_Ph1 = bankInputs.ph_daq_value
-			>= bank.testParms.ph_threshold / bank.calFactors.ka_ph;
+	Ph_ge_Ph1 = bankInputs.ph_daq_value >= bank.testParms.ph_threshold / bank.calFactors.ka_ph;
 
 	Pf_gt_0 = bankInputs.pf_daq_value > ZERO_PF;
-	Pf_ge_Pf1 = bankInputs.pf_daq_value
-			>= bank.testParms.pf_threshold / bank.calFactors.ka_pf;
+	Pf_ge_Pf1 = bankInputs.pf_daq_value >= bank.testParms.pf_threshold / bank.calFactors.ka_pf;
+
+	T1_ge_Thot = bankInputs.t1_daq_value >= bank.testParms.t1_hot / bank.calFactors.ka_t1;
+	T2_ge_Thot = bankInputs.t2_daq_value >= bank.testParms.t2_hot / bank.calFactors.ka_t2;
 
 	timeOut = (millis() - _t0) > _dt;
 
@@ -228,16 +264,16 @@ void checkKeyPad() {
 		return;
 
 	if (keyPadRx->dataReady()) {
-		bankLeds.beep(10, 1, 1);
+		bankLeds.beep(100, 1, 1);
 
 		int cc = getCmd(bankKp.getBuff(), cmdTable);
 
-		if (cc < 10) {
+		if (cc < 16) {
 			Serial << "\nkey: " << cc;
 			ev_key[cc] = true;
 		} else {
-			Serial << "\nevt: " << (cc - 10);
-			ev_cmd[cc - 10] = true;
+			Serial << "\nevt: " << (cc - 16);
+			ev_cmd[cc - 16] = true;
 		}
 
 		keyPadRx->start();
@@ -333,7 +369,7 @@ void keyPadDataReadyHandler() {
 void keyPadPressedHandler(char key) {
 	Serial << ((key == '*') ? keyPadRx->getAsterisk() : key);
 	bankLeds.display(key);
-	bankLeds.beep(2, 1, 1);
+	bankLeds.beep(20, 1, 1);
 }
 
 /******************************************
@@ -341,10 +377,11 @@ void keyPadPressedHandler(char key) {
  ******************************************/
 void Task1ms() {
 	bankButtons.update();
+	bankLeds.update();
 }
 
 void Task10ms() {
-	bankLeds.update();
+
 }
 
 void Task100ms() {

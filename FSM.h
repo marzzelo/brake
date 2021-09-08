@@ -66,6 +66,9 @@ bool Ph_ge_Ph1;
 bool Pf_gt_0;
 bool Pf_ge_Pf1;
 
+bool T1_ge_Thot;
+bool T2_ge_Thot;
+
 bool reset_requested;
 
 bool timeOut;
@@ -87,17 +90,15 @@ void ent_idle() {
 	Serial << F("\n* Ingresar *1<enter> para Menú       *");
 	Serial << F("\n**************************************\n\n");
 
-	bankLeds.display('A');
+	bankLeds.display('P');
 }
 
 void ent_checking_cond() {
 	bankInputs.start();
-	bankLeds.display('E');
+	bankLeds.blink('E');
 	bankLeds.beep();
 
-	Serial
-			<< F(
-					"\nST_CHECKING_COND... [Esperando condiciones de inicio: Mv=0, Wv=0, Ph=0, Pf=0]");
+	Serial << F("\nST_CHECKING_COND... [Esperando condiciones de inicio: Mv=0, Wv=0, Ph=0, Pf=0]");
 }
 
 void ent_cond_ok() {
@@ -155,14 +156,14 @@ void ent_braking() {
 
 void ent_test_error() {
 	bankLeds.beep();
-	bankLeds.display('E');
+	bankLeds.blink('E');
 
 	Serial << F("\n**TEST ERROR** <RESET> para REINICIAR");
 }
 
 void ent_test_complete() {
 	bankLeds.beep();
-	bankLeds.display('F');
+	bankLeds.blink('F');
 
 	Serial << F("\n**TEST FINALIZADO** <RESET> para REINICIAR");
 }
@@ -196,6 +197,7 @@ bool from_idle_to_checking_cond() {
  * - Rueda detenida
  * - Presión de horquilla nula
  * - Presión de freno nula
+ * - Temperaturas por debajo del límite caliente
  */
 bool from_checking_to_cond_ok() {
 
@@ -225,6 +227,14 @@ bool from_checking_to_cond_ok() {
 		Serial << F("\n** REDUCIR PF [") << _FLOAT(pf, 3) << F(" bar]");
 	}
 
+	if (T1_ge_Thot || T2_ge_Thot) {
+		cond_ok = false;
+		uint16_t T1 = bankInputs.t1_daq_value * bank.calFactors.ka_t1;
+		uint16_t T2 = bankInputs.t2_daq_value * bank.calFactors.ka_t2;
+		Serial << F("\n** Temp Alta [T1: ") << _FLOAT(T1, 3) << F(" °C]");
+		Serial << F(" [T2: ") << _FLOAT(T2, 3) << F(" °C]");
+	}
+
 	if (!cond_ok) {
 		Serial << F("\n----------------------");
 	}
@@ -238,6 +248,7 @@ bool from_checking_to_cond_ok() {
 bool any_to_idle() {
 	{
 		if (timeOut) {
+			bankLeds.beep(1000, 1, 1);
 			Serial << F("\nTimeout");
 			return true;
 		}
@@ -347,6 +358,64 @@ bool from_landed_to_braking_vel() {
 	return (Mv_le_BRAKEv_max && Mv_ge_BRAKEv_min);
 }
 
+/*****************************************************
+ *
+ * Transitions from ST_BRAKING_VEL
+ *
+ *****************************************************/
+/**
+ * ## Se ingresa a BRAKING cuando la presión de freno alcanza la presión nominal del ensayo.
+ * - El valor nominal de presión de freno puede fijarse desde el menú del sistema.
+ */
+bool from_braking_vel_to_braking() {
+	uint16_t pf = bankInputs.pf_daq_value * bank.calFactors.ka_pf;
+	Serial << F("\nST_BRAKING_VEL> PF: ") << _FLOAT(pf, 3);
+	Serial << " ***### APLICAR FRENO ###***";
+
+	return Pf_ge_Pf1;
+}
+
+/**
+ * ## Se regresa al estado LANDED si la velocidad de masa sale del rango de frenado antes de que la presión de freno alcance la presión nominal
+ */
+bool from_braking_vel_to_landed() {
+	if (!(Mv_le_BRAKEv_max && Mv_ge_BRAKEv_min)) {
+		bankLeds.beep();
+		return true;
+	}
+	return false;
+}
+
+/*****************************************************
+ *
+ * Transitions from ST_BRAKING
+ *
+ *****************************************************/
+/**
+ * ## Se ingresa a TEST_COMPLETE cuando las velocidades de masa y de rueda se anulan.
+ */
+bool from_braking_to_complete() {
+	uint16_t wv = bankInputs.wheel_daq_value * bank.calFactors.ka_wheel;
+	Serial << F("\nST_BRAKING> Mv: ") << _FLOAT(Mv, 3);
+	Serial << ", Wv: " << _FLOAT(wv, 3) << " ** MANTENER Pf HASTA DETENER ** ";
+
+	return (Mv_eq_0 && Wv_eq_0);
+}
+
+/**
+ * ## Se disminuyó demasiado la presión de freno durante el frenado
+ */
+bool from_braking_to_error() {
+	Serial << F("\nPf demasiado baja. Test abortado");
+	bankLeds.beep(1000, 1, 1);
+	return (!Pf_gt_0);
+}
+
+/*****************************************************
+ *
+ * Transitions from ST_TEST_COMPLETE
+ *
+ *****************************************************/
 
 /**
  * Asignar callbacks de entrada, transición y salida
@@ -355,17 +424,25 @@ void setupFSM() {
 
 	FSM.AddTransition(ST_IDLE, ST_CHECKING_COND, from_idle_to_checking_cond);
 
+	//-----------------------------------------------------------------------
+
 	FSM.AddTransition(ST_CHECKING_COND, ST_COND_OK, from_checking_to_cond_ok);
 
 	FSM.AddTransition(ST_CHECKING_COND, ST_IDLE, any_to_idle);
+
+	//-----------------------------------------------------------------------
 
 	FSM.AddTransition(ST_COND_OK, ST_SPEEDING, from_cond_ok_to_speeding);
 
 	FSM.AddTransition(ST_COND_OK, ST_IDLE, any_to_idle);
 
+	//-----------------------------------------------------------------------
+
 	FSM.AddTransition(ST_SPEEDING, ST_MAX_VEL, from_speeding_to_max_vel);
 
 	FSM.AddTransition(ST_SPEEDING, ST_IDLE, any_to_idle);
+
+	//-----------------------------------------------------------------------
 
 	FSM.AddTransition(ST_MAX_VEL, ST_LANDING, from_max_vel_to_landing);
 
@@ -373,76 +450,45 @@ void setupFSM() {
 
 	FSM.AddTransition(ST_MAX_VEL, ST_IDLE, any_to_idle);
 
+	//-----------------------------------------------------------------------
+
 	FSM.AddTransition(ST_LANDING, ST_LANDED, from_landing_to_landed);
 
 	FSM.AddTransition(ST_LANDING, ST_TEST_ERROR, from_landing_to_error);
 
 	FSM.AddTransition(ST_LANDING, ST_IDLE, any_to_idle);
 
+	//-----------------------------------------------------------------------
+
 	FSM.AddTransition(ST_LANDED, ST_BRAKING_VEL, from_landed_to_braking_vel);
 
 	FSM.AddTransition(ST_LANDED, ST_IDLE, any_to_idle);
 
-	/*****************************************************
-	 *
-	 * Transitions from ST_BRAKING_VEL
-	 *
-	 *****************************************************/
-	FSM.AddTransition(ST_BRAKING_VEL, ST_BRAKING, []() {
-		uint16_t pf = bankInputs.pf_daq_value * bank.calFactors.ka_pf;
-		Serial << F("\nST_BRAKING_VEL> PF: ") << _FLOAT(pf, 3);
-		Serial << " ***### APLICAR FRENO ###***";
+	//-----------------------------------------------------------------------
 
-		return Pf_ge_Pf1;
-	});
+	FSM.AddTransition(ST_BRAKING_VEL, ST_BRAKING, from_braking_vel_to_braking);
 
-	FSM.AddTransition(ST_BRAKING_VEL, ST_LANDED, []() {
+	FSM.AddTransition(ST_BRAKING_VEL, ST_LANDED, from_braking_vel_to_landed);
 
-		if (!(Mv_le_BRAKEv_max && Mv_ge_BRAKEv_min)) {
-			bankLeds.beep();
-			return true;
-		}
-		return false;
-	});
+	FSM.AddTransition(ST_BRAKING_VEL, ST_IDLE, any_to_idle);
 
-	FSM.AddTransition(ST_BRAKING_VEL, ST_IDLE, []() {
-		return btn3_p;
-	});
+	//-----------------------------------------------------------------------
 
-	/*****************************************************
-	 *
-	 * Transitions from ST_BRAKING
-	 *
-	 *****************************************************/
-	FSM.AddTransition(ST_BRAKING, ST_TEST_COMPLETE, []() {
-		uint16_t wv = bankInputs.wheel_daq_value * bank.calFactors.ka_wheel;
-		Serial << F("\nST_BRAKING> Mv: ") << _FLOAT(Mv, 3);
-		Serial << ", Wv: " << _FLOAT(wv, 3) <<" ** MANTENER Pf HASTA DETENER ** " ;
+	FSM.AddTransition(ST_BRAKING, ST_TEST_COMPLETE, from_braking_to_complete);
 
-		return (Mv_eq_0 && Wv_eq_0);
-	});
+	FSM.AddTransition(ST_BRAKING, ST_TEST_ERROR, from_braking_to_error);
 
-	FSM.AddTransition(ST_BRAKING, ST_IDLE, []() {
-		return btn3_p;
-	});
+	FSM.AddTransition(ST_BRAKING, ST_IDLE, any_to_idle);
 
-	/*****************************************************
-	 *
-	 * Transitions from ST_TEST_COMPLETE
-	 *
-	 *****************************************************/
-	FSM.AddTransition(ST_TEST_COMPLETE, IDLE, []() {
-		return btn3_p;
-	});
+	//-----------------------------------------------------------------------
 
-	/*****************************************************
-	 *
-	 * Transitions from ST_TEST_ERROR
-	 *
-	 *****************************************************/
-	FSM.AddTransition(ST_TEST_ERROR, IDLE, []() {
-		return btn3_p;
-	});
+	FSM.AddTransition(ST_TEST_COMPLETE, IDLE, any_to_idle);
+
+	//-----------------------------------------------------------------------
+
+	FSM.AddTransition(ST_TEST_ERROR, IDLE, any_to_idle);
+
+	//-----------------------------------------------------------------------
 
 	//////////////////////////////////////////////////////////////////
 	//

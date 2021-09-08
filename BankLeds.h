@@ -39,29 +39,24 @@ public:
 	void beep() {
 		buzz->start();
 	}
-	;
 
 	void beep(unsigned long ton, unsigned long toff, unsigned long nCycles);
 
 	void ledStart(int ledIndex) {
 		led[ledIndex]->start();
 	}
-	;
 
 	void ledStop(int ledIndex) {
 		led[ledIndex]->stop();
 	}
-	;
 
 	void ledOff(int ledIndex) {
 		led[ledIndex]->set(LOW);
 	}
-	;
 
 	void ledOn(int ledIndex) {
 		led[ledIndex]->set(HIGH);
 	}
-	;
 
 	void ledOnAll(int = HIGH);
 
@@ -72,9 +67,15 @@ public:
 	void ledStopAll();
 
 	void display(int symbol, bool dp = false) {
+		led7s->noBlink();
 		led7s->display(symbol, dp);
 	}
-	;
+
+	void blink(int symbol, uint16_t period = 200) {
+		led7s->display(symbol, false);
+		led7s->blink(period);
+	}
+
 };
 
 #endif /* BANKLEDS_H_ */
