@@ -195,101 +195,65 @@ void setupMENU() {
 		Serial << F("\n\nCALIBRACIÓN VEL DE RUEDA");
 		Serial << F("\nGirar rueda a velocidad cte. e ingresar valor real:");
 		Serial << F("\n\nVelocidad [rpm] ==> ");
-//
-//		checkCommands = false;  // handle keypad here
-//		keyPadRx->asterisk('.');
 	});
 
 	MENU.SetOnEntering (ST_MENU_PH_CAL , [ ] ( ) {
 		Serial << F("\n\nCALIBRACIÓN PRESIÓN DE HORQUILLA");
 		Serial << F("\nAplicar presión de Horquilla cte. e ingresar valor real:");
 		Serial << F("\n\nPresión H [bar] ==> ");
-//
-//		checkCommands = false;  // handle keypad here
-//		keyPadRx->asterisk('.');
 	});
 
 	MENU.SetOnEntering ( ST_MENU_PF_CAL , [ ] ( ) {
 		Serial << F("\n\nCALIBRACIÓN PRESIÓN DE FRENO");
 		Serial << F("\nAplicar presión de Freno cte. e ingresar valor real:");
 		Serial << F("\n\nPresión F [bar] ==> ");
-//
-//		checkCommands = false;  // handle keypad here
-//		keyPadRx->asterisk('.');
 	});
 
 	MENU.SetOnEntering ( ST_MENU_T1_CAL , [ ] ( ) {
 		Serial << F("\n\nCALIBRACIÓN TEMP 1");
 		Serial << F("\nAplicar temperatura 1 e ingresar valor real:");
 		Serial << F("\n\nTemperatura [°C] ==> ");
-//
-//		checkCommands = false;  // handle keypad here
-//		keyPadRx->asterisk('.');
 	});
 
 	MENU.SetOnEntering ( ST_MENU_T2_CAL , [ ] ( ) {
 		Serial << F("\n\nCALIBRACIÓN TEMP 2");
 		Serial << F("\nAplicar temperatura 2 e ingresar valor real:");
 		Serial << F("\n\nTemperatura [°C] ==> ");
-//
-//		checkCommands = false;  // handle keypad here
-//		keyPadRx->asterisk('.');
 	});
 
 	MENU.SetOnEntering (ST_MENU_MVMAX_PAR , [ ] ( ) {
 		Serial << F("\n\nVELOCIDAD MÁXIMA DE MASA - Actual: ") << _FLOAT(bank.testParms.max_mass_vel, 3);
 		Serial << F("\n\nVelocidad máxima [rpm] ==> ");
-//
-//		checkCommands = false;  // handle keypad here
-//		keyPadRx->asterisk('.');
 	});
 
 	MENU.SetOnEntering (ST_MENU_BVMAX_PAR , [ ] ( ) {
 		Serial << F("\n\nLIM SUPERIOR VEL DE FRENO - Actual: ") << _FLOAT(bank.testParms.brake_mass_vel_max, 3);
 		Serial << F("\n\nLímite superior [rpm] ==> ");
-//
-//		checkCommands = false;  // handle keypad here
-//		keyPadRx->asterisk('.');
 	});
 
 	MENU.SetOnEntering (ST_MENU_BVMIN_PAR , [ ] ( ) {
 		Serial << F("\n\nLIM INFERIOR VEL DE FRENO - Actual: ") << _FLOAT(bank.testParms.brake_mass_vel_min, 3);
 		Serial << F("\n\nLímite inferior [rpm] ==> ");
-//
-//		checkCommands = false;  // handle keypad here
-//		keyPadRx->asterisk('.');
 	});
 
 	MENU.SetOnEntering (ST_MENU_PH_PAR , [ ] ( ) {
 		Serial << F("\n\nPRESIÓN DE HORQUILLA NOMINAL - Actual: ") << _FLOAT(bank.testParms.ph_threshold, 3);
 		Serial << F("\n\nPresión nominal [bar] ==> ");
-//
-//		checkCommands = false;  // handle keypad here
-//		keyPadRx->asterisk('.');
 	});
 
 	MENU.SetOnEntering (ST_MENU_PF_PAR , [ ] ( ) {
 		Serial << F("\n\nPRESIÓN DE FRENO NOMINAL - Actual: ") << _FLOAT(bank.testParms.pf_threshold, 3);
 		Serial << F("\n\nPresión nominal [bar] ==> ");
-//
-//		checkCommands = false;  // handle keypad here
-//		keyPadRx->asterisk('.');
 	});
 
 	MENU.SetOnEntering (ST_MENU_T1HOT_PAR , [ ] ( ) {
 		Serial << F("\n\nTEMPERATURA LÍMITE 1 - Actual: ") << _FLOAT(bank.testParms.t1_hot, 3);
 		Serial << F("\n\nTemp límite 1 [°C] ==> ");
-//
-//		checkCommands = false;  // handle keypad here
-//		keyPadRx->asterisk('.');
 	});
 
 	MENU.SetOnEntering (ST_MENU_T2HOT_PAR , [ ] ( ) {
 		Serial << F("\n\nTEMPERATURA LÍMITE 2 - Actual: ") << _FLOAT(bank.testParms.t2_hot, 3);
 		Serial << F("\n\nTemp límite 2 [°C] ==> ");
-//
-//		checkCommands = false;  // handle keypad here
-//		keyPadRx->asterisk('.');
 	});
 
 //////////////////////////////////////////////////////////////////
@@ -297,7 +261,6 @@ void setupMENU() {
 //////////////////////////////////////////////////////////////////
 
 	MENU.SetOnLeaving(ST_IDLE, [] () {
-		keyPadRx->asterisk('.');
 		Serial << F("\n------\nLEAVING ST_MENU_IDLE\n\n");
 	});
 
@@ -308,9 +271,6 @@ void setupMENU() {
 
 	for (st_menu = ST_MENU_WHEEL_CAL; st_menu <= ST_MENU_T2HOT_PAR;	++st_menu	)	{
 		MENU.SetOnLeaving(st_menu, [](){
-//			checkCommands = true;
-//			keyPadRx->asterisk('*');
-//			keyPadRx->start( );
 			Serial <<"\n...leaving state #"	<< st_menu;
 		}																															)																						;
 	}
