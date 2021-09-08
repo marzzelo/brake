@@ -35,7 +35,7 @@ enum State {
 	ST_LANDED,			//!< presión alcanzada, esperando velocidad de frenado
 	ST_BRAKING_VEL, 	//!< velocidad de freno alcanzada, esperando frenado
 	ST_BRAKING,			//!< frenado iniciado, esperando detención total.
-	ST_TEST_COMPLETE,//!< test finalizado, esperando reset o timeout para IDLE.
+	ST_TEST_COMPLETE,	//!< test finalizado, esperando reset o timeout para IDLE.
 	ST_TEST_ERROR,		//!< test Abortado, esperando reset o timeout para IDLE.
 	ST_COUNT
 };
@@ -84,7 +84,7 @@ bool eventsChecked;
 void ent_idle() {
 	bankLeds.beep();
 	state_reset();
-	keyPadEnabled = true;
+	checkCommands = true;
 	Serial << F("\n\n**************************************");
 	Serial << F("\n* Presionar START para comenzar      *");
 	Serial << F("\n* Ingresar *1<enter> para Menú       *");
@@ -252,10 +252,10 @@ bool any_to_idle() {
 			Serial << F("\nTimeout");
 			return true;
 		}
-		if (reset_requested) {
-			reset_requested = false;
-			return true;
-		}
+//		if (reset_requested) {
+//			reset_requested = false;
+//			return true;
+//		}
 		return btn3_p;
 	}
 }
@@ -514,7 +514,7 @@ void setupFSM() {
 	//////////////////////////////////////////////////////////////////
 	FSM.SetOnLeaving(ST_IDLE, []() {
 		setTimeOut(120000);
-		keyPadEnabled = false;
+		checkCommands = false;
 		Serial << F("\n...leaving ST_IDLE");
 	});
 	FSM.SetOnLeaving(ST_CHECKING_COND, []() {

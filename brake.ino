@@ -96,7 +96,7 @@ char str[40];  // comandos desde keyboard o Processing
 Rx *keyboard = new Rx(str, 40);
 volatile bool dataReady = false;
 
-bool keyPadEnabled = true;
+bool checkCommands = true;
 volatile bool keypad_data_ready;
 
 /***************************
@@ -260,7 +260,7 @@ void loop() {
  * KEYPAD COMMANDS
  ***************************/
 void checkKeyPad() {
-	if (!keyPadEnabled)
+	if (!checkCommands)
 		return;
 
 	if (keyPadRx->dataReady()) {
@@ -271,9 +271,11 @@ void checkKeyPad() {
 		if (cc < 16) {
 			Serial << "\nkey: " << cc;
 			ev_key[cc] = true;
-		} else {
+		} else if (cc < _END) {
 			Serial << "\nevt: " << (cc - 16);
 			ev_cmd[cc - 16] = true;
+		} else {
+			Serial << "\nunknwn evt: " << cc;
 		}
 
 		keyPadRx->start();
@@ -321,7 +323,7 @@ void checkKeyPad() {
 int getCmd(char *strCmd, const char *table[]) {
 	int p;
 
-	for (p = 0; p < _END; p++) {
+	for (p = 0; p <= _END; p++) {
 		if (strcmp(strCmd, table[p]) == 0) {
 			break;
 		}
