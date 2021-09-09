@@ -336,18 +336,24 @@ int getCmd(char *strCmd, const char *table[]) {
  ******************************************/
 void onBtn0() {
 	btn0_pressed = true;
+	bank.relayToggle(0);
 }
 
 void onBtn1() {
 	btn1_pressed = true;
+	bank.relayToggle(1);
 }
 
 void onBtn2() {
 	btn2_pressed = true;
+	bank.relayToggle(2);
 }
 
 void onBtn3() {
 	btn3_pressed = true;
+	bool state = bank.relayToggle(3);
+	Serial << "\nLAMP ";
+	Serial << (state ? "ENCENDIDA" : "APAGADA");
 }
 
 /******************************************

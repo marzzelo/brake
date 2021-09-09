@@ -21,6 +21,16 @@ void Bank::setup() {
 	pinMode(LED_BUILTIN, OUTPUT);
 	digitalWrite(LED_BUILTIN, LOW);
 
+	relay[0] = RELAY0;
+	relay[1] = RELAY1;
+	relay[2] = RELAY2;
+	relay[3] = RELAY3;
+
+	for (int releIndex = RELAY0; releIndex <= RELAY3; ++releIndex) {
+		pinMode(releIndex, OUTPUT);
+		digitalWrite(releIndex, LOW);
+	}
+
 	Serial.println(F("\n\nBrake Test"));
 }
 
@@ -67,4 +77,10 @@ void Bank::eePreset() {
 	EEPROM.put(eeAddress, testParms);
 
 	EEpromPlus::EEshow(32, 1, 'm');
+}
+
+bool Bank::relayToggle(int index) {
+	bool newState = !digitalRead(relay[index]);
+	digitalWrite(relay[index], newState );
+	return newState;
 }
