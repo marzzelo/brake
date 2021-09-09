@@ -333,6 +333,8 @@ bool from_landing_to_landed() {
  * ## Se ingresa al estado de ERROR si la velocidad de masa disminuye por debajo de la velocidad de frenado antes de aplicar el freno.
  */
 bool from_landing_to_error() {
+	Serial << F("\nPérdida de velocidad de Masa. Test abortado");
+	bankLeds.beep(1000, 1, 1);
 	return Mv_le_BRAKEv_max;
 }
 
