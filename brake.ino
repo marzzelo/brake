@@ -128,11 +128,6 @@ enum _cmdEnum {
 //
 bool cmd_menu_sent;
 
-bool btn0_pressed = false;
-bool btn1_pressed = false;
-bool btn2_pressed = false;
-bool btn3_pressed = false;
-
 uint16_t Mv;
 
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
@@ -195,17 +190,8 @@ void setup() {
 //////////////////////////////////////////////////////////////////
 void checkEvents() {
 
-	btn0_p = btn0_pressed;
-	btn0_pressed = false;
-
-	btn1_p = btn1_pressed;
-	btn1_pressed = false;
-
-	btn2_p = btn2_pressed;
-	btn2_pressed = false;
-
-	btn3_p = btn3_pressed;
-	btn3_pressed = false;
+	for (int btnIndex = 0; btnIndex < 4; ++btnIndex)
+		btn_pressed[btnIndex] = bankButtons.read(btnIndex);  // read() clears pressed state.
 
 	Mv = bankInputs.getRpm();  // available() already checked!
 
@@ -233,12 +219,11 @@ void checkEvents() {
 	bankInputs.start();
 }
 
-//void setTimeOut(unsigned long dt) {
-//	_t0 = millis();
-//	_dt = dt;
-//}
+void setTimeOut(unsigned long dt) {
+	_t0 = millis();
+	_dt = dt;
+}
 
-#define setTimeOut(DT)		_t0 = millis();  _dt = (DT);
 
 /*********************************************************************************
  * 										LOOP
@@ -336,25 +321,23 @@ int getCmd(char *strCmd, const char *table[]) {
  * BUTTONS Callbacks
  ******************************************/
 void onBtn0() {
-	btn0_pressed = true;
+	bankButtons.setPressed(0);
 	bank.relayToggle(0);
 }
 
 void onBtn1() {
-	btn1_pressed = true;
+	bankButtons.setPressed(1);
 	bank.relayToggle(1);
 }
 
 void onBtn2() {
-	btn2_pressed = true;
+	bankButtons.setPressed(2);
 	bank.relayToggle(2);
 }
 
 void onBtn3() {
-	btn3_pressed = true;
+	bankButtons.setPressed(3);
 	bool state = bank.relayToggle(3);
-//	Serial << "\nLAMP ";
-//	Serial << (state ? "ENCENDIDA" : "APAGADA");
 }
 
 /******************************************
@@ -415,10 +398,9 @@ void state_reset() {
 
 	keypad_data_ready = false;
 
-	btn0_pressed = false;
-	btn1_pressed = false;
-	btn2_pressed = false;
-	btn3_pressed = false;
+
+	for (int btnIndex = 0; btnIndex < 4; ++btnIndex)
+		btn_pressed[btnIndex] = false;
 
 	bankLeds.ledOffAll();
 

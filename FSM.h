@@ -44,10 +44,7 @@ enum State {
 StateMachine FSM(ST_COUNT, N_TRANSITIONS);
 
 ///////////////// INPUTS //////////////////
-bool btn0_p;
-bool btn1_p;
-bool btn2_p;
-bool btn3_p;
+bool btn_pressed[4];
 
 bool Mv_gt_0;
 bool Mv_gt_MAX;
@@ -182,7 +179,7 @@ void ent_test_complete() {
  * ## Presionando el botón START se inicia el ensayo.
  */
 bool from_idle_to_checking_cond() {
-	return btn0_p;
+	return btn_pressed[0];
 }
 
 /*****************************************************
@@ -251,11 +248,7 @@ bool any_to_idle() {
 			Serial << F("\nTimeout");
 			return true;
 		}
-//		if (reset_requested) {
-//			reset_requested = false;
-//			return true;
-//		}
-		return btn3_p;
+		return btn_pressed[3];
 	}
 }
 

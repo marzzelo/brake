@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-09-10 10:19:30
+//This file has been generated on 2021-09-14 13:53:11
 
 #include "Arduino.h"
 #define fadea
@@ -45,10 +45,6 @@ extern const char* cmdTable[];
 extern const char* cmdTable[];
 extern const char* cmdTable[];
 extern bool cmd_menu_sent;
-extern bool btn0_pressed;
-extern bool btn1_pressed;
-extern bool btn2_pressed;
-extern bool btn3_pressed;
 extern uint16_t Mv;
 extern LiquidCrystal lcd;
 #include "FSM.h"
