@@ -154,6 +154,12 @@ void ent_test_error() {
 	bankLeds.beep();
 	bankLeds.blink('E');
 
+	if (!Pf_gt_0) {
+		Serial << F("\nPf demasiado baja. Test abortado");
+	} else if (Mv_le_BRAKEv_max) {
+		Serial << F("\nPérdida de velocidad de Masa. Test abortado");
+	}
+
 	Serial << F("\n**TEST ERROR** <RESET> para REINICIAR");
 }
 
@@ -326,9 +332,11 @@ bool from_landing_to_landed() {
  * antes de aplicar el freno.
  */
 bool from_landing_to_error() {
-	Serial << F("\nPérdida de velocidad de Masa. Test abortado");
-	bankLeds.beep();
-	return Mv_le_BRAKEv_max;
+	if (Mv_le_BRAKEv_max) {
+		Serial << "\nERROR: velocidad de masa baja antes de frenar";
+		return true;
+	}
+	return false;
 }
 
 /*****************************************************
@@ -401,9 +409,11 @@ bool from_braking_to_complete() {
  * ## Se disminuyó demasiado la presión de freno durante el frenado
  */
 bool from_braking_to_error() {
-	Serial << F("\nPf demasiado baja. Test abortado");
-	bankLeds.beep(1000, 1, 1);
-	return (!Pf_gt_0);
+	if (!Pf_gt_0) {
+		Serial << "\nPresión de freno baja durante el frenado";
+		return true;
+	}
+	return false;
 }
 
 /*****************************************************
@@ -449,7 +459,7 @@ void setupFSM() {
 
 	FSM.AddTransition(ST_LANDING, ST_LANDED, from_landing_to_landed);
 
-//	FSM.AddTransition(ST_LANDING, ST_TEST_ERROR, from_landing_to_error);
+	FSM.AddTransition(ST_LANDING, ST_TEST_ERROR, from_landing_to_error);
 
 	FSM.AddTransition(ST_LANDING, ST_IDLE, any_to_idle);
 
@@ -471,7 +481,7 @@ void setupFSM() {
 
 	FSM.AddTransition(ST_BRAKING, ST_TEST_COMPLETE, from_braking_to_complete);
 
-//	FSM.AddTransition(ST_BRAKING, ST_TEST_ERROR, from_braking_to_error);
+	FSM.AddTransition(ST_BRAKING, ST_TEST_ERROR, from_braking_to_error);
 
 	FSM.AddTransition(ST_BRAKING, ST_IDLE, any_to_idle);
 
