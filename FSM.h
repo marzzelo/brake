@@ -20,7 +20,6 @@ extern BankLeds bankLeds;
 extern MyLed7 *led7s;
 extern uint16_t Mv;
 
-// STATE LEAVING
 
 /**
  * # Estados para la FSM principal del sistema
@@ -40,7 +39,7 @@ enum State {
 	ST_COUNT
 };
 
-#define N_TRANSITIONS	25
+#define N_TRANSITIONS	30
 
 StateMachine FSM(ST_COUNT, N_TRANSITIONS);
 
@@ -248,7 +247,7 @@ bool from_checking_to_cond_ok() {
 bool any_to_idle() {
 	{
 		if (timeOut) {
-			bankLeds.beep(1000, 1, 1);
+			bankLeds.beep();
 			Serial << F("\nTimeout");
 			return true;
 		}
@@ -330,11 +329,12 @@ bool from_landing_to_landed() {
 }
 
 /**
- * ## Se ingresa al estado de ERROR si la velocidad de masa disminuye por debajo de la velocidad de frenado antes de aplicar el freno.
+ * ## Se ingresa al estado de ERROR si la velocidad de masa disminuye por debajo de la velocidad de frenado
+ * antes de aplicar el freno.
  */
 bool from_landing_to_error() {
 	Serial << F("\nPérdida de velocidad de Masa. Test abortado");
-	bankLeds.beep(1000, 1, 1);
+	bankLeds.beep();
 	return Mv_le_BRAKEv_max;
 }
 
@@ -456,7 +456,7 @@ void setupFSM() {
 
 	FSM.AddTransition(ST_LANDING, ST_LANDED, from_landing_to_landed);
 
-	FSM.AddTransition(ST_LANDING, ST_TEST_ERROR, from_landing_to_error);
+//	FSM.AddTransition(ST_LANDING, ST_TEST_ERROR, from_landing_to_error);
 
 	FSM.AddTransition(ST_LANDING, ST_IDLE, any_to_idle);
 
@@ -478,7 +478,7 @@ void setupFSM() {
 
 	FSM.AddTransition(ST_BRAKING, ST_TEST_COMPLETE, from_braking_to_complete);
 
-	FSM.AddTransition(ST_BRAKING, ST_TEST_ERROR, from_braking_to_error);
+//	FSM.AddTransition(ST_BRAKING, ST_TEST_ERROR, from_braking_to_error);
 
 	FSM.AddTransition(ST_BRAKING, ST_IDLE, any_to_idle);
 

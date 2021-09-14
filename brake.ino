@@ -233,11 +233,12 @@ void checkEvents() {
 	bankInputs.start();
 }
 
-// TODO: Convert to macro
-void setTimeOut(unsigned long dt) {
-	_t0 = millis();
-	_dt = dt;
-}
+//void setTimeOut(unsigned long dt) {
+//	_t0 = millis();
+//	_dt = dt;
+//}
+
+#define setTimeOut(DT)		_t0 = millis();  _dt = (DT);
 
 /*********************************************************************************
  * 										LOOP
@@ -352,8 +353,8 @@ void onBtn2() {
 void onBtn3() {
 	btn3_pressed = true;
 	bool state = bank.relayToggle(3);
-	Serial << "\nLAMP ";
-	Serial << (state ? "ENCENDIDA" : "APAGADA");
+//	Serial << "\nLAMP ";
+//	Serial << (state ? "ENCENDIDA" : "APAGADA");
 }
 
 /******************************************
