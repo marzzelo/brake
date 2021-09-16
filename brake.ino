@@ -126,23 +126,24 @@ enum _cmdEnum {
 } cmdEnum;                       // @formatter:on
 //
 //
-bool cmd_menu_sent;
-
-uint16_t Mv;
 
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 
-/******************************************************************
- * 								F S M
- ******************************************************************/
+uint16_t Mv;
+bool cmd_menu_sent;
+bool ev_key[16] = { false };
+bool ev_cmd[10] = { false };
 
+/*************************************************************
+ * 							F S M
+ *************************************************************/
 #include "FSM.h"
 
 #include "MENU.h"
 
-/*********************************************************************************
- * 										SETUP
- *********************************************************************************/
+/*************************************************************
+ * 							SETUP
+ *************************************************************/
 void setup() {
 
 	Serial.begin(115200);
@@ -166,10 +167,10 @@ void setup() {
 	_t500ms = T500MS;
 	_t1s = T1S;
 
-	bank.setup();
+	bank.setup();	// Establece pinModes para relays. Apaga relays y led built-in
 
-	setupFSM();
-	setupMENU();
+	setupFSM();		// Carga transiciones, enterings & leavings de states de la máquina principal.
+	setupMENU();	// Carga transiciones, enterings & leavings de states de la máquina de Menús.
 
 	FSM.SetState(ST_IDLE, false, true);
 	MENU.SetState(ST_MENU_IDLE, false, false);
@@ -181,41 +182,50 @@ void setup() {
 
 //	bank.eePreset();
 
-	bank.loadSettings();
+	bank.loadSettings();	// Carga datos de calibración y parámetros de ensayo desde EEprom
 
 }
 
 //////////////////////////////////////////////////////////////////
 // EVENT CHECKING
 //////////////////////////////////////////////////////////////////
+/**
+ * Se ejecuta antes de llamar a checkEvents de la FSM principal.
+ * A partir de las lecturas de las entradas analógicas habilitadas, calcula varias variables
+ * booleanas que serán utilizadas en la FSM principal para generar las transiciones.
+ */
 void checkEvents() {
 
 	for (int btnIndex = 0; btnIndex < 4; ++btnIndex)
 		btn_pressed[btnIndex] = bankButtons.read(btnIndex);  // read() clears pressed state.
 
-	Mv = bankInputs.getRpm();  // available() already checked!
-
+	// Velocidad de masa - available() es comprobado previamente en loop: bankInputs.ready()
+	Mv = bankInputs.getRpm();
 	Mv_eq_0 = Mv <= ZERO_MASS_VEL;
 	Mv_gt_0 = Mv > ZERO_MASS_VEL;
 	Mv_gt_MAX = Mv >= bank.testParms.max_mass_vel;
 	Mv_le_BRAKEv_max = Mv <= bank.testParms.brake_mass_vel_max;
 	Mv_ge_BRAKEv_min = Mv >= bank.testParms.brake_mass_vel_min;
 
+	// Velocidad de rueda
 	Wv_eq_0 = bankInputs.wheel_daq_value <= ZERO_WHEEL_VEL;
 	Wv_ge_LANDINGv = bankInputs.wheel_daq_value	>= bank.testParms.landing_wheel_vel / bank.calFactors.ka_wheel;
 	Wv_gt_0 = bankInputs.wheel_daq_value > ZERO_WHEEL_VEL;
 
+	// Presiones
 	Ph_gt_0 = bankInputs.ph_daq_value >= ZERO_PH;
 	Ph_ge_Ph1 = bankInputs.ph_daq_value >= bank.testParms.ph_threshold / bank.calFactors.ka_ph;
-
 	Pf_gt_0 = bankInputs.pf_daq_value > ZERO_PF;
 	Pf_ge_Pf1 = bankInputs.pf_daq_value >= bank.testParms.pf_threshold / bank.calFactors.ka_pf;
 
+	// Temperaturas
 	T1_ge_Thot = bankInputs.t1_daq_value >= bank.testParms.t1_hot / bank.calFactors.ka_t1;
 	T2_ge_Thot = bankInputs.t2_daq_value >= bank.testParms.t2_hot / bank.calFactors.ka_t2;
 
+	// Tiempo
 	timeOut = (millis() - _t0) > _dt;
 
+	// Activar DAQ e inicializar FreqCounter
 	bankInputs.start();
 }
 
@@ -230,21 +240,24 @@ void setTimeOut(unsigned long dt) {
  *********************************************************************************/
 void loop() {
 
-	checkKeyPad();
+	checkKeyPad();	// Check comandos por teclado - comenzados con "*"  (ej.: "*5#")
 
-	MENU.Update();
+	MENU.Update();	// chequea FSM de Menú principal
 
-	if (bankInputs.ready()) {
-		checkEvents();
+	if (bankInputs.ready()) {	// Datos digitalizados y conteo de pulsos disponible ?
+		checkEvents();			// Actualizar booleans
 
-		FSM.Update();
+		FSM.Update();			// Generar transiciones (si corresponde, según checkEvents()
 	}
 
 }
 
-/***************************
+/**
  * KEYPAD COMMANDS
- ***************************/
+ * Verifica si hay un comando terminado con # en el buffer del keyPad.
+ * En caso afirmativo, setea las flags ev_key[n] o ev_cmd[n].
+ * Las flags deberán ser reseteadas cuando sean servidas.
+ */
 void checkKeyPad() {
 	if (!checkCommands)
 		return;
@@ -322,22 +335,18 @@ int getCmd(char *strCmd, const char *table[]) {
  ******************************************/
 void onBtn0() {
 	bankButtons.setPressed(0);
-	bank.relayToggle(0);
 }
 
 void onBtn1() {
 	bankButtons.setPressed(1);
-	bank.relayToggle(1);
 }
 
 void onBtn2() {
 	bankButtons.setPressed(2);
-	bank.relayToggle(2);
 }
 
 void onBtn3() {
 	bankButtons.setPressed(3);
-	bool state = bank.relayToggle(3);
 }
 
 /******************************************
@@ -402,7 +411,7 @@ void state_reset() {
 	for (int btnIndex = 0; btnIndex < 4; ++btnIndex)
 		btn_pressed[btnIndex] = false;
 
-	bankLeds.ledOffAll();
+	bankLeds.relayOffAll();
 
 //keyboard->start();
 	keyPadRx->start();

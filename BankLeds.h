@@ -11,14 +11,23 @@
 #include "SuperLed.h"
 #include "MyLed7.h"
 
-#define LED0	22
-#define LED1	24
-#define LED2	26
-#define LED3	28
-#define LED4	30
-#define LED5	32
-#define LED6	34
-#define LED7	36
+#define SEGM0	22
+#define SEGM1	24
+#define SEGM2	26
+#define SEGM3	28
+#define SEGM4	30
+#define SEGM5	32
+#define SEGM6	34
+#define SEGM7	36
+
+#define RELAY0	2
+#define RELAY1	3
+#define RELAY2	4
+#define RELAY3	5
+#define RELAY4	6
+#define RELAY5	7
+#define RELAY6	8
+#define RELAY7	9
 
 #define BUZZ	38
 
@@ -26,7 +35,7 @@ class BankLeds {
 
 private:
 
-	SuperLed *led[8];
+	SuperLed *relay[8];
 	SuperLed *buzz;
 
 	MyLed7 *led7s;
@@ -42,29 +51,29 @@ public:
 
 	void beep(unsigned long ton, unsigned long toff, unsigned long nCycles);
 
-	void ledStart(int ledIndex) {
-		led[ledIndex]->start();
+	void relayStart(int relayIndex) {
+		relay[relayIndex]->start();
 	}
 
-	void ledStop(int ledIndex) {
-		led[ledIndex]->stop();
+	void relayStop(int relayIndex) {
+		relay[relayIndex]->stop();
 	}
 
-	void ledOff(int ledIndex) {
-		led[ledIndex]->set(LOW);
+	void relayOff(int relayIndex) {
+		relay[relayIndex]->set(LOW);
 	}
 
-	void ledOn(int ledIndex) {
-		led[ledIndex]->set(HIGH);
+	void relayOn(int relayIndex) {
+		relay[relayIndex]->set(HIGH);
 	}
 
-	void ledOnAll(int = HIGH);
+	void relayOnAll(int = HIGH);
 
-	void ledOffAll();
+	void relayOffAll();
 
-	void ledStartAll();
+	void relayStartAll();
 
-	void ledStopAll();
+	void relayStopAll();
 
 	void display(int symbol, bool dp = false) {
 		led7s->noBlink();

@@ -19,7 +19,7 @@ extern BankAnalogInputs bankInputs;
 extern BankLeds bankLeds;
 extern MyLed7 *led7s;
 extern uint16_t Mv;
-
+extern bool ev_key[], ev_cmd[];
 
 /**
  * # Estados para la FSM principal del sistema
@@ -36,6 +36,7 @@ enum State {
 	ST_BRAKING,			//!< frenado iniciado, esperando detención total.
 	ST_TEST_COMPLETE,	//!< test finalizado, esperando reset o timeout para IDLE.
 	ST_TEST_ERROR,		//!< test Abortado, esperando reset o timeout para IDLE.
+	ST_MONITORING,		//!< outputs all analog sensors to Serial port
 	ST_COUNT
 };
 
@@ -77,14 +78,22 @@ bool eventsChecked;
 //////////////////////////////////////////////////////////////////
 // STATES ON_ENTERING
 //////////////////////////////////////////////////////////////////
+
+//for (int rIndex = 0; rIndex < 8; rIndex++) {
+//	relay[rIndex]->start(1000, 1000, 3);
+//}
+//
+
 void ent_idle() {
 	bankLeds.beep();
 	state_reset();
 	checkCommands = true;
-	Serial << F("\n\n**************************************");
-	Serial << F("\n* Presionar START para comenzar      *");
-	Serial << F("\n* Ingresar *1<enter> para Menú       *");
-	Serial << F("\n**************************************\n\n");
+	Serial << F("\n\n+------------------------------------+");
+	Serial << F(  "\n| Presionar START para comenzar      |");
+	Serial << F(  "\n| o ingresar  *1     para Menú       |");
+	Serial << F(  "\n|             *2     para Comenzar   |");
+	Serial << F(  "\n|             *5     para Monitoreo  |");
+	Serial << F(  "\n+------------------------------------+\n\n");
 
 	bankLeds.display('P');
 }
@@ -92,6 +101,7 @@ void ent_idle() {
 void ent_checking_cond() {
 	bankInputs.start();
 	bankLeds.blink('E');
+	bankLeds.relayStart(0);
 	bankLeds.beep();
 
 	Serial << F("\nST_CHECKING_COND... [Esperando condiciones de inicio: Mv=0, Wv=0, Ph=0, Pf=0]");
@@ -100,12 +110,15 @@ void ent_checking_cond() {
 void ent_cond_ok() {
 	Serial << F("\nST_COND_OK... [Esperando Mv > 0]");
 	bankLeds.display(0);
+	bankLeds.relayOn(0);
 	bankLeds.beep();
 }
 
 void ent_speeding() {
 	bankLeds.beep();
 	bankLeds.display(1);
+	bankLeds.relayOff(0);
+	bankLeds.relayOn(1);
 
 	Serial << F("\n\nST_SPEEDING... [Esperando Mv >= ")
 			<< _DEC(bank.testParms.max_mass_vel) << F(" rpm]");
@@ -114,6 +127,8 @@ void ent_speeding() {
 void ent_max_vel() {
 	bankLeds.beep();
 	bankLeds.display(2);
+	bankLeds.relayOff(1);
+	bankLeds.relayOn(2);
 
 	Serial << F("\n\nST_MAX_VEL... [Esperando Wv > ")
 			<< _DEC(bank.testParms.landing_wheel_vel) << F(" m/s]");
@@ -122,6 +137,8 @@ void ent_max_vel() {
 void ent_landing() {
 	bankLeds.beep();
 	bankLeds.display(3);
+	bankLeds.relayOff(2);
+	bankLeds.relayOn(3);
 
 	Serial << F("\n\nST_LANDING... [Esperando PH >= ")
 			<< _DEC(bank.testParms.ph_threshold) << F(" bar]");
@@ -130,6 +147,8 @@ void ent_landing() {
 void ent_landed() {
 	bankLeds.beep();
 	bankLeds.display(4);
+	bankLeds.relayOff(3);
+	bankLeds.relayOn(4);
 
 	Serial << F("\n\nST_LANDED... [Esperando ")
 			<< _DEC(bank.testParms.brake_mass_vel_min) << " < Mv < "
@@ -139,6 +158,9 @@ void ent_landed() {
 void ent_braking_vel() {
 	bankLeds.beep();
 	bankLeds.display(5);
+	bankLeds.relayOff(4);
+	bankLeds.relayOn(5);
+
 	Serial << F("\n\nST_BRAKING_VEL... [Esperando PF >= ")
 			<< _DEC(bank.testParms.pf_threshold) << F(" bar]");
 }
@@ -146,6 +168,8 @@ void ent_braking_vel() {
 void ent_braking() {
 	bankLeds.beep();
 	bankLeds.display(6);
+	bankLeds.relayOff(5);
+	bankLeds.relayOn(6);
 
 	Serial << F("\n\nST_BRAKING... [Esperando Wv = 0 & Mv = 0]");
 }
@@ -153,6 +177,8 @@ void ent_braking() {
 void ent_test_error() {
 	bankLeds.beep();
 	bankLeds.blink('E');
+	bankLeds.relayOffAll();
+	bankLeds.relayStart(7);
 
 	if (!Pf_gt_0) {
 		Serial << F("\nPf demasiado baja. Test abortado");
@@ -166,8 +192,18 @@ void ent_test_error() {
 void ent_test_complete() {
 	bankLeds.beep();
 	bankLeds.blink('F');
+	bankLeds.relayOffAll();
+	bankLeds.relayOn(7);
 
 	Serial << F("\n**TEST FINALIZADO** <RESET> para REINICIAR");
+}
+
+void ent_monitoring() {
+	bankLeds.blink('M');
+	bankLeds.relayStartAll();
+	bankLeds.beep();
+
+	Serial << F("\nMONITOREO DE SENSORES ----------");
 }
 
 //////////////////////////////////////////////////////////////////
@@ -182,10 +218,23 @@ void ent_test_complete() {
  *
  *****************************************************/
 /**
- * ## Presionando el botón START se inicia el ensayo.
+ * ## Presionando el botón START o keyPad *2 se inicia el ensayo.
  */
 bool from_idle_to_checking_cond() {
+	if (ev_cmd[2]) {		// cmd[2]:  *2#
+		ev_cmd[2] = false;
+		return true;
+	}
+
 	return btn_pressed[0];
+}
+
+bool from_idle_to_monitoring() {
+	if (ev_cmd[5]) {
+		ev_cmd[5] = false;
+		return true;
+	}
+	return false;
 }
 
 /*****************************************************
@@ -248,14 +297,12 @@ bool from_checking_to_cond_ok() {
  * ## Presionando RESET desde cualquier estado se retorna al inicio (IDLE)
  */
 bool any_to_idle() {
-	{
-		if (timeOut) {
-			bankLeds.beep();
-			Serial << F("\nTimeout");
-			return true;
-		}
-		return btn_pressed[3];
+	if (timeOut) {
+		bankLeds.beep();
+		Serial << F("\nTimeout");
+		return true;
 	}
+	return btn_pressed[3];
 }
 
 /*****************************************************
@@ -418,9 +465,30 @@ bool from_braking_to_error() {
 
 /*****************************************************
  *
- * Transitions from ST_TEST_COMPLETE
+ * Transitions from ST_MONITORING
  *
  *****************************************************/
+/**
+ * ## Condiciones nominales para el inicio del ensayo.
+ * - Masa detenida
+ */
+bool from_monitoring_to_idle() {
+	uint16_t Wv = bankInputs.wheel_daq_value * bank.calFactors.ka_wheel;
+	uint16_t ph = bankInputs.ph_daq_value * bank.calFactors.ka_ph;
+	uint16_t pf = bankInputs.pf_daq_value * bank.calFactors.ka_pf;
+	uint16_t T1 = bankInputs.t1_daq_value * bank.calFactors.ka_t1;
+	uint16_t T2 = bankInputs.t2_daq_value * bank.calFactors.ka_t2;
+
+	Serial << "\nMv: " << _FLOATW(Mv, 1, 5);
+	Serial << "\tWv: " << _FLOATW(Wv, 1, 5);
+	Serial << "\tPh: " << _FLOATW(ph, 1, 5);
+	Serial << "\tPf: " << _FLOATW(pf, 1, 5);
+	Serial << "\tT1: " << _FLOATW(T1, 1, 5);
+	Serial << "\tT2: " << _FLOATW(T2, 1, 5);
+
+	return btn_pressed[3];
+}
+
 
 /**
  * Asignar callbacks de entrada, transición y salida
@@ -428,6 +496,8 @@ bool from_braking_to_error() {
 void setupFSM() {
 
 	FSM.AddTransition(ST_IDLE, ST_CHECKING_COND, from_idle_to_checking_cond);
+
+	FSM.AddTransition(ST_IDLE, ST_MONITORING, from_idle_to_monitoring);
 
 	//-----------------------------------------------------------------------
 
@@ -495,6 +565,11 @@ void setupFSM() {
 
 	//-----------------------------------------------------------------------
 
+	FSM.AddTransition(ST_MONITORING, IDLE, from_monitoring_to_idle);
+
+	//-----------------------------------------------------------------------
+
+
 	//////////////////////////////////////////////////////////////////
 	//
 	// ON_ENTERING
@@ -511,6 +586,7 @@ void setupFSM() {
 	FSM.SetOnEntering(ST_BRAKING, ent_braking);
 	FSM.SetOnEntering(ST_TEST_ERROR, ent_test_error);
 	FSM.SetOnEntering(ST_TEST_COMPLETE, ent_test_complete);
+	FSM.SetOnEntering(ST_MONITORING, ent_monitoring);
 
 	//////////////////////////////////////////////////////////////////
 	//
@@ -561,6 +637,9 @@ void setupFSM() {
 	FSM.SetOnLeaving(ST_TEST_COMPLETE, []() {
 		setTimeOut(120000);
 		Serial << F("\n...leaving ST_TEST_COMPLETE");
+	});
+	FSM.SetOnLeaving(ST_MONITORING, [] () {
+		bankLeds.relayStopAll();
 	});
 }
 

@@ -10,6 +10,7 @@
 #define MENU_H_
 
 extern KeyPadRX *keyPadRx;
+extern bool ev_key[], ev_cmd[];
 
 /**
  * # Estados para la FSM de Menu del sistema
@@ -44,9 +45,6 @@ int st_menu;
 #define MENU_TRANSITIONS	35
 
 StateMachine MENU(ST_MENU_COUNT, MENU_TRANSITIONS);
-
-bool ev_key[16] = { false };
-bool ev_cmd[10] = { false };
 
 bool updateParam(double &param, uint16_t daqValue) {
 	if (keyPadRx->dataReady()) {	// espera comando terminado en #

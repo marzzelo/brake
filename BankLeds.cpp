@@ -8,19 +8,19 @@
 #include "BankLeds.h"
 
 BankLeds::BankLeds() {
-	led[0] = new SuperLed(LED0, 100, 400, 0);
-	led[1] = new SuperLed(LED1, 100, 400, 0);
-	led[2] = new SuperLed(LED2, 100, 400, 0);
-	led[3] = new SuperLed(LED3, 100, 400, 0);
-	led[4] = new SuperLed(LED4, 100, 400, 0);
-	led[5] = new SuperLed(LED5, 100, 400, 0);
-	led[6] = new SuperLed(LED6, 100, 400, 0);
-	led[7] = new SuperLed(LED7, 100, 400, 0);
+	relay[0] = new SuperLed(RELAY0, 400, 400, 0);
+	relay[1] = new SuperLed(RELAY1, 400, 400, 0);
+	relay[2] = new SuperLed(RELAY2, 400, 400, 0);
+	relay[3] = new SuperLed(RELAY3, 400, 400, 0);
+	relay[4] = new SuperLed(RELAY4, 400, 400, 0);
+	relay[5] = new SuperLed(RELAY5, 400, 400, 0);
+	relay[6] = new SuperLed(RELAY6, 400, 400, 0);
+	relay[7] = new SuperLed(RELAY7, 400, 400, 0);
 
 	buzz = new SuperLed(BUZZ, 60, 1, 0);
 	buzz->setCycles(1);
 
-	led7s = new MyLed7(22, 24, 26, 28, 30, 32, 34, 36);
+	led7s = new MyLed7(SEGM0, SEGM1, SEGM2, SEGM3, SEGM4, SEGM5, SEGM6, SEGM7);
 }
 
 void BankLeds::beep(unsigned long ton, unsigned long toff, unsigned long nCycles) {
@@ -28,8 +28,8 @@ void BankLeds::beep(unsigned long ton, unsigned long toff, unsigned long nCycles
 }
 
 void BankLeds::update() {
-	for (int ledIndex = 0; ledIndex < 8; ++ledIndex) {
-		led[ledIndex]->update();
+	for (int relayIndex = 0; relayIndex < 8; ++relayIndex) {
+		relay[relayIndex]->update();
 	}
 
 	buzz->update();
@@ -37,24 +37,24 @@ void BankLeds::update() {
 	led7s->update();
 }
 
-void BankLeds::ledOnAll(int on = HIGH) {
-	for (int ledIndex = 0; ledIndex < 8; ++ledIndex) {
-		led[ledIndex]->set(on);
+void BankLeds::relayOnAll(int on = HIGH) {
+	for (int relayIndex = 0; relayIndex < 8; ++relayIndex) {
+		relay[relayIndex]->set(on);
 	}
 }
 
-void BankLeds::ledOffAll() {
-	ledOnAll(LOW);
+void BankLeds::relayOffAll() {
+	relayOnAll(LOW);
 }
 
-void BankLeds::ledStartAll() {
-	for (int ledIndex = 0; ledIndex < 8; ++ledIndex) {
-		led[ledIndex]->start();
+void BankLeds::relayStartAll() {
+	for (int relayIndex = 0; relayIndex < 8; ++relayIndex) {
+		relay[relayIndex]->start();
 	}
 }
 
-void BankLeds::ledStopAll() {
-	for (int ledIndex = 0; ledIndex < 8; ++ledIndex) {
-		led[ledIndex]->stop();
+void BankLeds::relayStopAll() {
+	for (int relayIndex = 0; relayIndex < 8; ++relayIndex) {
+		relay[relayIndex]->stop();
 	}
 }

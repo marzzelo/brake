@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-09-14 13:53:11
+//This file has been generated on 2021-09-16 10:10:11
 
 #include "Arduino.h"
 #define fadea
@@ -44,9 +44,11 @@ extern MyTasker* tasker;
 extern const char* cmdTable[];
 extern const char* cmdTable[];
 extern const char* cmdTable[];
-extern bool cmd_menu_sent;
-extern uint16_t Mv;
 extern LiquidCrystal lcd;
+extern uint16_t Mv;
+extern bool cmd_menu_sent;
+extern bool ev_key[];
+extern bool ev_cmd[];
 #include "FSM.h"
 #include "MENU.h"
 

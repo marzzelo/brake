@@ -9,11 +9,6 @@
 #define BANK_H_
 
 
-#define RELAY0 	2
-#define RELAY1	3
-#define RELAY2	4
-#define RELAY3	5
-
 class Bank {
 private:
 	struct TestParms {
@@ -53,7 +48,6 @@ public:
 
 	void eePreset();
 
-	bool relayToggle(int relayIndex);
 };
 
 #endif /* BANK_H_ */
