@@ -204,8 +204,9 @@ void ent_monitoring() {
 	bankLeds.relayStartAll();
 	bankLeds.beep();
 	bankInputs.startCounting();
+	bankInputs.resetTimer();
 
-	Serial << "\n\n\nsep=\t\nMv\tWv\tPh\tPf\tT1\tT2\td";
+	Serial << "\n\n\nsep=\t\nt[s]\tMv\tWv\tPh\tPf\tT1\tT2\td";
 }
 
 //////////////////////////////////////////////////////////////////
@@ -482,15 +483,17 @@ bool from_monitoring_to_idle() {
 	uint16_t pf = bankInputs.pf_daq_value * bank.calFactors.ka_pf;
 	uint16_t T1 = bankInputs.t1_daq_value * bank.calFactors.ka_t1;
 	uint16_t T2 = bankInputs.t2_daq_value * bank.calFactors.ka_t2;
-//	uint32_t d = bankInputs.distance += Mv;
+	double t = bankInputs.getTime();
 
-	Serial << "\n" << _FLOATW(Mv, 1, 5);
+	Serial << "\n" << _FLOATW(t, 3, 6);
+	Serial << "\t" << _FLOATW(Mv, 1, 5);
 	Serial << "\t" << _FLOATW(Wv, 1, 5);
 	Serial << "\t" << _FLOATW(ph, 1, 5);
 	Serial << "\t" << _FLOATW(pf, 1, 5);
 	Serial << "\t" << _FLOATW(T1, 1, 5);
 	Serial << "\t" << _FLOATW(T2, 1, 5);
 	Serial << "\t" << _FLOATW(bankInputs.getDistance(), 1, 5);
+
 
 	return btn_pressed[3];
 }

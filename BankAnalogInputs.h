@@ -37,6 +37,7 @@ private:
 	volatile bool _daq_enabled;
 	int _filter;
 	volatile double _distance;			//<! Distancia recorrida durante el frenado
+	double _t0;
 	bool _counting;
 
 //public:   // debug only
@@ -65,6 +66,10 @@ public:
 	void startCounting();
 
 	double stopCounting();
+
+	void resetTimer();
+
+	double getTime();
 
 	void update();
 };
