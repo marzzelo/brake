@@ -31,10 +31,14 @@
 class BankAnalogInputs {
 
 private:
-	int _PERIOD; //!< Periodo de muestreo de pulsos (FreqCount.h)
+	int _period; //!< Periodo de muestreo de pulsos (FreqCount.h)
 
 	volatile bool _daq_ready;
 	volatile bool _daq_enabled;
+	int _filter;
+
+//public:   // debug only
+	uint32_t _freqBuff[8] = {0};
 
 public:
 
@@ -44,15 +48,15 @@ public:
 	volatile uint16_t t1_daq_value;		//<! Temperatura 1
 	volatile uint16_t t2_daq_value;		//<! Temperatura 2
 
-	BankAnalogInputs(int period = 200);
+	BankAnalogInputs(int period = 1000, int filter = 1);
 
 	void enable() { _daq_enabled = true; }
 
-	void start() { _daq_enabled = true; _daq_ready = false; FreqCount.begin(_PERIOD); }
+	void start() { _daq_enabled = true; _daq_ready = false; FreqCount.begin(_period); }
 
 	bool ready() { return (FreqCount.available() && _daq_ready); }
 
-	uint32_t getRpm() { return FreqCount.read() * 1000 / _PERIOD; }
+	uint32_t getRpm();
 
 	void update();
 };

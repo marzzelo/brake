@@ -203,7 +203,7 @@ void ent_monitoring() {
 	bankLeds.relayStartAll();
 	bankLeds.beep();
 
-	Serial << F("\nMONITOREO DE SENSORES ----------");
+	Serial << "\n\n\nsep=\t\nMv\tWv\tPh\tPf\tT1\tT2";
 }
 
 //////////////////////////////////////////////////////////////////
@@ -479,15 +479,31 @@ bool from_monitoring_to_idle() {
 	uint16_t T1 = bankInputs.t1_daq_value * bank.calFactors.ka_t1;
 	uint16_t T2 = bankInputs.t2_daq_value * bank.calFactors.ka_t2;
 
-	Serial << "\nMv: " << _FLOATW(Mv, 1, 5);
-	Serial << "\tWv: " << _FLOATW(Wv, 1, 5);
-	Serial << "\tPh: " << _FLOATW(ph, 1, 5);
-	Serial << "\tPf: " << _FLOATW(pf, 1, 5);
-	Serial << "\tT1: " << _FLOATW(T1, 1, 5);
-	Serial << "\tT2: " << _FLOATW(T2, 1, 5);
+	Serial << "\n" << _FLOATW(Mv, 1, 5);
+	Serial << "\t" << _FLOATW(Wv, 1, 5);
+	Serial << "\t" << _FLOATW(ph, 1, 5);
+	Serial << "\t" << _FLOATW(pf, 1, 5);
+	Serial << "\t" << _FLOATW(T1, 1, 5);
+	Serial << "\t" << _FLOATW(T2, 1, 5);
 
 	return btn_pressed[3];
 }
+
+//bool from_monitoring_to_idle() {
+//	uint16_t Wv = bankInputs.wheel_daq_value * bank.calFactors.ka_wheel;
+//	uint16_t ph = bankInputs.ph_daq_value * bank.calFactors.ka_ph;
+//	uint16_t pf = bankInputs.pf_daq_value * bank.calFactors.ka_pf;
+//	uint16_t T1 = bankInputs.t1_daq_value * bank.calFactors.ka_t1;
+//	uint16_t T2 = bankInputs.t2_daq_value * bank.calFactors.ka_t2;
+//
+//	Serial << "\n" << _FLOATW(Mv, 1, 5);
+//
+//	for (int i = 0; i < 5; ++i) {
+//		Serial << "\t" << _FLOATW(bankInputs._freqBuff[i], 1, 5);
+//	}
+//
+//	return btn_pressed[3];
+//}
 
 
 /**

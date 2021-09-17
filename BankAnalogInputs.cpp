@@ -7,7 +7,7 @@
 
 #include "BankAnalogInputs.h"
 
-BankAnalogInputs::BankAnalogInputs(int period = 200) : _PERIOD(period) {
+BankAnalogInputs::BankAnalogInputs(int period, int filter) : _period(period), _filter(filter) {
 	analogReference(DEFAULT);  // 5.0V
 	FreqCount.begin(period);
 }
@@ -23,5 +23,18 @@ void BankAnalogInputs::update() {
 
 		_daq_ready = true;
 	}
+}
+
+uint32_t BankAnalogInputs::getRpm() {
+
+	uint32_t accum = _freqBuff[_filter] = FreqCount.read();
+	int i;
+
+	for (i = 0; i < _filter; ++i) {
+		accum += _freqBuff[i];
+		_freqBuff[i] = _freqBuff[i+1];   // last i + 1 == _filter
+	}
+
+	return accum * 1000.0 / (_filter + 1) / _period;
 }
 

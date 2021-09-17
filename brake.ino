@@ -71,7 +71,7 @@ BankButtons bankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
 
 BankLeds bankLeds;
 
-BankAnalogInputs bankInputs(200);
+BankAnalogInputs bankInputs(500, 5);
 
 BankKeyPad bankKp;
 
@@ -199,7 +199,7 @@ void checkEvents() {
 	for (int btnIndex = 0; btnIndex < 4; ++btnIndex)
 		btn_pressed[btnIndex] = bankButtons.read(btnIndex);  // read() clears pressed state.
 
-	// Velocidad de masa - available() es comprobado previamente en loop: bankInputs.ready()
+	// Velocidad de masa - available() es comprobado previamente en loop: if(bankInputs.ready())
 	Mv = bankInputs.getRpm();
 	Mv_eq_0 = Mv <= ZERO_MASS_VEL;
 	Mv_gt_0 = Mv > ZERO_MASS_VEL;
