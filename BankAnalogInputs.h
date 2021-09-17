@@ -36,6 +36,8 @@ private:
 	volatile bool _daq_ready;
 	volatile bool _daq_enabled;
 	int _filter;
+	volatile double _distance;			//<! Distancia recorrida durante el frenado
+	bool _counting;
 
 //public:   // debug only
 	uint32_t _freqBuff[8] = {0};
@@ -57,6 +59,12 @@ public:
 	bool ready() { return (FreqCount.available() && _daq_ready); }
 
 	uint32_t getRpm();
+
+	double getDistance();
+
+	void startCounting();
+
+	double stopCounting();
 
 	void update();
 };

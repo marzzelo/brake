@@ -170,6 +170,7 @@ void ent_braking() {
 	bankLeds.display(6);
 	bankLeds.relayOff(5);
 	bankLeds.relayOn(6);
+	bankInputs.startCounting();
 
 	Serial << F("\n\nST_BRAKING... [Esperando Wv = 0 & Mv = 0]");
 }
@@ -202,8 +203,9 @@ void ent_monitoring() {
 	bankLeds.blink('M');
 	bankLeds.relayStartAll();
 	bankLeds.beep();
+	bankInputs.startCounting();
 
-	Serial << "\n\n\nsep=\t\nMv\tWv\tPh\tPf\tT1\tT2";
+	Serial << "\n\n\nsep=\t\nMv\tWv\tPh\tPf\tT1\tT2\td";
 }
 
 //////////////////////////////////////////////////////////////////
@@ -446,8 +448,10 @@ bool from_braking_vel_to_landed() {
  */
 bool from_braking_to_complete() {
 	uint16_t wv = bankInputs.wheel_daq_value * bank.calFactors.ka_wheel;
+//	bankInputs.distance += Mv;
 	Serial << F("\nST_BRAKING> Mv: ") << _FLOAT(Mv, 3);
-	Serial << ", Wv: " << _FLOAT(wv, 3) << " ** MANTENER Pf HASTA DETENER ** ";
+	Serial << ", Wv: " << _FLOAT(wv, 3)  << ", d: " << _FLOAT(bankInputs.getDistance(), 3);
+	Serial << " ** MANTENER Pf HASTA DETENER ** ";
 
 	return (Mv_eq_0 && Wv_eq_0);
 }
@@ -478,6 +482,7 @@ bool from_monitoring_to_idle() {
 	uint16_t pf = bankInputs.pf_daq_value * bank.calFactors.ka_pf;
 	uint16_t T1 = bankInputs.t1_daq_value * bank.calFactors.ka_t1;
 	uint16_t T2 = bankInputs.t2_daq_value * bank.calFactors.ka_t2;
+//	uint32_t d = bankInputs.distance += Mv;
 
 	Serial << "\n" << _FLOATW(Mv, 1, 5);
 	Serial << "\t" << _FLOATW(Wv, 1, 5);
@@ -485,6 +490,7 @@ bool from_monitoring_to_idle() {
 	Serial << "\t" << _FLOATW(pf, 1, 5);
 	Serial << "\t" << _FLOATW(T1, 1, 5);
 	Serial << "\t" << _FLOATW(T2, 1, 5);
+	Serial << "\t" << _FLOATW(bankInputs.getDistance(), 1, 5);
 
 	return btn_pressed[3];
 }

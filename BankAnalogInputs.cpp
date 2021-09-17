@@ -10,6 +10,7 @@
 BankAnalogInputs::BankAnalogInputs(int period, int filter) : _period(period), _filter(filter) {
 	analogReference(DEFAULT);  // 5.0V
 	FreqCount.begin(period);
+	_counting = false;
 }
 
 void BankAnalogInputs::update() {
@@ -35,6 +36,25 @@ uint32_t BankAnalogInputs::getRpm() {
 		_freqBuff[i] = _freqBuff[i+1];   // last i + 1 == _filter
 	}
 
-	return accum * 1000.0 / (_filter + 1) / _period;
+	double pulses = accum / (_filter + 1.0);
+
+	if (_counting) {
+		_distance += pulses * 0.105;
+	}
+	return pulses * 1000.0 / _period;
+}
+
+double BankAnalogInputs::getDistance() {
+	return _distance;
+}
+
+void BankAnalogInputs::startCounting() {
+	_distance = 0;
+	_counting = true;
+}
+
+double BankAnalogInputs::stopCounting() {
+	_counting = false;
+	return _distance;
 }
 
