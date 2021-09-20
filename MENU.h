@@ -9,6 +9,35 @@
 #ifndef MENU_H_
 #define MENU_H_
 
+const String separator = "\n+----------------------------------------------------------+";
+char spaces[60];
+char text[60];
+char num[10];
+
+#define print_separator() 	Serial << separator;
+
+void print_item(String s) {
+	int i;
+	for (i = 0; i < 60 - 3 - s.length(); ++i)
+		spaces[i] = ' ';
+
+	spaces[i] = '\0';
+
+	Serial << "\n| " << s << spaces << "|";
+}
+
+void make_item(char *fmt, double value) {
+	dtostrf(value, 0, 3, num);
+	sprintf(text, fmt, num);
+	print_item(text);
+}
+
+void print_header(String s, bool closed = true) {
+	print_separator();
+	print_item(s);
+	if (closed) print_separator();
+}
+
 extern KeyPadRX *keyPadRx;
 extern bool ev_key[], ev_cmd[];
 
@@ -64,12 +93,13 @@ void setupMENU() {
 // 					T R A N S I T I O N S
 //////////////////////////////////////////////////////////////////
 	MENU.AddTransition(ST_MENU_IDLE, ST_MENU_MAIN, []() {
-		if (ev_cmd[1]) {		// cmd[1]:  *1#
-			ev_cmd[1] = false;
+		if (ev_key[1]) {
+			ev_key[1] = false;
 			return true;
 		}
 		return false;
 	});
+
 
 	ADD_MENU_TRANSITION_TO(ST_MENU_IDLE, 0);
 
@@ -159,7 +189,8 @@ void setupMENU() {
 		keyPadRx->asterisk('*');
 		checkCommands = true;  // modo normal al salir de menu
 		bankLeds.display('P');
-		Serial << F("\n------\nENTERING ST_MENU_IDLE\n\n");
+//		Serial << F("\n------\nENTERING ST_MENU_IDLE\n\n");
+		FSM.SetState(ST_IDLE, false, true);
 	});
 
 	MENU.SetOnEntering(ST_MENU_MAIN, []() {
@@ -168,24 +199,26 @@ void setupMENU() {
 		checkCommands = true;  // modo normal al salir de menu
 		ev_key[0] = false;  // clear eventual buffered event;
 
-		Serial << F("\n\nMENU PRINCIPAL");
-		Serial << F("\n\nCALIBRACIÓN");
-		Serial << F("\n1. Calibrar Vel Rueda [k = ") << _FLOAT(bank.calFactors.ka_wheel, 3) << "]";
-		Serial << F("\n2. Calibrar Ph [k = ") << _FLOAT(bank.calFactors.ka_ph, 3) << "]";
-		Serial << F("\n3. Calibrar Pf [k = ") << _FLOAT(bank.calFactors.ka_pf, 3) << "]";
-		Serial << F("\n4. Calibrar T1 [k = ") << _FLOAT(bank.calFactors.ka_t1, 3) << "]";
-		Serial << F("\n5. Calibrar T2 [k = ") << _FLOAT(bank.calFactors.ka_t2, 3) << "]";
+		print_header("CONFIGURACIÓN DEL SISTEMA", false);
+		print_header("PARÁMETROS DE CALIBRACIÓN");
 
-		Serial << F("\n\nPARÁMETROS DE ENSAYO");
-		Serial << F("\n6. Vel Max de Masa: ") << _FLOAT(bank.testParms.max_mass_vel, 3);
-		Serial << F("\n7. Vel Lím Sup de Frenado: ") << _FLOAT(bank.testParms.brake_mass_vel_max, 3);
-		Serial << F("\n8. Vel Lím Inf de Frenado: ") << _FLOAT(bank.testParms.brake_mass_vel_min, 3);
-		Serial << F("\n9. Presión Nom de Horquilla: ") << _FLOAT(bank.testParms.ph_threshold, 3);
-		Serial << F("\n10. Presión Nom de Freno: ") << _FLOAT(bank.testParms.pf_threshold, 3);
-		Serial << F("\n11. Temperatura 1: ") << _FLOAT(bank.testParms.t1_hot, 3);
-		Serial << F("\n12. Temperatura 2: ") << _FLOAT(bank.testParms.t2_hot, 3);
+		make_item("1. Calibrar Vel Rueda [k = %s]", bank.calFactors.ka_wheel);
+		make_item("2. Calibrar Ph [k = %s]", bank.calFactors.ka_ph);
+		make_item("3. Calibrar Pf [k = %s]", bank.calFactors.ka_pf);
+		make_item("4. Calibrar T1 [k = %s]", bank.calFactors.ka_t1);
+		make_item("5. Calibrar T2 [k = %s]", bank.calFactors.ka_t2);
 
-		Serial << F("\n0. Salir del Menú");
+		print_header("PARÁMETROS DE ENSAYO");
+
+		make_item("6. Vel Máx de Masa: %s", bank.testParms.max_mass_vel);
+		make_item("7. Vel Lím Sup de Frenado: %s", bank.testParms.brake_mass_vel_max);
+		make_item("8. Vel Lím Inf de Frenado: %s", bank.testParms.brake_mass_vel_min);
+		make_item("9. Presión Nom de Horquilla: %s", bank.testParms.ph_threshold);
+		make_item("10.Presión Nom de Freno: %s", bank.testParms.pf_threshold);
+		make_item("11.Temperatura T1: %s", bank.testParms.t1_hot);
+		make_item("12.Temperatura T2: %s", bank.testParms.t2_hot);
+
+		print_header("0. Salir del Menú");
 		Serial << F("\n\n==>");
 	});
 

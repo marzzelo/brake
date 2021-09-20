@@ -90,9 +90,9 @@ void ent_idle() {
 	checkCommands = true;
 	Serial << F("\n\n+------------------------------------+");
 	Serial << F(  "\n| Presionar START para comenzar      |");
-	Serial << F(  "\n| o ingresar  *1     para Menú       |");
-	Serial << F(  "\n|             *2     para Comenzar   |");
-	Serial << F(  "\n|             *5     para Monitoreo  |");
+	Serial << F(  "\n| o ingresar   1     para Config.    |");
+	Serial << F(  "\n|              2     para Comenzar   |");
+	Serial << F(  "\n|              5     para Monitoreo  |");
 	Serial << F(  "\n+------------------------------------+\n\n");
 
 	bankLeds.display('P');
@@ -171,6 +171,7 @@ void ent_braking() {
 	bankLeds.relayOff(5);
 	bankLeds.relayOn(6);
 	bankInputs.startCounting();
+	bankInputs.resetTimer();
 
 	Serial << F("\n\nST_BRAKING... [Esperando Wv = 0 & Mv = 0]");
 }
@@ -224,8 +225,8 @@ void ent_monitoring() {
  * ## Presionando el botón START o keyPad *2 se inicia el ensayo.
  */
 bool from_idle_to_checking_cond() {
-	if (ev_cmd[2]) {		// cmd[2]:  *2#
-		ev_cmd[2] = false;
+	if (ev_key[2]) {		// cmd[2]:  *2#
+		ev_key[2] = false;
 		return true;
 	}
 
@@ -233,8 +234,8 @@ bool from_idle_to_checking_cond() {
 }
 
 bool from_idle_to_monitoring() {
-	if (ev_cmd[5]) {
-		ev_cmd[5] = false;
+	if (ev_key[5]) {
+		ev_key[5] = false;
 		return true;
 	}
 	return false;
@@ -449,9 +450,11 @@ bool from_braking_vel_to_landed() {
  */
 bool from_braking_to_complete() {
 	uint16_t wv = bankInputs.wheel_daq_value * bank.calFactors.ka_wheel;
-//	bankInputs.distance += Mv;
+	double t = bankInputs.getTime();
+
 	Serial << F("\nST_BRAKING> Mv: ") << _FLOAT(Mv, 3);
 	Serial << ", Wv: " << _FLOAT(wv, 3)  << ", d: " << _FLOAT(bankInputs.getDistance(), 3);
+	Serial << ", t: " << _FLOAT(t, 3);
 	Serial << " ** MANTENER Pf HASTA DETENER ** ";
 
 	return (Mv_eq_0 && Wv_eq_0);

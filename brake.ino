@@ -274,7 +274,7 @@ void checkKeyPad() {
 			Serial << "\nevt: " << (cc - 16);
 			ev_cmd[cc - 16] = true;
 		} else {
-			Serial << "\nunknwn evt: " << cc;
+			Serial << "\ncomando inválido: " << cc;
 		}
 
 		keyPadRx->start();
