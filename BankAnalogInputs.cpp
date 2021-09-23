@@ -7,11 +7,23 @@
 
 #include "BankAnalogInputs.h"
 
-BankAnalogInputs::BankAnalogInputs(int period, int filter) :
-		_period(period), _filter(filter) {
+BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period, int filter) :
+		_period(period), _filter(filter), _checkPosition(checkPosition) {
 	analogReference(DEFAULT);  // 5.0V
 	FreqCount.begin(period);
 	_counting = false;
+
+	pinMode(PIN_IN1, INPUT_PULLUP);
+	pinMode(PIN_IN2, INPUT_PULLUP);
+
+	BankAnalogInputs::encoder = new RotaryEncoder(PIN_IN1, PIN_IN2, RotaryEncoder::LatchMode::TWO03);
+	encoderData.position = BankAnalogInputs::encoder->getPosition();
+	encoderData.direction = (int)(BankAnalogInputs::encoder->getDirection());
+	encoderData.rpm = BankAnalogInputs::encoder->getRPM();
+
+	// register interrupt routine
+	attachInterrupt(digitalPinToInterrupt(PIN_IN1), _checkPosition, CHANGE);
+	attachInterrupt(digitalPinToInterrupt(PIN_IN2), _checkPosition, CHANGE);
 }
 
 void BankAnalogInputs::update() {
@@ -40,6 +52,13 @@ uint32_t BankAnalogInputs::getRpm() {
 	double pulses = accum / (_filter + 1.0);
 
 	if (_counting) {
+		//-----------------------------------
+		// v = w r
+		//   = 6.28 f r;  		pulses == p = 60 f
+		// v = 6.28 (p/60) r
+		//   = 0.10467 p r;		r = 1m
+		// v = 0.105 p
+		//-----------------------------------
 		_distance += pulses * 0.105;
 	}
 	return pulses * 1000.0 / _period;
@@ -67,4 +86,18 @@ void BankAnalogInputs::resetTimer() {
 double BankAnalogInputs::getTime() {
 	return (millis() - _t0) / 1000.0;
 }
+
+
+BankAnalogInputs::EncoderData BankAnalogInputs::encoderRead() {
+	long newPos = BankAnalogInputs::encoder->getPosition();
+
+	if (encoderData.position != newPos) {
+		encoderData.angle = newPos*360.0/2000.0;
+		encoderData.position = newPos;
+		encoderData.direction = (int)(BankAnalogInputs::encoder->getDirection());
+		encoderData.rpm = BankAnalogInputs::encoder->getRPM();
+	}
+	return encoderData;
+}
+
 

@@ -45,7 +45,7 @@ extern bool ev_key[], ev_cmd[];
  * # Estados para la FSM de Menu del sistema
  */
 enum MenuState {
-	ST_MENU_IDLE = 0,		//!< Menú oculto
+	ST_MENU_IDLE = 0,		//!< Menú idle
 	ST_MENU_MAIN,			//!< Menú principal
 
 	ST_MENU_WHEEL_CAL,		//!< Submenú para calibración de velocidad de rueda
@@ -53,6 +53,7 @@ enum MenuState {
 	ST_MENU_PF_CAL,			//!< Submenú para calibración de presión de freno
 	ST_MENU_T1_CAL,			//!< Submenú para calibración de temperatura 1
 	ST_MENU_T2_CAL,			//!< Submenú para calibración de temperatura 2
+	ST_MENU_ALPHA_CAL,		//!< Submenú para calibración de ángulo
 
 	ST_MENU_MVMAX_PAR,		//!< Submenú para establecer velocidad máxima de masa
 	ST_MENU_BVMAX_PAR,		//!< Submenú para establecer velocidad máxima de frenado
@@ -113,21 +114,23 @@ void setupMENU() {
 
 	ADD_MENU_TRANSITION_TO(ST_MENU_T2_CAL, 5);
 
+	ADD_MENU_TRANSITION_TO(ST_MENU_ALPHA_CAL, 6);
+
 	//-------------------------------------------------------------------------
 
-	ADD_MENU_TRANSITION_TO(ST_MENU_MVMAX_PAR, 6);
+	ADD_MENU_TRANSITION_TO(ST_MENU_MVMAX_PAR, 7);
 
-	ADD_MENU_TRANSITION_TO(ST_MENU_BVMAX_PAR, 7);
+	ADD_MENU_TRANSITION_TO(ST_MENU_BVMAX_PAR, 8);
 
-	ADD_MENU_TRANSITION_TO(ST_MENU_BVMIN_PAR, 8);
+	ADD_MENU_TRANSITION_TO(ST_MENU_BVMIN_PAR, 9);
 
-	ADD_MENU_TRANSITION_TO(ST_MENU_PH_PAR, 9);
+	ADD_MENU_TRANSITION_TO(ST_MENU_PH_PAR, 10);
 
-	ADD_MENU_TRANSITION_TO(ST_MENU_PF_PAR, 10);
+	ADD_MENU_TRANSITION_TO(ST_MENU_PF_PAR, 11);
 
-	ADD_MENU_TRANSITION_TO(ST_MENU_T1HOT_PAR, 11);
+	ADD_MENU_TRANSITION_TO(ST_MENU_T1HOT_PAR, 12);
 
-	ADD_MENU_TRANSITION_TO(ST_MENU_T2HOT_PAR, 12);
+	ADD_MENU_TRANSITION_TO(ST_MENU_T2HOT_PAR, 13);
 
 	//-------------------------------------------------------------------------
 
@@ -149,6 +152,18 @@ void setupMENU() {
 
 	MENU.AddTransition(ST_MENU_T2_CAL, ST_MENU_MAIN, []() {
 		return updateParam(bank.calFactors.ka_t2, bankInputs.t2_daq_value);
+	});
+
+	MENU.AddTransition(ST_MENU_ALPHA_CAL, ST_MENU_MAIN, []() {
+		if (keyPadRx->dataReady()) {	// espera comando terminado en #
+			bankLeds.beep(100, 1, 1);
+			double dblReadVal = String(keyPadRx->buffer()).toDouble();// convierte entrada a Double
+			bank.calFactors.kb_alpha = int(dblReadVal - bankInputs.encoder->getPosition() * 360 / 2000);// calcula el factor de calibración para param
+			Serial << "\n-------\nNew Value: " << _FLOAT(bank.calFactors.kb_alpha, 3);
+			bank.saveSettings();
+			return true;  // --> to main menu
+		}
+		return false;  // keep reading keypad
 	});
 
 	//-------------------------------------------------------------------------
@@ -207,20 +222,24 @@ void setupMENU() {
 		make_item("3. Calibrar Pf [k = %s]", bank.calFactors.ka_pf);
 		make_item("4. Calibrar T1 [k = %s]", bank.calFactors.ka_t1);
 		make_item("5. Calibrar T2 [k = %s]", bank.calFactors.ka_t2);
+		make_item("6. Calibrar Ángulo a [k = %s]", bank.calFactors.kb_alpha);
 
 		print_header("PARÁMETROS DE ENSAYO");
 
-		make_item("6. Vel Máx de Masa: %s", bank.testParms.max_mass_vel);
-		make_item("7. Vel Lím Sup de Frenado: %s", bank.testParms.brake_mass_vel_max);
-		make_item("8. Vel Lím Inf de Frenado: %s", bank.testParms.brake_mass_vel_min);
-		make_item("9. Presión Nom de Horquilla: %s", bank.testParms.ph_threshold);
-		make_item("10.Presión Nom de Freno: %s", bank.testParms.pf_threshold);
-		make_item("11.Temperatura T1: %s", bank.testParms.t1_hot);
-		make_item("12.Temperatura T2: %s", bank.testParms.t2_hot);
+		make_item("7. Vel Máx de Masa: %s", bank.testParms.max_mass_vel);
+		make_item("8. Vel Lím Sup de Frenado: %s", bank.testParms.brake_mass_vel_max);
+		make_item("9. Vel Lím Inf de Frenado: %s", bank.testParms.brake_mass_vel_min);
+		make_item("10. Presión Nom de Horquilla: %s", bank.testParms.ph_threshold);
+		make_item("11.Presión Nom de Freno: %s", bank.testParms.pf_threshold);
+		make_item("12.Temperatura T1: %s", bank.testParms.t1_hot);
+		make_item("13.Temperatura T2: %s", bank.testParms.t2_hot);
+
 
 		print_header("0. Salir del Menú");
 		Serial << F("\n\n==>");
 	});
+
+	//----- AJUSTES DE CALIBRACIÓN ---------------------------------------------------------
 
 	MENU.SetOnEntering (ST_MENU_WHEEL_CAL , [ ] ( ) {
 		Serial << F("\n\nCALIBRACIÓN VEL DE RUEDA");
@@ -251,6 +270,14 @@ void setupMENU() {
 		Serial << F("\nAplicar temperatura 2 e ingresar valor real:");
 		Serial << F("\n\nTemperatura [°C] ==> ");
 	});
+
+	MENU.SetOnEntering ( ST_MENU_ALPHA_CAL , [ ] ( ) {
+		Serial << F("\n\nCALIBRACIÓN ÁNGULO");
+		Serial << F("\nPosicionar en un ángulo conocido e ingresar el valor:");
+		Serial << F("\n\nÁngulo [grados] ==> ");
+	});
+
+	//----- PARÁMETROS --------------------------------------------------------------------
 
 	MENU.SetOnEntering (ST_MENU_MVMAX_PAR , [ ] ( ) {
 		Serial << F("\n\nVELOCIDAD MÁXIMA DE MASA - Actual: ") << _FLOAT(bank.testParms.max_mass_vel, 3);

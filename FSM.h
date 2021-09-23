@@ -20,6 +20,7 @@ extern BankLeds bankLeds;
 extern MyLed7 *led7s;
 extern uint16_t Mv;
 extern bool ev_key[], ev_cmd[];
+extern BankAnalogInputs::EncoderData encoderData;
 
 /**
  * # Estados para la FSM principal del sistema
@@ -207,7 +208,7 @@ void ent_monitoring() {
 	bankInputs.startCounting();
 	bankInputs.resetTimer();
 
-	Serial << "\n\n\nsep=\t\nt[s]\tMv\tWv\tPh\tPf\tT1\tT2\td";
+	Serial << "\n\n\nsep=\t\nt[s]\tMv\tWv\tPh\tPf\tT1\tT2\td\tangle";
 }
 
 //////////////////////////////////////////////////////////////////
@@ -496,6 +497,7 @@ bool from_monitoring_to_idle() {
 	Serial << "\t" << _FLOATW(T1, 1, 5);
 	Serial << "\t" << _FLOATW(T2, 1, 5);
 	Serial << "\t" << _FLOATW(bankInputs.getDistance(), 1, 5);
+	Serial << "\t" << encoderData.angle + bank.calFactors.kb_alpha;
 
 
 	return btn_pressed[3];

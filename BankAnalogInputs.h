@@ -10,6 +10,7 @@
 
 #include "Arduino.h"
 #include "FreqCount.h"  // contador de pulsos  [+0V --> +5V]
+#include "RotaryEncoder.h"
 
 #define INPUT_MASS		47	// Frequency Counter
 #define INPUT_PF		A0	// Analog input
@@ -17,6 +18,12 @@
 #define INPUT_PH		A2	// Analog input
 #define INPUT_T1		A3	// Temp 1
 #define INPUT_T2		A4	// Temp 2
+
+/*********************************
+ * ROTARY ENCODER PINS
+ *********************************/
+#define PIN_IN1 		18	// SELECT PINS 2, 3, 18, 19, 20 or 21
+#define PIN_IN2 		19	// SELECT PINS 2, 3, 18, 19, 20 or 21
 
 
 /**
@@ -31,19 +38,31 @@
 class BankAnalogInputs {
 
 private:
-	int _period; //!< Periodo de muestreo de pulsos (FreqCount.h)
+	int _period; 						//!< Periodo de muestreo de pulsos (FreqCount.h)
+
+	int _pos = 0;  						//!< Rotary Encoder Position;
 
 	volatile bool _daq_ready;
 	volatile bool _daq_enabled;
 	int _filter;
 	volatile double _distance;			//<! Distancia recorrida durante el frenado
-	double _t0;
+	double _t0 = 0;
 	bool _counting;
-
-//public:   // debug only
 	uint32_t _freqBuff[8] = {0};
 
+	void (*_checkPosition)();
+
 public:
+	RotaryEncoder *encoder = nullptr;
+
+	struct EncoderData {
+		long position;
+		int angle;
+		int direction;
+		unsigned long rpm;
+	};
+
+	EncoderData encoderData;
 
 	volatile uint16_t wheel_daq_value;	//<! Velocidad de rueda (calibrar mediante menú)
 	volatile uint16_t ph_daq_value;		//<! Presión de horquilla (calibrar mediante menú)
@@ -51,7 +70,7 @@ public:
 	volatile uint16_t t1_daq_value;		//<! Temperatura 1
 	volatile uint16_t t2_daq_value;		//<! Temperatura 2
 
-	BankAnalogInputs(int period = 1000, int filter = 1);
+	BankAnalogInputs(void (*checkPosition)(), int period = 1000, int filter = 1);
 
 	void enable() { _daq_enabled = true; }
 
@@ -72,6 +91,9 @@ public:
 	double getTime();
 
 	void update();
+
+	EncoderData encoderRead();
+
 };
 
 #endif /* BANKANALOGINPUTS_H_ */

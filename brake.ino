@@ -71,7 +71,7 @@ BankButtons bankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
 
 BankLeds bankLeds;
 
-BankAnalogInputs bankInputs(500, 5);
+BankAnalogInputs bankInputs(checkPosition, 500, 5);
 
 BankKeyPad bankKp;
 
@@ -130,6 +130,8 @@ enum _cmdEnum {
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 
 uint16_t Mv;
+BankAnalogInputs::EncoderData encoderData;
+
 bool cmd_menu_sent;
 bool ev_key[16] = { false };
 bool ev_cmd[10] = { false };
@@ -167,7 +169,7 @@ void setup() {
 	_t500ms = T500MS;
 	_t1s = T1S;
 
-	bank.setup();	// Establece pinModes para relays. Apaga relays y led built-in
+	print_header("Brake Test", true);
 
 	setupFSM();		// Carga transiciones, enterings & leavings de states de la máquina principal.
 	setupMENU();	// Carga transiciones, enterings & leavings de states de la máquina de Menús.
@@ -195,6 +197,7 @@ void setup() {
  * booleanas que serán utilizadas en la FSM principal para generar las transiciones.
  */
 void checkEvents() {
+	encoderData = bankInputs.encoderRead();
 
 	for (int btnIndex = 0; btnIndex < 4; ++btnIndex)
 		btn_pressed[btnIndex] = bankButtons.read(btnIndex);  // read() clears pressed state.
@@ -415,5 +418,10 @@ void state_reset() {
 
 //keyboard->start();
 	keyPadRx->start();
+}
+
+void checkPosition()
+{
+	bankInputs.encoder->tick(); // just call tick() to check the state.
 }
 

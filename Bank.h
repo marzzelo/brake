@@ -29,6 +29,7 @@ private:
 		double ka_pf;
 		double ka_t1;
 		double ka_t2;
+		double kb_alpha;
 	};
 
 	int relay[4];

@@ -11,18 +11,11 @@
 #include "EEpromPlus.h"
 
 Bank::Bank() {
-
-}
-
-void Bank::setup() {
-	// STARTUP ACTIONS
-
 	// turn built-in led off
 	pinMode(LED_BUILTIN, OUTPUT);
 	digitalWrite(LED_BUILTIN, LOW);
-
-	Serial.println(F("\n\nBrake Test"));
 }
+
 
 void Bank::saveSettings() {
 	int eeAddress = 0;  // Bank 0/3 : Cell 0x000/0x3FF
@@ -59,6 +52,7 @@ void Bank::eePreset() {
 	calFactors.ka_pf = 1.0f;
 	calFactors.ka_t1 = 1000.0f;
 	calFactors.ka_t2 = 1000.0f;
+	calFactors.kb_alpha = 0.0f;
 
 	int eeAddress = 0;  // Bank 0/3 : Cell 0x000/0x3FF
 	EEPROM.put(eeAddress, calFactors);
