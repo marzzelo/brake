@@ -49,6 +49,7 @@ private:
 	double _t0 = 0;
 	bool _counting;
 	uint32_t _freqBuff[8] = {0};
+	int _angleOffset = 0;
 
 	void (*_checkPosition)();
 
@@ -64,11 +65,14 @@ public:
 
 	EncoderData encoderData;
 
+	volatile uint16_t angle;			//<! posición angular encoder
 	volatile uint16_t wheel_daq_value;	//<! Velocidad de rueda (calibrar mediante menú)
 	volatile uint16_t ph_daq_value;		//<! Presión de horquilla (calibrar mediante menú)
 	volatile uint16_t pf_daq_value;		//<! Presión de freno (calibrar mediante menú)
 	volatile uint16_t t1_daq_value;		//<! Temperatura 1
 	volatile uint16_t t2_daq_value;		//<! Temperatura 2
+
+	volatile uint16_t &R = angle ;
 
 	BankAnalogInputs(void (*checkPosition)(), int period = 1000, int filter = 1);
 
@@ -93,6 +97,8 @@ public:
 	void update();
 
 	EncoderData encoderRead();
+
+	void setAngleOffset(int angleOffset) { _angleOffset = angleOffset; }
 
 };
 

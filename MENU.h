@@ -159,6 +159,7 @@ void setupMENU() {
 			bankLeds.beep(100, 1, 1);
 			double dblReadVal = String(keyPadRx->buffer()).toDouble();// convierte entrada a Double
 			bank.calFactors.kb_alpha = int(dblReadVal - bankInputs.encoder->getPosition() * 360 / 2000);// calcula el factor de calibración para param
+			bankInputs.setAngleOffset(bank.calFactors.kb_alpha);
 			Serial << "\n-------\nNew Value: " << _FLOAT(bank.calFactors.kb_alpha, 3);
 			bank.saveSettings();
 			return true;  // --> to main menu

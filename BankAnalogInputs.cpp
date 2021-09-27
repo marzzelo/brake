@@ -92,7 +92,8 @@ BankAnalogInputs::EncoderData BankAnalogInputs::encoderRead() {
 	long newPos = BankAnalogInputs::encoder->getPosition();
 
 	if (encoderData.position != newPos) {
-		encoderData.angle = newPos*360.0/2000.0;
+		encoderData.angle = newPos*360.0/2000.0 + _angleOffset;
+		angle = (uint16_t)abs(encoderData.angle);
 		encoderData.position = newPos;
 		encoderData.direction = (int)(BankAnalogInputs::encoder->getDirection());
 		encoderData.rpm = BankAnalogInputs::encoder->getRPM();

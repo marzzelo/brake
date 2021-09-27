@@ -497,7 +497,8 @@ bool from_monitoring_to_idle() {
 	Serial << "\t" << _FLOATW(T1, 1, 5);
 	Serial << "\t" << _FLOATW(T2, 1, 5);
 	Serial << "\t" << _FLOATW(bankInputs.getDistance(), 1, 5);
-	Serial << "\t" << encoderData.angle + bank.calFactors.kb_alpha;
+	Serial << "\t" << encoderData.angle;
+	Serial << "\t &R:" << bankInputs.R;
 
 
 	return btn_pressed[3];
