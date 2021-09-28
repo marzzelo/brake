@@ -10,10 +10,10 @@
 
 #include "Button.h"
 
-#define BTN0 	31
-#define BTN1 	33
+#define BTN0 	31		//<! Start
+#define BTN1 	33		//<! Select
 #define BTN2 	35
-#define BTN3 	37
+#define BTN3 	37		//<! Reset
 
 class BankButtons {
 

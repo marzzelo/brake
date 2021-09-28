@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-09-27 11:46:02
+//This file has been generated on 2021-09-28 11:33:52
 
 #include "Arduino.h"
 #define fadea
@@ -17,10 +17,8 @@
 #include "LiquidCrystal.h"
 #include "BankButtons.h"
 #include "BankLeds.h"
-#include "Bank.h"
 #include "BankAnalogInputs.h"
 #include "BankKeyPad.h"
-extern Bank bank;
 extern BankButtons bankButtons;
 extern BankLeds bankLeds;
 extern BankAnalogInputs bankInputs;
@@ -45,8 +43,6 @@ extern const char* cmdTable[];
 extern const char* cmdTable[];
 extern const char* cmdTable[];
 extern LiquidCrystal lcd;
-extern uint16_t Mv;
-extern BankAnalogInputs::EncoderData encoderData;
 extern bool cmd_menu_sent;
 extern bool ev_key[];
 extern bool ev_cmd[];

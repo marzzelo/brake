@@ -82,7 +82,7 @@ bool updateParam(double &param, uint16_t daqValue) {
 		double dblReadVal = String(keyPadRx->buffer()).toDouble();// convierte entrada a Double
 		param = dblReadVal / daqValue;// calcula el factor de calibración para param
 		Serial << "\n-------\nNew Value: " << _FLOAT(param, 3);
-		bank.saveSettings();
+		bankInputs.saveSettings();
 		return true;  // --> to main menu
 	}
 	return false;  // keep reading keypad
@@ -135,66 +135,71 @@ void setupMENU() {
 	//-------------------------------------------------------------------------
 
 	MENU.AddTransition(ST_MENU_WHEEL_CAL, ST_MENU_MAIN, []() {
-		return updateParam(bank.calFactors.ka_wheel, bankInputs.wheel_daq_value);
+		return updateParam(bankInputs.calFactors.ka_wheel, bankInputs.wheel_daq_value);
 	});
 
 	MENU.AddTransition(ST_MENU_PH_CAL, ST_MENU_MAIN, []() {
-		return updateParam(bank.calFactors.ka_ph, bankInputs.ph_daq_value);
+		return updateParam(bankInputs.calFactors.ka_ph, bankInputs.ph_daq_value);
 	});
 
 	MENU.AddTransition(ST_MENU_PF_CAL, ST_MENU_MAIN, []() {
-		return updateParam(bank.calFactors.ka_pf, bankInputs.pf_daq_value);
+		return updateParam(bankInputs.calFactors.ka_pf, bankInputs.pf_daq_value);
 	});
 
 	MENU.AddTransition(ST_MENU_T1_CAL, ST_MENU_MAIN, []() {
-		return updateParam(bank.calFactors.ka_t1, bankInputs.t1_daq_value);
+		return updateParam(bankInputs.calFactors.ka_t1, bankInputs.t1_daq_value);
 	});
 
 	MENU.AddTransition(ST_MENU_T2_CAL, ST_MENU_MAIN, []() {
-		return updateParam(bank.calFactors.ka_t2, bankInputs.t2_daq_value);
+		return updateParam(bankInputs.calFactors.ka_t2, bankInputs.t2_daq_value);
 	});
 
 	MENU.AddTransition(ST_MENU_ALPHA_CAL, ST_MENU_MAIN, []() {
+
 		if (keyPadRx->dataReady()) {	// espera comando terminado en #
 			bankLeds.beep(100, 1, 1);
 			double dblReadVal = String(keyPadRx->buffer()).toDouble();// convierte entrada a Double
-			bank.calFactors.kb_alpha = int(dblReadVal - bankInputs.encoder->getPosition() * 360 / 2000);// calcula el factor de calibración para param
-			bankInputs.setAngleOffset(bank.calFactors.kb_alpha);
-			Serial << "\n-------\nNew Value: " << _FLOAT(bank.calFactors.kb_alpha, 3);
-			bank.saveSettings();
+
+			// calcula el factor de calibración para param
+			bankInputs.calFactors.kb_alpha = int(dblReadVal - bankInputs.encoder->getPosition() * 360 / 2000);
+			bankInputs.setAngleOffset(bankInputs.calFactors.kb_alpha);
+
+			Serial << "\n-------\nNew Value: " << _FLOAT(bankInputs.calFactors.kb_alpha, 3);
+			bankInputs.saveSettings();
 			return true;  // --> to main menu
 		}
+
 		return false;  // keep reading keypad
 	});
 
 	//-------------------------------------------------------------------------
 
 	MENU.AddTransition(ST_MENU_MVMAX_PAR, ST_MENU_MAIN, []() {
-		return updateParam(bank.testParms.max_mass_vel, 1);
+		return updateParam(bankInputs.testParms.max_mass_vel, 1);
 	});
 
 	MENU.AddTransition(ST_MENU_BVMAX_PAR, ST_MENU_MAIN, []() {
-		return updateParam(bank.testParms.brake_mass_vel_max, 1);
+		return updateParam(bankInputs.testParms.brake_mass_vel_max, 1);
 	});
 
 	MENU.AddTransition(ST_MENU_BVMIN_PAR, ST_MENU_MAIN, []() {
-		return updateParam(bank.testParms.brake_mass_vel_min, 1);
+		return updateParam(bankInputs.testParms.brake_mass_vel_min, 1);
 	});
 
 	MENU.AddTransition(ST_MENU_PH_PAR, ST_MENU_MAIN, []() {
-		return updateParam(bank.testParms.ph_threshold, 1);
+		return updateParam(bankInputs.testParms.ph_threshold, 1);
 	});
 
 	MENU.AddTransition(ST_MENU_PF_PAR, ST_MENU_MAIN, []() {
-		return updateParam(bank.testParms.pf_threshold, 1);
+		return updateParam(bankInputs.testParms.pf_threshold, 1);
 	});
 
 	MENU.AddTransition(ST_MENU_T1HOT_PAR, ST_MENU_MAIN, []() {
-		return updateParam(bank.testParms.t1_hot, 1);
+		return updateParam(bankInputs.testParms.t1_hot, 1);
 	});
 
 	MENU.AddTransition(ST_MENU_T2HOT_PAR, ST_MENU_MAIN, []() {
-		return updateParam(bank.testParms.t2_hot, 1);
+		return updateParam(bankInputs.testParms.t2_hot, 1);
 	});
 
 	//////////////////////////////////////////////////////////////////
@@ -218,22 +223,22 @@ void setupMENU() {
 		print_header("CONFIGURACIÓN DEL SISTEMA", false);
 		print_header("PARÁMETROS DE CALIBRACIÓN");
 
-		make_item("1. Calibrar Vel Rueda [k = %s]", bank.calFactors.ka_wheel);
-		make_item("2. Calibrar Ph [k = %s]", bank.calFactors.ka_ph);
-		make_item("3. Calibrar Pf [k = %s]", bank.calFactors.ka_pf);
-		make_item("4. Calibrar T1 [k = %s]", bank.calFactors.ka_t1);
-		make_item("5. Calibrar T2 [k = %s]", bank.calFactors.ka_t2);
-		make_item("6. Calibrar Ángulo a [k = %s]", bank.calFactors.kb_alpha);
+		make_item("1. Calibrar Vel Rueda [k = %s]", bankInputs.calFactors.ka_wheel);
+		make_item("2. Calibrar Ph [k = %s]", bankInputs.calFactors.ka_ph);
+		make_item("3. Calibrar Pf [k = %s]", bankInputs.calFactors.ka_pf);
+		make_item("4. Calibrar T1 [k = %s]", bankInputs.calFactors.ka_t1);
+		make_item("5. Calibrar T2 [k = %s]", bankInputs.calFactors.ka_t2);
+		make_item("6. Calibrar Ángulo a [k = %s]", bankInputs.calFactors.kb_alpha);
 
 		print_header("PARÁMETROS DE ENSAYO");
 
-		make_item("7. Vel Máx de Masa: %s", bank.testParms.max_mass_vel);
-		make_item("8. Vel Lím Sup de Frenado: %s", bank.testParms.brake_mass_vel_max);
-		make_item("9. Vel Lím Inf de Frenado: %s", bank.testParms.brake_mass_vel_min);
-		make_item("10. Presión Nom de Horquilla: %s", bank.testParms.ph_threshold);
-		make_item("11.Presión Nom de Freno: %s", bank.testParms.pf_threshold);
-		make_item("12.Temperatura T1: %s", bank.testParms.t1_hot);
-		make_item("13.Temperatura T2: %s", bank.testParms.t2_hot);
+		make_item("7. Vel Máx de Masa: %s", bankInputs.testParms.max_mass_vel);
+		make_item("8. Vel Lím Sup de Frenado: %s", bankInputs.testParms.brake_mass_vel_max);
+		make_item("9. Vel Lím Inf de Frenado: %s", bankInputs.testParms.brake_mass_vel_min);
+		make_item("10. Presión Nom de Horquilla: %s", bankInputs.testParms.ph_threshold);
+		make_item("11.Presión Nom de Freno: %s", bankInputs.testParms.pf_threshold);
+		make_item("12.Temperatura T1: %s", bankInputs.testParms.t1_hot);
+		make_item("13.Temperatura T2: %s", bankInputs.testParms.t2_hot);
 
 
 		print_header("0. Salir del Menú");
@@ -281,37 +286,37 @@ void setupMENU() {
 	//----- PARÁMETROS --------------------------------------------------------------------
 
 	MENU.SetOnEntering (ST_MENU_MVMAX_PAR , [ ] ( ) {
-		Serial << F("\n\nVELOCIDAD MÁXIMA DE MASA - Actual: ") << _FLOAT(bank.testParms.max_mass_vel, 3);
+		Serial << F("\n\nVELOCIDAD MÁXIMA DE MASA - Actual: ") << _FLOAT(bankInputs.testParms.max_mass_vel, 3);
 		Serial << F("\n\nVelocidad máxima [rpm] ==> ");
 	});
 
 	MENU.SetOnEntering (ST_MENU_BVMAX_PAR , [ ] ( ) {
-		Serial << F("\n\nLIM SUPERIOR VEL DE FRENO - Actual: ") << _FLOAT(bank.testParms.brake_mass_vel_max, 3);
+		Serial << F("\n\nLIM SUPERIOR VEL DE FRENO - Actual: ") << _FLOAT(bankInputs.testParms.brake_mass_vel_max, 3);
 		Serial << F("\n\nLímite superior [rpm] ==> ");
 	});
 
 	MENU.SetOnEntering (ST_MENU_BVMIN_PAR , [ ] ( ) {
-		Serial << F("\n\nLIM INFERIOR VEL DE FRENO - Actual: ") << _FLOAT(bank.testParms.brake_mass_vel_min, 3);
+		Serial << F("\n\nLIM INFERIOR VEL DE FRENO - Actual: ") << _FLOAT(bankInputs.testParms.brake_mass_vel_min, 3);
 		Serial << F("\n\nLímite inferior [rpm] ==> ");
 	});
 
 	MENU.SetOnEntering (ST_MENU_PH_PAR , [ ] ( ) {
-		Serial << F("\n\nPRESIÓN DE HORQUILLA NOMINAL - Actual: ") << _FLOAT(bank.testParms.ph_threshold, 3);
+		Serial << F("\n\nPRESIÓN DE HORQUILLA NOMINAL - Actual: ") << _FLOAT(bankInputs.testParms.ph_threshold, 3);
 		Serial << F("\n\nPresión nominal [bar] ==> ");
 	});
 
 	MENU.SetOnEntering (ST_MENU_PF_PAR , [ ] ( ) {
-		Serial << F("\n\nPRESIÓN DE FRENO NOMINAL - Actual: ") << _FLOAT(bank.testParms.pf_threshold, 3);
+		Serial << F("\n\nPRESIÓN DE FRENO NOMINAL - Actual: ") << _FLOAT(bankInputs.testParms.pf_threshold, 3);
 		Serial << F("\n\nPresión nominal [bar] ==> ");
 	});
 
 	MENU.SetOnEntering (ST_MENU_T1HOT_PAR , [ ] ( ) {
-		Serial << F("\n\nTEMPERATURA LÍMITE 1 - Actual: ") << _FLOAT(bank.testParms.t1_hot, 3);
+		Serial << F("\n\nTEMPERATURA LÍMITE 1 - Actual: ") << _FLOAT(bankInputs.testParms.t1_hot, 3);
 		Serial << F("\n\nTemp límite 1 [°C] ==> ");
 	});
 
 	MENU.SetOnEntering (ST_MENU_T2HOT_PAR , [ ] ( ) {
-		Serial << F("\n\nTEMPERATURA LÍMITE 2 - Actual: ") << _FLOAT(bank.testParms.t2_hot, 3);
+		Serial << F("\n\nTEMPERATURA LÍMITE 2 - Actual: ") << _FLOAT(bankInputs.testParms.t2_hot, 3);
 		Serial << F("\n\nTemp límite 2 [°C] ==> ");
 	});
 

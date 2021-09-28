@@ -18,9 +18,9 @@ extern void setTimeOut(unsigned long dt);
 extern BankAnalogInputs bankInputs;
 extern BankLeds bankLeds;
 extern MyLed7 *led7s;
-extern uint16_t Mv;
+//extern uint16_t Mv;
 extern bool ev_key[], ev_cmd[];
-extern BankAnalogInputs::EncoderData encoderData;
+//extern BankAnalogInputs::EncoderData encoderData;
 
 /**
  * # Estados para la FSM principal del sistema
@@ -122,7 +122,7 @@ void ent_speeding() {
 	bankLeds.relayOn(1);
 
 	Serial << F("\n\nST_SPEEDING... [Esperando Mv >= ")
-			<< _DEC(bank.testParms.max_mass_vel) << F(" rpm]");
+			<< _DEC(bankInputs.testParms.max_mass_vel) << F(" rpm]");
 }
 
 void ent_max_vel() {
@@ -132,7 +132,7 @@ void ent_max_vel() {
 	bankLeds.relayOn(2);
 
 	Serial << F("\n\nST_MAX_VEL... [Esperando Wv > ")
-			<< _DEC(bank.testParms.landing_wheel_vel) << F(" m/s]");
+			<< _DEC(bankInputs.testParms.landing_wheel_vel) << F(" m/s]");
 }
 
 void ent_landing() {
@@ -142,7 +142,7 @@ void ent_landing() {
 	bankLeds.relayOn(3);
 
 	Serial << F("\n\nST_LANDING... [Esperando PH >= ")
-			<< _DEC(bank.testParms.ph_threshold) << F(" bar]");
+			<< _DEC(bankInputs.testParms.ph_threshold) << F(" bar]");
 }
 
 void ent_landed() {
@@ -152,8 +152,8 @@ void ent_landed() {
 	bankLeds.relayOn(4);
 
 	Serial << F("\n\nST_LANDED... [Esperando ")
-			<< _DEC(bank.testParms.brake_mass_vel_min) << " < Mv < "
-			<< _DEC(bank.testParms.brake_mass_vel_max) << "]";
+			<< _DEC(bankInputs.testParms.brake_mass_vel_min) << " < Mv < "
+			<< _DEC(bankInputs.testParms.brake_mass_vel_max) << "]";
 }
 
 void ent_braking_vel() {
@@ -163,7 +163,7 @@ void ent_braking_vel() {
 	bankLeds.relayOn(5);
 
 	Serial << F("\n\nST_BRAKING_VEL... [Esperando PF >= ")
-			<< _DEC(bank.testParms.pf_threshold) << F(" bar]");
+			<< _DEC(bankInputs.testParms.pf_threshold) << F(" bar]");
 }
 
 void ent_braking() {
@@ -203,7 +203,7 @@ void ent_test_complete() {
 
 void ent_monitoring() {
 	bankLeds.blink('M');
-	bankLeds.relayStartAll();
+	// bankLeds.relayStartAll();
 	bankLeds.beep();
 	bankInputs.startCounting();
 	bankInputs.resetTimer();
@@ -267,26 +267,26 @@ bool from_checking_to_cond_ok() {
 
 	if (Wv_gt_0) {
 		cond_ok = false;
-		uint16_t wv = bankInputs.wheel_daq_value * bank.calFactors.ka_wheel;
+		uint16_t wv = bankInputs.getWv();
 		Serial << F("\n** DETENER RUEDA [") << _FLOAT(wv, 3) << " rpm]";
 	}
 
 	if (Ph_gt_0) {
 		cond_ok = false;
-		uint16_t ph = bankInputs.ph_daq_value * bank.calFactors.ka_ph;
+		uint16_t ph = bankInputs.getPh();
 		Serial << F("\n** REDUCIR PH [") << _FLOAT(ph, 3) << F(" bar]");
 	}
 
 	if (Pf_gt_0) {
 		cond_ok = false;
-		uint16_t pf = bankInputs.pf_daq_value * bank.calFactors.ka_pf;
+		uint16_t pf = bankInputs.getPf();
 		Serial << F("\n** REDUCIR PF [") << _FLOAT(pf, 3) << F(" bar]");
 	}
 
 	if (T1_ge_Thot || T2_ge_Thot) {
 		cond_ok = false;
-		uint16_t T1 = bankInputs.t1_daq_value * bank.calFactors.ka_t1;
-		uint16_t T2 = bankInputs.t2_daq_value * bank.calFactors.ka_t2;
+		uint16_t T1 = bankInputs.getT1();
+		uint16_t T2 = bankInputs.getT2();
 		Serial << F("\n** Temp Alta [T1: ") << _FLOAT(T1, 3) << F(" °C]");
 		Serial << F(" [T2: ") << _FLOAT(T2, 3) << F(" °C]");
 	}
@@ -319,6 +319,7 @@ bool any_to_idle() {
  * ## Cumplidas las condiciones, esperar inicio de giro de masa
  */
 bool from_cond_ok_to_speeding() {
+	uint16_t Mv = bankInputs.getRpm();
 	Serial << F("\nST_COND_OK> mass vel: ") << _FLOAT(Mv, 3)
 			<< F(" ** INICIAR GIRO **");
 	return (Mv_gt_0);
@@ -333,6 +334,8 @@ bool from_cond_ok_to_speeding() {
  * ## Se alcanza la máxima velocidad de masa.
  */
 bool from_speeding_to_max_vel() {
+	uint16_t Mv = bankInputs.getRpm();
+
 	Serial << F("\nST_SPEEDING> Mv: ") << _FLOAT(Mv, 3)
 			<< F(" ** ACELERAR a 500 rpm **");
 	return Mv_gt_MAX;
@@ -347,7 +350,9 @@ bool from_speeding_to_max_vel() {
  * ## Se alcanza el estado LANDING cuando la velocidad de rueda alcanza el valor nominal fijado en el menu del sistema.
  */
 bool from_max_vel_to_landing() {
-	uint16_t wv = bankInputs.wheel_daq_value * bank.calFactors.ka_wheel;
+	uint16_t Mv = bankInputs.getRpm();
+	uint16_t wv = bankInputs.getWv();
+
 	Serial << F("\nST_MAX_VEL> Mv: ") << _FLOAT(Mv, 3);
 	Serial << F(", Wv: ") << _FLOAT(wv, 3) << F(" ** ATERRIZAR RUEDA ***");
 	return Wv_ge_LANDINGv;
@@ -369,13 +374,14 @@ bool from_max_vel_to_speeding() {
  * ## Se alcanza el estado LANDED cuando la presión de horquilla alcanza o supera el valor nominal de aterrizaje.
  */
 bool from_landing_to_landed() {
-	uint16_t wv = bankInputs.wheel_daq_value * bank.calFactors.ka_wheel;
-	uint16_t ph = bankInputs.ph_daq_value * bank.calFactors.ka_ph;
+	uint16_t wv = bankInputs.getWv();
+	uint16_t ph = bankInputs.getPh();
+	uint16_t Mv = bankInputs.getRpm();
 
 	Serial << F("\nLANDING> Mv: ") << _FLOAT(Mv, 3);
 	Serial << F(", Wv: ") << _FLOAT(wv, 3);
 	Serial << F(", PH: ") << _FLOAT(ph, 3) << F(" ** AUMENTAR Ph a ")
-			<< _FLOAT(bank.testParms.ph_threshold, 3) << " ***";
+			<< _FLOAT(bankInputs.testParms.ph_threshold, 3) << " ***";
 	return Ph_ge_Ph1;
 }
 
@@ -402,6 +408,8 @@ bool from_landing_to_error() {
  * - Los valores nominales aproximados están alrededor de las 420 rpm
  */
 bool from_landed_to_braking_vel() {
+	uint16_t Mv = bankInputs.getRpm();
+
 	if (!Mv_le_BRAKEv_max) {
 		Serial << F("\nST_LANDED> Mv: ") << _FLOAT(Mv, 3);
 		Serial << F(" ** DISMINUIR VELOCIDAD **");
@@ -423,7 +431,7 @@ bool from_landed_to_braking_vel() {
  * - El valor nominal de presión de freno puede fijarse desde el menú del sistema.
  */
 bool from_braking_vel_to_braking() {
-	uint16_t pf = bankInputs.pf_daq_value * bank.calFactors.ka_pf;
+	uint16_t pf = bankInputs.getPf();
 	Serial << F("\nST_BRAKING_VEL> PF: ") << _FLOAT(pf, 3);
 	Serial << " ***### APLICAR FRENO ###***";
 
@@ -450,8 +458,9 @@ bool from_braking_vel_to_landed() {
  * ## Se ingresa a TEST_COMPLETE cuando las velocidades de masa y de rueda se anulan.
  */
 bool from_braking_to_complete() {
-	uint16_t wv = bankInputs.wheel_daq_value * bank.calFactors.ka_wheel;
+	uint16_t wv = bankInputs.getWv();
 	double t = bankInputs.getTime();
+	uint16_t Mv = bankInputs.getRpm();
 
 	Serial << F("\nST_BRAKING> Mv: ") << _FLOAT(Mv, 3);
 	Serial << ", Wv: " << _FLOAT(wv, 3)  << ", d: " << _FLOAT(bankInputs.getDistance(), 3);
@@ -482,43 +491,28 @@ bool from_braking_to_error() {
  * - Masa detenida
  */
 bool from_monitoring_to_idle() {
-	uint16_t Wv = bankInputs.wheel_daq_value * bank.calFactors.ka_wheel;
-	uint16_t ph = bankInputs.ph_daq_value * bank.calFactors.ka_ph;
-	uint16_t pf = bankInputs.pf_daq_value * bank.calFactors.ka_pf;
-	uint16_t T1 = bankInputs.t1_daq_value * bank.calFactors.ka_t1;
-	uint16_t T2 = bankInputs.t2_daq_value * bank.calFactors.ka_t2;
-	double t = bankInputs.getTime();
+//	uint16_t Mv = bankInputs.getRpm();
+//	uint16_t Wv = bankInputs.getWv();
+//	uint16_t ph = bankInputs.getPh();
+//	uint16_t pf = bankInputs.getPf();
+//	uint16_t T1 = bankInputs.getT1();
+//	uint16_t T2 = bankInputs.getT2();
+//	double t = bankInputs.getTime();
 
-	Serial << "\n" << _FLOATW(t, 3, 6);
-	Serial << "\t" << _FLOATW(Mv, 1, 5);
-	Serial << "\t" << _FLOATW(Wv, 1, 5);
-	Serial << "\t" << _FLOATW(ph, 1, 5);
-	Serial << "\t" << _FLOATW(pf, 1, 5);
-	Serial << "\t" << _FLOATW(T1, 1, 5);
-	Serial << "\t" << _FLOATW(T2, 1, 5);
-	Serial << "\t" << _FLOATW(bankInputs.getDistance(), 1, 5);
-	Serial << "\t" << encoderData.angle;
-	Serial << "\t &R:" << bankInputs.R;
-
+//	Serial << "\n" << _FLOATW(t, 3, 6);
+	Serial << "\n" << bankInputs.getTime();
+	Serial << "\t" << bankInputs.getRpm();
+	Serial << "\t" << bankInputs.getWv();
+	Serial << "\t" << bankInputs.getPh();
+	Serial << "\t" << bankInputs.getPf();
+	Serial << "\t" << bankInputs.getT1();
+	Serial << "\t" << bankInputs.getT2();
+	Serial << "\t" << bankInputs.getDistance();
+	Serial << "\t" << bankInputs.encoderRead().angle;
+	Serial << "\t Display:" << bankInputs.getDisplayVar();
 
 	return btn_pressed[3];
 }
-
-//bool from_monitoring_to_idle() {
-//	uint16_t Wv = bankInputs.wheel_daq_value * bank.calFactors.ka_wheel;
-//	uint16_t ph = bankInputs.ph_daq_value * bank.calFactors.ka_ph;
-//	uint16_t pf = bankInputs.pf_daq_value * bank.calFactors.ka_pf;
-//	uint16_t T1 = bankInputs.t1_daq_value * bank.calFactors.ka_t1;
-//	uint16_t T2 = bankInputs.t2_daq_value * bank.calFactors.ka_t2;
-//
-//	Serial << "\n" << _FLOATW(Mv, 1, 5);
-//
-//	for (int i = 0; i < 5; ++i) {
-//		Serial << "\t" << _FLOATW(bankInputs._freqBuff[i], 1, 5);
-//	}
-//
-//	return btn_pressed[3];
-//}
 
 
 /**
