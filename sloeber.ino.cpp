@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-09-28 11:33:52
+//This file has been generated on 2021-09-28 15:00:00
 
 #include "Arduino.h"
 #define fadea
@@ -19,11 +19,16 @@
 #include "BankLeds.h"
 #include "BankAnalogInputs.h"
 #include "BankKeyPad.h"
+#include "MenuFSM.h"
+extern bool cmd_menu_sent;
+extern bool ev_key[];
+extern bool ev_cmd[];
 extern BankButtons bankButtons;
 extern BankLeds bankLeds;
 extern BankAnalogInputs bankInputs;
 extern BankKeyPad bankKp;
 extern KeyPadRX* keyPadRx;
+extern MenuFSM* menu;
 #define T250MS 	25
 #define T500MS 	50
 #define T1S 	100
@@ -43,11 +48,9 @@ extern const char* cmdTable[];
 extern const char* cmdTable[];
 extern const char* cmdTable[];
 extern LiquidCrystal lcd;
-extern bool cmd_menu_sent;
-extern bool ev_key[];
-extern bool ev_cmd[];
 #include "FSM.h"
 #include "MENU.h"
+#include "MenuTransitions.h"
 
 void setup() ;
 void checkEvents() ;

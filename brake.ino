@@ -59,10 +59,16 @@
 #include "BankAnalogInputs.h"
 #include "BankKeyPad.h"
 
+#include "MenuFSM.h"
+
 void onBtn0();
 void onBtn1();
 void onBtn2();
 void onBtn3();
+
+bool cmd_menu_sent;
+bool ev_key[16] = { false };
+bool ev_cmd[10] = { false };
 
 
 BankButtons bankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
@@ -74,6 +80,8 @@ BankAnalogInputs bankInputs(checkPosition, 500, 5);
 BankKeyPad bankKp;
 
 KeyPadRX *keyPadRx = bankKp.getKeyPadRX();
+
+MenuFSM *menu = new MenuFSM(f1);
 
 /*********************************
  * TIMER ACCUMULATORS
@@ -127,11 +135,7 @@ enum _cmdEnum {
 
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 
-//BankAnalogInputs::EncoderData encoderData;
 
-bool cmd_menu_sent;
-bool ev_key[16] = { false };
-bool ev_cmd[10] = { false };
 
 /*************************************************************
  * 							F S M
@@ -424,4 +428,8 @@ void checkPosition()
 {
 	bankInputs.encoder->tick(); // just call tick() to check the state.
 }
+
+
+#include "MenuTransitions.h"
+
 
