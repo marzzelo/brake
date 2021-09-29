@@ -58,8 +58,8 @@
 #include "BankLeds.h"
 #include "BankAnalogInputs.h"
 #include "BankKeyPad.h"
-
 #include "MenuFSM.h"
+
 
 void onBtn0();
 void onBtn1();
@@ -81,7 +81,7 @@ BankKeyPad bankKp;
 
 KeyPadRX *keyPadRx = bankKp.getKeyPadRX();
 
-MenuFSM *menu = new MenuFSM(f1);
+MenuFSM *menu = new MenuFSM(transitions, onEnterings, onLeavings);
 
 /*********************************
  * TIMER ACCUMULATORS
@@ -137,12 +137,44 @@ LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 
 
 
+
+const String separator = "\n+----------------------------------------------------------+";
+char spaces[60];
+char text[60];
+char num[10];
+
+
+void print_item(String s) {
+	int i;
+	for (i = 0; i < 60 - 3 - s.length(); ++i)
+		spaces[i] = ' ';
+
+	spaces[i] = '\0';
+
+	Serial << "\n| " << s << spaces << "|";
+}
+
+void make_item(char *fmt, double value) {
+	dtostrf(value, 0, 3, num);
+	sprintf(text, fmt, num);
+	print_item(text);
+}
+
+void print_header(String s, bool closed = true) {
+	print_separator();
+	print_item(s);
+	if (closed) { Serial << separator; }
+}
+
+
+
+
 /*************************************************************
  * 							F S M
  *************************************************************/
 #include "FSM.h"
 
-#include "MENU.h"
+//#include "MENU.h"
 
 /*************************************************************
  * 							SETUP
@@ -173,10 +205,10 @@ void setup() {
 	print_header("Brake Test", true);
 
 	setupFSM();		// Carga transiciones, enterings & leavings de states de la máquina principal.
-	setupMENU();	// Carga transiciones, enterings & leavings de states de la máquina de Menús.
+//	setupMENU();	// Carga transiciones, enterings & leavings de states de la máquina de Menús.
 
 	FSM.SetState(ST_IDLE, false, true);
-	MENU.SetState(ST_MENU_IDLE, false, false);
+	menu->SetState(MenuFSM::ST_MENU_IDLE, false, false);
 
 //	lcd.begin(16, 2);
 //
@@ -249,7 +281,7 @@ void loop() {
 
 	checkKeyPad();	// Check comandos por teclado - comenzados con "*"  (ej.: "*5#")
 
-	MENU.Update();	// chequea FSM de Menú principal
+	menu->Update();	// chequea FSM de Menú principal
 
 	if (bankInputs.ready()) {	// Datos digitalizados y conteo de pulsos disponible ?
 		checkEvents();			// Actualizar booleans
