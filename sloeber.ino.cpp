@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-09-29 11:05:16
+//This file has been generated on 2021-09-29 14:43:06
 
 #include "Arduino.h"
 #define fadea
@@ -20,6 +20,7 @@
 #include "BankAnalogInputs.h"
 #include "BankKeyPad.h"
 #include "MenuFSM.h"
+#include "Printer.h"
 extern bool cmd_menu_sent;
 extern bool ev_key[];
 extern bool ev_cmd[];
@@ -48,16 +49,12 @@ extern const char* cmdTable[];
 extern const char* cmdTable[];
 extern const char* cmdTable[];
 extern LiquidCrystal lcd;
-extern const String separator;
-extern char spaces[];
-extern char text[];
-extern char num[];
-#define print_separator() 	Serial << separator;
+extern Printer printer;
 #include "FSM.h"
 #include "MenuTransitions.h"
+#include "MenuOnEnterings.h"
+#include "MenuOnLeavings.h"
 
-void print_item(String s) ;
-void make_item(char *fmt, double value) ;
 void setup() ;
 void checkEvents() ;
 void setTimeOut(unsigned long dt) ;

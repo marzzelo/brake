@@ -6,8 +6,8 @@
  */
 
 
-#ifndef MENU_H_
-#define MENU_H_
+#ifndef MENU_H_BAK_
+#define MENU_H_BAK_
 
 const String separator = "\n+----------------------------------------------------------+";
 char spaces[60];
@@ -340,4 +340,4 @@ void setupMENU() {
 	}
 }
 
-#endif /* MENU_H_ */
+#endif /* MENU_H_BAK_ */

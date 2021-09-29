@@ -89,12 +89,14 @@ void ent_idle() {
 	bankLeds.beep();
 	state_reset();
 	checkCommands = true;
-	Serial << F("\n\n+------------------------------------+");
-	Serial << F(  "\n| Presionar START para comenzar      |");
-	Serial << F(  "\n| o ingresar   1     para Config.    |");
-	Serial << F(  "\n|              2     para Comenzar   |");
-	Serial << F(  "\n|              5     para Monitoreo  |");
-	Serial << F(  "\n+------------------------------------+\n\n");
+
+	printer.print_header("Brake Test", true);
+	printer.print_item(  "Presionar START para comenzar");
+	printer.print_item(  "o ingresar   1     para Configurar ensayo");
+	printer.print_item(  "             2     para Comenzar ensayo");
+	printer.print_item(  "             5     para Monitoreo de variables");
+	printer.print_separator();
+	Serial << "\n\n==> ";
 
 	bankLeds.display('P');
 }

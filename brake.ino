@@ -60,6 +60,8 @@
 #include "BankKeyPad.h"
 #include "MenuFSM.h"
 
+#include "Printer.h"
+
 
 void onBtn0();
 void onBtn1();
@@ -135,46 +137,12 @@ enum _cmdEnum {
 
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 
-
-
-
-const String separator = "\n+----------------------------------------------------------+";
-char spaces[60];
-char text[60];
-char num[10];
-
-
-void print_item(String s) {
-	int i;
-	for (i = 0; i < 60 - 3 - s.length(); ++i)
-		spaces[i] = ' ';
-
-	spaces[i] = '\0';
-
-	Serial << "\n| " << s << spaces << "|";
-}
-
-void make_item(char *fmt, double value) {
-	dtostrf(value, 0, 3, num);
-	sprintf(text, fmt, num);
-	print_item(text);
-}
-
-void print_header(String s, bool closed = true) {
-	print_separator();
-	print_item(s);
-	if (closed) { Serial << separator; }
-}
-
-
-
+Printer printer(60);
 
 /*************************************************************
  * 							F S M
  *************************************************************/
 #include "FSM.h"
-
-//#include "MENU.h"
 
 /*************************************************************
  * 							SETUP
@@ -202,10 +170,7 @@ void setup() {
 	_t500ms = T500MS;
 	_t1s = T1S;
 
-	print_header("Brake Test", true);
-
 	setupFSM();		// Carga transiciones, enterings & leavings de states de la máquina principal.
-//	setupMENU();	// Carga transiciones, enterings & leavings de states de la máquina de Menús.
 
 	FSM.SetState(ST_IDLE, false, true);
 	menu->SetState(MenuFSM::ST_MENU_IDLE, false, false);
@@ -307,10 +272,10 @@ void checkKeyPad() {
 		int cc = getCmd(bankKp.getBuff(), cmdTable);
 
 		if (cc < 16) {
-			Serial << "\nkey: " << cc;
+//			Serial << "\nkey: " << cc;
 			ev_key[cc] = true;
 		} else if (cc < _END) {
-			Serial << "\nevt: " << (cc - 16);
+//			Serial << "\nevt: " << (cc - 16);
 			ev_cmd[cc - 16] = true;
 		} else {
 			Serial << "\ncomando inválido: " << cc;
@@ -463,5 +428,9 @@ void checkPosition()
 
 
 #include "MenuTransitions.h"
+
+#include "MenuOnEnterings.h"
+
+#include "MenuOnLeavings.h"
 
 
