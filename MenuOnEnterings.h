@@ -12,7 +12,7 @@
  * Array of on-entering functions.
  * NOTE: ORDER MUST FOLLOW THE ENUM  MenuFSM::OnEnterings
  */
-void (*onEnterings[])(void) = {
+void (*menuOnEnterings[])(void) = {
 
 	// -> IDLE  (index = 0)
 	[]() {
@@ -20,7 +20,7 @@ void (*onEnterings[])(void) = {
 		checkCommands = true;  // modo normal al salir de menu
 		bankLeds.display('P');
 //		Serial << F("\n------\nENTERING ST_MENU_IDLE\n\n");
-		FSM.SetState(ST_IDLE, false, true);
+		brake->SetState(MainFSM::ST_IDLE, false, true);
 	},
 
 

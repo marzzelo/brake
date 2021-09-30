@@ -5,6 +5,14 @@
  *      Author: valdez
  */
 
+//						  __  __              __    _____ ____  __  __
+//						 |  \/  | ___ _ __  _/_/_  |  ___/ ___||  \/  |
+//						 | |\/| |/ _ \ '_ \| | | | | |_  \___ \| |\/| |
+//						 | |  | |  __/ | | | |_| | |  _|  ___) | |  | |
+//						 |_|  |_|\___|_| |_|\__,_| |_|   |____/|_|  |_|
+//
+
+
 #ifndef MENUFSM_H_
 #define MENUFSM_H_
 
@@ -23,6 +31,33 @@ class MenuFSM : public StateMachine {
 
 public:
 	MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void (*onLeavings[])(void));
+
+
+	/**
+	 * # Estados para la FSM de Menu del sistema
+	 */
+	enum MenuState {
+		ST_MENU_IDLE = 0,		//!< MenÃº idle
+		ST_MENU_MAIN,			//!< MenÃº principal
+
+		ST_MENU_WHEEL_CAL,		//!< SubmenÃº para calibraciÃ³n de velocidad de rueda
+		ST_MENU_PH_CAL,			//!< SubmenÃº para calibraciÃ³n de presiÃ³n de horquilla
+		ST_MENU_PF_CAL,			//!< SubmenÃº para calibraciÃ³n de presiÃ³n de freno
+		ST_MENU_T1_CAL,			//!< SubmenÃº para calibraciÃ³n de temperatura 1
+		ST_MENU_T2_CAL,			//!< SubmenÃº para calibraciÃ³n de temperatura 2
+		ST_MENU_ALPHA_CAL,		//!< SubmenÃº para calibraciÃ³n de Ã¡ngulo
+
+		ST_MENU_MVMAX_PAR,		//!< SubmenÃº para establecer velocidad mÃ¡xima de masa
+		ST_MENU_BVMAX_PAR,		//!< SubmenÃº para establecer velocidad mÃ¡xima de frenado
+		ST_MENU_BVMIN_PAR,		//!< SubmenÃº para establecer velocidad mÃ­nima de frenado
+		ST_MENU_PHLIM_PAR,		//!< SubmenÃº para establecer presiÃ³n de horquilla nominal
+		ST_MENU_PFLIM_PAR,		//!< SubmenÃº para establecer presiÃ³n nominal de freno
+		ST_MENU_T1HOT_PAR,		//!< SubmenÃº para establecer temp1 hot
+		ST_MENU_T2HOT_PAR,		//!< SubmenÃº para establecer temp2 hot
+
+		MENU_COUNT			//!< reserved
+	};
+
 
 	enum Transitions {
 		TR_IDLE_MAIN = 0,
@@ -88,33 +123,8 @@ public:
 	};
 
 
-	/**
-	 * # Estados para la FSM de Menu del sistema
-	 */
-	enum MenuState {
-		ST_MENU_IDLE = 0,		//!< Menú idle
-		ST_MENU_MAIN,			//!< Menú principal
-
-		ST_MENU_WHEEL_CAL,		//!< Submenú para calibración de velocidad de rueda
-		ST_MENU_PH_CAL,			//!< Submenú para calibración de presión de horquilla
-		ST_MENU_PF_CAL,			//!< Submenú para calibración de presión de freno
-		ST_MENU_T1_CAL,			//!< Submenú para calibración de temperatura 1
-		ST_MENU_T2_CAL,			//!< Submenú para calibración de temperatura 2
-		ST_MENU_ALPHA_CAL,		//!< Submenú para calibración de ángulo
-
-		ST_MENU_MVMAX_PAR,		//!< Submenú para establecer velocidad máxima de masa
-		ST_MENU_BVMAX_PAR,		//!< Submenú para establecer velocidad máxima de frenado
-		ST_MENU_BVMIN_PAR,		//!< Submenú para establecer velocidad mínima de frenado
-		ST_MENU_PHLIM_PAR,		//!< Submenú para establecer presión de horquilla nominal
-		ST_MENU_PFLIM_PAR,		//!< Submenú para establecer presión nominal de freno
-		ST_MENU_T1HOT_PAR,		//!< Submenú para establecer temp1 hot
-		ST_MENU_T2HOT_PAR,		//!< Submenú para establecer temp2 hot
-
-		MENU_COUNT			//!< reserved
-	};
-
 private:
-	int _st_menu;
+
 
 };
 

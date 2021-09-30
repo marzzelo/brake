@@ -1,7 +1,17 @@
-/* ===============================================================================================
- * 					       BANCO DE FRENO - FIRMWARE ARDUINO MEGA 2560
- * ===============================================================================================*/
-/**
+//
+//
+//				  ____    _    _   _  ____ ___    ____  _____   _____ ____  _____ _   _  ___
+//				 | __ )  / \  | \ | |/ ___/ _ \  |  _ \| ____| |  ___|  _ \| ____| \ | |/ _ \
+//				 |  _ \ / _ \ |  \| | |  | | | | | | | |  _|   | |_  | |_) |  _| |  \| | | | |
+//				 | |_) / ___ \| |\  | |__| |_| | | |_| | |___  |  _| |  _ <| |___| |\  | |_| |
+//				 |____/_/   \_\_| \_|\____\___/  |____/|_____| |_|   |_| \_\_____|_| \_|\___/
+//
+//																	   _   _   _   _
+//						  /\  ._ _|     o ._   _    |\/|  _   _   _.    ) |_  |_  / \
+//						 /--\ | (_| |_| | | | (_)   |  | (/_ (_| (_|   /_  _) |_) \_/
+//															  _|
+/*
+ *
  * # OPERACIÓN
  *
  * ## DISPLAY: P (IDLE)
@@ -53,37 +63,56 @@
 #include "MyTasker.h"
 #include "StateMachineLib.h"
 #include "LiquidCrystal.h"
-
 #include "BankButtons.h"
 #include "BankLeds.h"
 #include "BankAnalogInputs.h"
 #include "BankKeyPad.h"
 #include "MenuFSM.h"
-
+#include "MainFSM.h"
 #include "Printer.h"
-
-
-void onBtn0();
-void onBtn1();
-void onBtn2();
-void onBtn3();
 
 bool cmd_menu_sent;
 bool ev_key[16] = { false };
 bool ev_cmd[10] = { false };
 
+bool btn_pressed[4];
 
+bool Mv_gt_0;
+bool Mv_gt_MAX;
+bool Mv_ge_BRAKEv_min;
+bool Mv_le_BRAKEv_max;
+bool Mv_eq_0;
+
+bool Wv_gt_0;
+bool Wv_ge_LANDINGv;
+bool Wv_eq_0;
+
+bool Ph_gt_0;
+bool Ph_ge_Ph1;
+
+bool Pf_gt_0;
+bool Pf_ge_Pf1;
+
+bool T1_ge_Thot;
+bool T2_ge_Thot;
+
+bool reset_requested;
+bool timeOut;
+bool eventsChecked;
+
+
+//	  _
+//	 /  |  _.  _  _  _   _
+//	 \_ | (_| _> _> (/_ _>
+//
 BankButtons bankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
-
 BankLeds bankLeds;
-
-BankAnalogInputs bankInputs(checkPosition, 500, 5);
-
+BankAnalogInputs bankInputs(checkAngle, 500, 5);
 BankKeyPad bankKp;
-
 KeyPadRX *keyPadRx = bankKp.getKeyPadRX();
+MainFSM *brake = new MainFSM(mainTransitions, mainOnEnterings, mainOnLeavings);
+MenuFSM *menu = new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
 
-MenuFSM *menu = new MenuFSM(transitions, onEnterings, onLeavings);
 
 /*********************************
  * TIMER ACCUMULATORS
@@ -131,22 +160,19 @@ enum _cmdEnum {
 	KEY0, KEY1, KEY2, KEY3, KEY4, KEY5, KEY6, KEY7, KEY8, KEY9, KEY10, KEY11, KEY12, KEY13, KEY14, KEY15,
 	CMD0, CMD1, CMD2, CMD3, CMD4, CMD5, CMD6, CMD7, CMD8, CMD9,
 	_END
-} cmdEnum;                       // @formatter:on
+} cmdEnum;                         // @formatter:on
 //
 //
-
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 
 Printer printer(60);
 
-/*************************************************************
- * 							F S M
- *************************************************************/
-#include "FSM.h"
 
-/*************************************************************
- * 							SETUP
- *************************************************************/
+
+//	  __
+//	 (_   _ _|_     ._
+//	 __) (/_ |_ |_| |_)
+//					|
 void setup() {
 
 	Serial.begin(115200);
@@ -170,10 +196,10 @@ void setup() {
 	_t500ms = T500MS;
 	_t1s = T1S;
 
-	setupFSM();		// Carga transiciones, enterings & leavings de states de la máquina principal.
-
-	FSM.SetState(ST_IDLE, false, true);
+	// State Machines
+	brake->SetState(MainFSM::ST_IDLE, false, true);
 	menu->SetState(MenuFSM::ST_MENU_IDLE, false, false);
+
 
 //	lcd.begin(16, 2);
 //
@@ -182,9 +208,33 @@ void setup() {
 
 //	bank.eePreset();
 
-	bankInputs.loadSettings();	// Carga datos de calibración y parámetros de ensayo desde EEprom
+	bankInputs.loadSettings();// Carga datos de calibración y parámetros de ensayo desde EEprom
+	bankInputs.start();
+}
+
+
+
+
+//
+//	 |   _   _  ._
+//	 |_ (_) (_) |_)
+//				|
+void loop() {
+
+	checkKeyPad();// Check comandos por teclado - comenzados con "*"  (ej.: "*5#")
+
+	menu->Update();	// chequea FSM de Menú principal
+
+	if (bankInputs.ready()) {// Datos digitalizados y conteo de pulsos disponible ?
+		checkEvents();			// Actualizar booleans
+
+//		FSM.Update();			// Generar transiciones (si corresponde, según checkEvents()
+		brake->Update();
+	}
 
 }
+
+
 
 //////////////////////////////////////////////////////////////////
 // EVENT CHECKING
@@ -197,7 +247,7 @@ void setup() {
 void checkEvents() {
 
 	for (int btnIndex = 0; btnIndex < 4; ++btnIndex)
-		btn_pressed[btnIndex] = bankButtons.read(btnIndex);  // read() clears pressed state.
+		btn_pressed[btnIndex] = bankButtons.read(btnIndex); // read() clears pressed state.
 
 	if (btn_pressed[1]) {
 		bankInputs.nextDisplayVar();
@@ -213,18 +263,24 @@ void checkEvents() {
 
 	// Velocidad de rueda
 	Wv_eq_0 = bankInputs.wheel_daq_value <= ZERO_WHEEL_VEL;
-	Wv_ge_LANDINGv = bankInputs.wheel_daq_value	>= bankInputs.testParms.landing_wheel_vel / bankInputs.calFactors.ka_wheel;
+	Wv_ge_LANDINGv = bankInputs.wheel_daq_value
+			>= bankInputs.testParms.landing_wheel_vel
+					/ bankInputs.calFactors.ka_wheel;
 	Wv_gt_0 = bankInputs.wheel_daq_value > ZERO_WHEEL_VEL;
 
 	// Presiones
 	Ph_gt_0 = bankInputs.ph_daq_value >= ZERO_PH;
-	Ph_ge_Ph1 = bankInputs.ph_daq_value >= bankInputs.testParms.ph_threshold / bankInputs.calFactors.ka_ph;
+	Ph_ge_Ph1 = bankInputs.ph_daq_value
+			>= bankInputs.testParms.ph_threshold / bankInputs.calFactors.ka_ph;
 	Pf_gt_0 = bankInputs.pf_daq_value > ZERO_PF;
-	Pf_ge_Pf1 = bankInputs.pf_daq_value >= bankInputs.testParms.pf_threshold / bankInputs.calFactors.ka_pf;
+	Pf_ge_Pf1 = bankInputs.pf_daq_value
+			>= bankInputs.testParms.pf_threshold / bankInputs.calFactors.ka_pf;
 
 	// Temperaturas
-	T1_ge_Thot = bankInputs.t1_daq_value >= bankInputs.testParms.t1_hot / bankInputs.calFactors.ka_t1;
-	T2_ge_Thot = bankInputs.t2_daq_value >= bankInputs.testParms.t2_hot / bankInputs.calFactors.ka_t2;
+	T1_ge_Thot = bankInputs.t1_daq_value
+			>= bankInputs.testParms.t1_hot / bankInputs.calFactors.ka_t1;
+	T2_ge_Thot = bankInputs.t2_daq_value
+			>= bankInputs.testParms.t2_hot / bankInputs.calFactors.ka_t2;
 
 	// Tiempo
 	timeOut = (millis() - _t0) > _dt;
@@ -236,24 +292,6 @@ void checkEvents() {
 void setTimeOut(unsigned long dt) {
 	_t0 = millis();
 	_dt = dt;
-}
-
-
-/*********************************************************************************
- * 										LOOP
- *********************************************************************************/
-void loop() {
-
-	checkKeyPad();	// Check comandos por teclado - comenzados con "*"  (ej.: "*5#")
-
-	menu->Update();	// chequea FSM de Menú principal
-
-	if (bankInputs.ready()) {	// Datos digitalizados y conteo de pulsos disponible ?
-		checkEvents();			// Actualizar booleans
-
-		FSM.Update();			// Generar transiciones (si corresponde, según checkEvents()
-	}
-
 }
 
 /**
@@ -334,9 +372,13 @@ int getCmd(char *strCmd, const char *table[]) {
 	return p;
 }
 
-/******************************************
- * BUTTONS Callbacks
- ******************************************/
+
+
+
+//	  _                           _
+//	 |_)    _|_ _|_  _  ._   _   /   _. | | |_   _.  _ |   _
+//	 |_) |_| |_  |_ (_) | | _>   \_ (_| | | |_) (_| (_ |< _>
+//
 void onBtn0() {
 	bankButtons.setPressed(0);
 }
@@ -402,15 +444,12 @@ void T1_ISR(void) {
 	tasker->update();
 }
 
-/******************************************
- * ROUTINES
- ******************************************/
+
 void state_reset() {
 	bankInputs.start();
 	eventsChecked = false;
 
 	keypad_data_ready = false;
-
 
 	for (int btnIndex = 0; btnIndex < 4; ++btnIndex)
 		btn_pressed[btnIndex] = false;
@@ -421,16 +460,26 @@ void state_reset() {
 	keyPadRx->start();
 }
 
-void checkPosition()
-{
+void checkAngle() {
 	bankInputs.encoder->tick(); // just call tick() to check the state.
 }
 
+
+//	  _  __         _
+//	 |_ (_  |\/|   /   _. | | |_   _.  _ |   _
+//	 |  __) |  |   \_ (_| | | |_) (_| (_ |< _>
+//
+#include "MainTransitions.h"
+
+#include "MainOnEnterings.h"
+
+#include "MainOnLeavings.h"
 
 #include "MenuTransitions.h"
 
 #include "MenuOnEnterings.h"
 
 #include "MenuOnLeavings.h"
+
 
 

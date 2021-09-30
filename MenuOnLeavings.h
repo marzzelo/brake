@@ -15,7 +15,7 @@
  * Array of on-leaving functions.
  * NOTE: ORDER MUST FOLLOW THE ENUM  MenuFSM::OnLeavings
  */
-void (*onLeavings[])(void) = {
+void (*menuOnLeavings[])(void) = {
 
 	// IDLE ->
 	[] () {

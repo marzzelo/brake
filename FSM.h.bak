@@ -6,8 +6,8 @@
  *      https://www.luisllamas.es/libreria-arduino-statemachine/
  */
 
-#ifndef FSM_H_
-#define FSM_H_
+#ifndef FSM_H_BAK_
+#define FSM_H_BAK_
 
 /******************************************************************
  * 								F S M
@@ -670,4 +670,4 @@ void setupFSM() {
 	});
 }
 
-#endif /* FSM_H_ */
+#endif /* FSM_H_BAK_ */

@@ -5,12 +5,25 @@
  *      Author: valdez
  */
 
+//						  __  __              __    _____ ____  __  __
+//						 |  \/  | ___ _ __  _/_/_  |  ___/ ___||  \/  |
+//						 | |\/| |/ _ \ '_ \| | | | | |_  \___ \| |\/| |
+//						 | |  | |  __/ | | | |_| | |  _|  ___) | |  | |
+//						 |_|  |_|\___|_| |_|\__,_| |_|   |____/|_|  |_|
+//
+
+
 #include "MenuFSM.h"
+
 
 MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void (*onLeavings[])(void))
 		: StateMachine(MenuState::MENU_COUNT, N_TRANSITIONS) {
 
-	_st_menu = MenuState::ST_MENU_IDLE;
+
+//	  __                  ___
+//	 (_ _|_  _. _|_  _     | ._ _. ._   _ o _|_ o  _  ._   _
+//	 __) |_ (_|  |_ (/_    | | (_| | | _> |  |_ | (_) | | _>
+//
 
 	/////////////////////////////
 	// IDLE TO MAIN (index: 0)
@@ -18,7 +31,7 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 	AddTransition(ST_MENU_IDLE, ST_MENU_MAIN, transitions[TR_IDLE_MAIN]);
 
 	/////////////////////////////
-	// FACTORES DE CALIBRACI”N
+	// FACTORES DE CALIBRACI√ìN
 	/////////////////////////////
 	AddTransition(ST_MENU_MAIN, ST_MENU_IDLE, transitions[TR_MAIN_IDLE]);
 
@@ -36,7 +49,7 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 
 
 	/////////////////////////////
-	// PAR¡METROS DE ENSAYO
+	// PAR√ÅMETROS DE ENSAYO
 	/////////////////////////////
 	AddTransition(ST_MENU_MAIN, ST_MENU_MVMAX_PAR, transitions[TR_MAIN_MVMAX]);
 
@@ -86,15 +99,15 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 
 
 
-	//////////////////////////////////////////////////////////////////
-	// ON_ENTERING
-	//////////////////////////////////////////////////////////////////
-
+//	  _         _
+//	 / \ ._    |_ ._ _|_  _  ._ o ._   _
+//	 \_/ | |   |_ | | |_ (/_ |  | | | (_|
+//	                                   _|
 	SetOnEntering(ST_MENU_IDLE, onEnterings[ENT_IDLE]);
 
 	SetOnEntering(ST_MENU_MAIN, onEnterings[ENT_MAIN]);
 
-	//----- AJUSTES DE CALIBRACI”N ---------------------------------------------------------
+	//----- AJUSTES DE CALIBRACI√ìN ---------------------------------------------------------
 
 	SetOnEntering (ST_MENU_WHEEL_CAL, onEnterings[ENT_WHEELCAL]);
 
@@ -108,7 +121,7 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 
 	SetOnEntering ( ST_MENU_ALPHA_CAL, onEnterings[ENT_ALPHACAL]);
 
-	//----- PAR¡METROS --------------------------------------------------------------------
+	//----- PAR√ÅMETROS --------------------------------------------------------------------
 
 	SetOnEntering (ST_MENU_MVMAX_PAR, onEnterings[ENT_MVMAX]);
 
@@ -125,10 +138,10 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 	SetOnEntering (ST_MENU_T2HOT_PAR, onEnterings[ENT_T2HOT]);
 
 
-	//////////////////////////////////////////////////////////////////
-	// ON_LEAVING
-	//////////////////////////////////////////////////////////////////
-
+//	  _
+//	 / \ ._    |   _   _.    o ._   _
+//	 \_/ | |   |_ (/_ (_| \/ | | | (_|
+//
 	SetOnLeaving(ST_MENU_IDLE, onLeavings[EXIT_IDLE]);
 
 	SetOnLeaving (ST_MENU_MAIN, onLeavings[EXIT_MAIN]);

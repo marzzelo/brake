@@ -5,11 +5,21 @@
  *      Author: valdez
  */
 
+/*
+					 _                _               ___                   _
+					/ \   _ __   __ _| | ___   __ _  |_ _|_ __  _ __  _   _| |_ ___
+				   / _ \ | '_ \ / _` | |/ _ \ / _` |  | || '_ \| '_ \| | | | __/ __|
+				  / ___ \| | | | (_| | | (_) | (_| |  | || | | | |_) | |_| | |_\__ \
+				 /_/   \_\_| |_|\__,_|_|\___/ \__, | |___|_| |_| .__/ \__,_|\__|___/
+											  |___/            |_|
+
+ */
+
 #ifndef BANKANALOGINPUTS_H_
 #define BANKANALOGINPUTS_H_
 
 #include "Arduino.h"
-#include "FreqCount.h"  // contador de pulsos  [+0V --> +5V]
+#include "FreqCount.h"  	// contador de pulsos  [+0V --> +5V]
 #include "RotaryEncoder.h"
 #include "EEPROM.h"
 #include "EEpromPlus.h"
@@ -67,7 +77,7 @@ private:
 
 	struct EncoderData {
 		long position;
-		int angle;
+		double angle;
 		int direction;
 		unsigned long rpm;
 	};
@@ -86,7 +96,7 @@ private:
 	double _t0 = 0;
 	bool _counting;
 	uint32_t _freqBuff[8] = {0};
-	int _angleOffset = 0;
+	double _angleOffset = 0;
 	void (*_checkPosition)();
 	Reference _display_var = Reference::ANGLE;;
 	EncoderData _encoderData;
@@ -103,38 +113,39 @@ public:
 
 	RotaryEncoder *encoder = nullptr;
 
-	volatile uint16_t mass_rpm;			//<! velocidad volanta
-	volatile uint16_t angle;			//<! posición angular encoder
-	volatile uint16_t wheel_daq_value;	//<! Velocidad de rueda (calibrar mediante menú)
-	volatile uint16_t ph_daq_value;		//<! Presión de horquilla (calibrar mediante menú)
-	volatile uint16_t pf_daq_value;		//<! Presión de freno (calibrar mediante menú)
-	volatile uint16_t t1_daq_value;		//<! Temperatura 1
-	volatile uint16_t t2_daq_value;		//<! Temperatura 2
+	volatile double mass_rpm;			//<! velocidad volanta
+	volatile double angle;				//<! posición angular encoder
+	volatile double wheel_daq_value;	//<! Velocidad de rueda (calibrar mediante menú)
+	volatile double ph_daq_value;		//<! Presión de horquilla (calibrar mediante menú)
+	volatile double pf_daq_value;		//<! Presión de freno (calibrar mediante menú)
+	volatile double t1_daq_value;		//<! Temperatura 1
+	volatile double t2_daq_value;		//<! Temperatura 2
 
 	BankAnalogInputs(void (*checkPosition)(), int period = 1000, int filter = 1);
 
-	void enable() { _daq_enabled = true; }
-	void start() { _daq_enabled = true; _daq_ready = false; FreqCount.begin(_period); }
-	bool ready() { return (FreqCount.available() && _daq_ready); }
+	void enable();
+	void start();
+	bool ready();
 
 	double getDistance();		//<! distancia recorrida en metros (desde el inicio del frenado)
 	double getTime();
 	EncoderData encoderRead();	//<! posición angular, rpm, dirección (encoder)
-	uint32_t getRpm();			//<! velocidad volanta en rpm
-	uint16_t getWv();			//<! velocidad de rueda en m/s
-	uint16_t getPf();
-	uint16_t getPh();
-	uint16_t getT1();
-	uint16_t getT2();
+	double getRpm();			//<! velocidad volanta en rpm
+	double getWv();				//<! velocidad de rueda en m/s
+	double getPf();
+	double getPh();
+	double getT1();
+	double getT2();
 
 	void startCounting();
 	double stopCounting();
 	void resetTimer();
 	void update();
-	void setAngleOffset(int angleOffset) { _angleOffset = angleOffset; }
+	void setAngleOffset(int angleOffset);
 	void nextDisplayVar();
-	uint16_t getDisplayVar();
+	double getDisplayVar();
 
 };
+
 
 #endif /* BANKANALOGINPUTS_H_ */
