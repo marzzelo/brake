@@ -12,7 +12,7 @@
 void ent_idle() {
 	bankLeds.beep();
 	state_reset();
-	checkCommands = true;
+	bankKp->checkCommands(true);
 
 	printer.print_header("Brake Test", true);
 	printer.print_item(  "Presionar START para comenzar");

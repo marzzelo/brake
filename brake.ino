@@ -30,10 +30,6 @@
 #include "MainFSM.h"
 #include "Printer.h"
 
-bool cmd_menu_sent;
-bool ev_key[16] = { false };
-bool ev_cmd[10] = { false };
-
 bool btn_pressed[4];
 
 bool Mv_gt_0;
@@ -55,7 +51,6 @@ bool Pf_ge_Pf1;
 bool T1_ge_Thot;
 bool T2_ge_Thot;
 
-bool reset_requested;
 bool timeOut;
 bool eventsChecked;
 
@@ -67,10 +62,14 @@ bool eventsChecked;
 BankButtons bankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
 BankLeds bankLeds;
 BankAnalogInputs bankInputs(checkAngle, 500, 5);
-BankKeyPad bankKp;
-KeyPadRX *keyPadRx = bankKp.getKeyPadRX();
+BankKeyPad *bankKp = new BankKeyPad(keyPadPressedHandler, keyPadDataReadyHandler, &bankLeds);
+
 MainFSM *brake = new MainFSM(mainTransitions, mainOnEnterings, mainOnLeavings);
 MenuFSM *menu = new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
+
+LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
+Printer printer(60);
+MyTasker *tasker;
 
 
 /*********************************
@@ -85,46 +84,11 @@ MenuFSM *menu = new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
 #define ZERO_MASS_VEL		5
 #define ZERO_WHEEL_VEL		5
 
-/*********************************
- * RX - PC KEYBOARD OR PROCESSING
- *********************************/
-//char str[40];  // comandos desde keyboard o Processing
-//Rx *keyboard = new Rx(str, 40);
-//volatile bool dataReady = false;
-
-bool checkCommands = true;
-volatile bool keypad_data_ready;
-
 /***************************
  * TIMERS
  ***************************/
 char _t250ms, _t500ms, _t1s;
 unsigned long _t0, _dt;
-
-/***************************
- * TASKER
- ***************************/
-MyTasker *tasker;
-
-/***************************
- * COMMAND TABLE
- ***************************/
-
-// @formatter:off
-char const *cmdTable[] = {
-		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
-		"*0", "*1", "*2", "*3", "*4", "*5", "*6", "*7", "*8", "*9" };
-
-enum _cmdEnum {
-	KEY0, KEY1, KEY2, KEY3, KEY4, KEY5, KEY6, KEY7, KEY8, KEY9, KEY10, KEY11, KEY12, KEY13, KEY14, KEY15,
-	CMD0, CMD1, CMD2, CMD3, CMD4, CMD5, CMD6, CMD7, CMD8, CMD9,
-	_END
-} cmdEnum;                         // @formatter:on
-//
-//
-LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
-
-Printer printer(60);
 
 
 
@@ -140,10 +104,6 @@ void setup() {
 
 	tasker = new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
 
-	// Keyboard handlers
-//	keyboard->setDataReadyHandler(dataReadyHandler);
-//	keyboard->setKeyPressedHandler(keyPressedHandler);
-
 	// Timer
 	Timer1.stop();
 	Timer1.initialize(1000);
@@ -155,9 +115,16 @@ void setup() {
 	_t500ms = T500MS;
 	_t1s = T1S;
 
-	// State Machines
-	brake->SetState(MainFSM::ST_IDLE, false, true);
-	menu->SetState(MenuFSM::ST_MENU_IDLE, false, false);
+
+	/*********************************
+	 * STATE MACHINES
+	 *********************************/
+#define DO_NOT_LAUNCH_ENTERING	false
+#define DO_NOT_LAUNCH_LEAVING	false
+#define DO_LAUNCH_ENTERING		true
+
+	brake->SetState(MainFSM::ST_IDLE, DO_NOT_LAUNCH_LEAVING, DO_LAUNCH_ENTERING);
+	menu->SetState(MenuFSM::ST_MENU_IDLE, DO_NOT_LAUNCH_LEAVING, DO_NOT_LAUNCH_ENTERING);
 
 
 //	lcd.begin(16, 2);
@@ -167,8 +134,8 @@ void setup() {
 
 //	bank.eePreset();
 
-	bankInputs.loadSettings();// Carga datos de calibración y parámetros de ensayo desde EEprom
-	bankInputs.start();
+	bankInputs.loadSettings();	// Carga datos de calibración y parámetros de ensayo desde EEprom
+	bankInputs.start(); 		// Inicia el contador de pulsos
 }
 
 
@@ -180,15 +147,15 @@ void setup() {
 //				|
 void loop() {
 
-	checkKeyPad();// Check comandos por teclado - comenzados con "*"  (ej.: "*5#")
+	bankKp->check();// Check comandos por teclado - comenzados con "*"  (ej.: "*5#")
 
 	menu->Update();	// chequea FSM de Menú principal
 
 	if (bankInputs.ready()) {// Datos digitalizados y conteo de pulsos disponible ?
-		checkEvents();			// Actualizar booleans
 
-//		FSM.Update();			// Generar transiciones (si corresponde, según checkEvents()
+		checkEvents();			// Actualizar booleans
 		brake->Update();
+
 	}
 
 }
@@ -222,24 +189,18 @@ void checkEvents() {
 
 	// Velocidad de rueda
 	Wv_eq_0 = bankInputs.wheel_daq_value <= ZERO_WHEEL_VEL;
-	Wv_ge_LANDINGv = bankInputs.wheel_daq_value
-			>= bankInputs.testParms.landing_wheel_vel
-					/ bankInputs.calFactors.ka_wheel;
+	Wv_ge_LANDINGv = bankInputs.wheel_daq_value	>= bankInputs.testParms.landing_wheel_vel / bankInputs.calFactors.ka_wheel;
 	Wv_gt_0 = bankInputs.wheel_daq_value > ZERO_WHEEL_VEL;
 
 	// Presiones
 	Ph_gt_0 = bankInputs.ph_daq_value >= ZERO_PH;
-	Ph_ge_Ph1 = bankInputs.ph_daq_value
-			>= bankInputs.testParms.ph_threshold / bankInputs.calFactors.ka_ph;
+	Ph_ge_Ph1 = bankInputs.ph_daq_value	>= bankInputs.testParms.ph_threshold / bankInputs.calFactors.ka_ph;
 	Pf_gt_0 = bankInputs.pf_daq_value > ZERO_PF;
-	Pf_ge_Pf1 = bankInputs.pf_daq_value
-			>= bankInputs.testParms.pf_threshold / bankInputs.calFactors.ka_pf;
+	Pf_ge_Pf1 = bankInputs.pf_daq_value	>= bankInputs.testParms.pf_threshold / bankInputs.calFactors.ka_pf;
 
 	// Temperaturas
-	T1_ge_Thot = bankInputs.t1_daq_value
-			>= bankInputs.testParms.t1_hot / bankInputs.calFactors.ka_t1;
-	T2_ge_Thot = bankInputs.t2_daq_value
-			>= bankInputs.testParms.t2_hot / bankInputs.calFactors.ka_t2;
+	T1_ge_Thot = bankInputs.t1_daq_value >= bankInputs.testParms.t1_hot / bankInputs.calFactors.ka_t1;
+	T2_ge_Thot = bankInputs.t2_daq_value >= bankInputs.testParms.t2_hot / bankInputs.calFactors.ka_t2;
 
 	// Tiempo
 	timeOut = (millis() - _t0) > _dt;
@@ -252,85 +213,6 @@ void setTimeOut(unsigned long dt) {
 	_t0 = millis();
 	_dt = dt;
 }
-
-/**
- * KEYPAD COMMANDS
- * Verifica si hay un comando terminado con # en el buffer del keyPad.
- * En caso afirmativo, setea las flags ev_key[n] o ev_cmd[n].
- * Las flags deberán ser reseteadas cuando sean servidas.
- */
-void checkKeyPad() {
-	if (!checkCommands)
-		return;
-
-	if (keyPadRx->dataReady()) {
-		bankLeds.beep(100, 1, 1);
-
-		int cc = getCmd(bankKp.getBuff(), cmdTable);
-
-		if (cc < 16) {
-//			Serial << "\nkey: " << cc;
-			ev_key[cc] = true;
-		} else if (cc < _END) {
-//			Serial << "\nevt: " << (cc - 16);
-			ev_cmd[cc - 16] = true;
-		} else {
-			Serial << "\ncomando inválido: " << cc;
-		}
-
-		keyPadRx->start();
-
-	}
-}
-
-/***************************
- * Keyboard COMMAND available
- ***************************
- if (keyboard->dataReady()) {
-
- int cc = getCmd(str, cmdTable);
-
- switch (cc) {
- case READ:
- //Serial << "Reading...\n\n";
- daqEnabled = true;
- break;
- case WRITE:
- Serial << "Writing...";
- break;
-
- case START:
- Serial << "Starting...";
- break;
-
- case STOP:
- Serial << "Stopping...";
- break;
-
- default:
- Serial << "Unknown command";
- break;
- }
-
- keyboard->start();
- }
-
- */
-
-/***************************
- * Obtain command offset (keyboard)
- ***************************/
-int getCmd(char *strCmd, const char *table[]) {
-	int p;
-
-	for (p = 0; p <= _END; p++) {
-		if (strcmp(strCmd, table[p]) == 0) {
-			break;
-		}
-	}
-	return p;
-}
-
 
 
 
@@ -369,11 +251,11 @@ void keyPressedHandler(char key) {
  * KEY PAD Callbacks
  ******************************************/
 void keyPadDataReadyHandler() {
-	keypad_data_ready = true;
+	bankKp->setDataReady(true);
 }
 
 void keyPadPressedHandler(char key) {
-	Serial << ((key == '*') ? keyPadRx->getAsterisk() : key);
+	Serial << ((key == '*') ? bankKp->getAsterisk() : key);
 	bankLeds.display(key);
 	bankLeds.beep(20, 1, 1);
 }
@@ -398,9 +280,10 @@ void Task100ms() {
  * TIMER 1  ISR
  ******************************************/
 void T1_ISR(void) {
-//keyboard->update();
-	keyPadRx->update();
+
+	bankKp->update();
 	tasker->update();
+
 }
 
 
@@ -408,15 +291,14 @@ void state_reset() {
 	bankInputs.start();
 	eventsChecked = false;
 
-	keypad_data_ready = false;
+	bankKp->setDataReady(false);
 
 	for (int btnIndex = 0; btnIndex < 4; ++btnIndex)
 		btn_pressed[btnIndex] = false;
 
 	bankLeds.relayOffAll();
 
-//keyboard->start();
-	keyPadRx->start();
+	bankKp->start();
 }
 
 void checkAngle() {

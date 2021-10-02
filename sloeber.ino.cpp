@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-10-01 22:03:48
+//This file has been generated on 2021-10-02 17:07:54
 
 #include "Arduino.h"
 #define fadea
@@ -23,8 +23,6 @@
 #include "MainFSM.h"
 #include "Printer.h"
 extern bool cmd_menu_sent;
-extern bool ev_key[];
-extern bool ev_cmd[];
 extern bool btn_pressed[];
 extern bool Mv_gt_0;
 extern bool Mv_gt_MAX;
@@ -45,10 +43,12 @@ extern bool timeOut;
 extern bool eventsChecked;
 extern BankLeds bankLeds;
 extern BankAnalogInputs bankInputs;
-extern BankKeyPad bankKp;
-extern KeyPadRX* keyPadRx;
+extern BankKeyPad* bankKp;
 extern MainFSM* brake;
 extern MenuFSM* menu;
+extern LiquidCrystal lcd;
+extern Printer printer;
+extern MyTasker* tasker;
 #define T250MS 	25
 #define T500MS 	50
 #define T1S 	100
@@ -56,18 +56,8 @@ extern MenuFSM* menu;
 #define ZERO_PF				5
 #define ZERO_MASS_VEL		5
 #define ZERO_WHEEL_VEL		5
-extern char str[];
-extern Rx* keyboard;
-extern bool checkCommands;
-extern volatile bool keypad_data_ready;
 extern char _t250ms;
 extern unsigned long _t0;
-extern MyTasker* tasker;
-extern const char* cmdTable[];
-extern const char* cmdTable[];
-extern const char* cmdTable[];
-extern LiquidCrystal lcd;
-extern Printer printer;
 #include "MainTransitions.h"
 #include "MainOnEnterings.h"
 #include "MainOnLeavings.h"
@@ -79,8 +69,6 @@ void setup() ;
 void loop() ;
 void checkEvents() ;
 void setTimeOut(unsigned long dt) ;
-void checkKeyPad() ;
-int getCmd(char *strCmd, const char *table[]) ;
 void onBtn0() ;
 void onBtn1() ;
 void onBtn2() ;

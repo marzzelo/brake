@@ -16,8 +16,8 @@ void (*menuOnEnterings[])(void) = {
 
 	// -> IDLE  (index = 0)
 	[]() {
-		keyPadRx->asterisk('*');
-		checkCommands = true;  // modo normal al salir de menu
+		bankKp->asterisk('*');
+		bankKp->checkCommands(true);
 		bankLeds.display('P');
 //		Serial << F("\n------\nENTERING ST_MENU_IDLE\n\n");
 		brake->SetState(MainFSM::ST_IDLE, false, true);
@@ -26,10 +26,10 @@ void (*menuOnEnterings[])(void) = {
 
 	// -> MAIN MENU
 	[]() {
-		keyPadRx->asterisk('.');
-		keyPadRx->start();
-		checkCommands = true;  // modo normal al salir de menu
-		ev_key[0] = false;  // clear eventual buffered event;
+		bankKp->asterisk('.');
+		bankKp->start();
+		bankKp->checkCommands(true);
+		bankKp->ev_key[0] = false;  // clear eventual buffered event;
 
 		Serial << "\n\n\n\n\n\n";
 

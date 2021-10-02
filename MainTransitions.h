@@ -29,8 +29,8 @@ extern void state_reset();
  * ## Presionando el botón START o keyPad *2 se inicia el ensayo.
  */
 bool tr_idle_checking() {
-	if (ev_key[2]) {		// cmd[2]:  *2#
-		ev_key[2] = false;
+	if (bankKp->ev_key[2]) {		// cmd[2]:  *2#
+		bankKp->ev_key[2] = false;
 		return true;
 	}
 
@@ -96,8 +96,8 @@ bool tr_checking_condok() {	// 0
 
 
 bool tr_idle_monitoring() {
-	if (ev_key[5]) {
-		ev_key[5] = false;
+	if (bankKp->ev_key[5]) {
+		bankKp->ev_key[5] = false;
 		return true;
 	}
 	return false;

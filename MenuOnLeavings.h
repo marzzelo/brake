@@ -24,8 +24,8 @@ void (*menuOnLeavings[])(void) = {
 
 	// MENU MAIN ->
 	[ ] ( ) {
-		checkCommands = false;
-		keyPadRx->start( );
+		bankKp->checkCommands(false);
+		bankKp->start( );
 	},
 
 };

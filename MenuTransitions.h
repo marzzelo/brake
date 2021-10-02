@@ -19,14 +19,14 @@
 
 */
 
-#define ADD_TRANSITION_FROM_MAIN_KEY(key) 	[]() { if (ev_key[(key)]) { ev_key[(key)] = false; return true;} return false; }
+#define ADD_TRANSITION_FROM_MAIN_KEY(key) 	[]() { if (bankKp->ev_key[(key)]) { bankKp->ev_key[(key)] = false; return true;} return false; }
 
 
 bool updateParam(double &param, uint16_t daqValue) {
-	if (keyPadRx->dataReady()) {	// espera comando terminado en #
+	if (bankKp->dataReady()) {	// espera comando terminado en #
 		bankLeds.beep(100, 1, 1);
-		double dblReadVal = String(keyPadRx->buffer()).toDouble();// convierte entrada a Double
-		param = dblReadVal / daqValue;// calcula el factor de calibración para param
+		double dblReadVal = String(bankKp->buffer()).toDouble();// convierte entrada a Double
+		param = dblReadVal / daqValue;// calcula el factor de calibraciÃ³n para param
 //		Serial << "\n-------\nNew Value: " << _FLOAT(param, 3);
 		bankInputs.saveSettings();
 		return true;  // --> to main menu
@@ -45,15 +45,15 @@ bool (*menuTransitions[])(void) = {
 	// IDLE TO MAIN (array index: 0)
 	//////////////////////////////////////////
 	[]() {
-		if (ev_key[1]) {
-			ev_key[1] = false;
+		if (bankKp->ev_key[1]) {
+			bankKp->ev_key[1] = false;
 			return true;
 		}
 		return false;
 	},
 
 	//////////////////////////////////////////
-	// FACTORES DE CALIBRACIÓN
+	// FACTORES DE CALIBRACIÃ“N
 	//////////////////////////////////////////
 	ADD_TRANSITION_FROM_MAIN_KEY(0),		//  (array index = 1, key = 0)
 
@@ -70,7 +70,7 @@ bool (*menuTransitions[])(void) = {
 	ADD_TRANSITION_FROM_MAIN_KEY(6),		//  (array index = 7, key = 6)
 
 	//////////////////////////////////////////
-	// PARÁMETROS DE ENSAYO
+	// PARÃ�METROS DE ENSAYO
 	//////////////////////////////////////////
 	ADD_TRANSITION_FROM_MAIN_KEY(7),		//  (array index = 8, key = 7)
 
@@ -118,11 +118,11 @@ bool (*menuTransitions[])(void) = {
 	// ALPHACAL -> MAIN
 	[]() {
 
-		if (keyPadRx->dataReady()) {	// espera comando terminado en #
+		if (bankKp->ready()) {	// espera comando terminado en #
 			bankLeds.beep(100, 1, 1);
-			double dblReadVal = String(keyPadRx->buffer()).toDouble();// convierte entrada a Double
+			double dblReadVal = String(bankKp->buffer()).toDouble();// convierte entrada a Double
 
-			// calcula el factor de calibración para param
+			// calcula el factor de calibraciÃ³n para param
 			bankInputs.calFactors.kb_alpha = int(dblReadVal - bankInputs.encoder->getPosition() * 360 / 2000);
 			bankInputs.setAngleOffset(bankInputs.calFactors.kb_alpha);
 

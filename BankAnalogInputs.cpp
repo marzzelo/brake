@@ -47,11 +47,13 @@ BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period,
 void BankAnalogInputs::enable() {
 	_daq_enabled = true;
 }
+
 void BankAnalogInputs::start() {
 	_daq_enabled = true;
 	_daq_ready = false;
 	FreqCount.begin(_period);
 }
+
 bool BankAnalogInputs::ready() {
 	return (FreqCount.available() && _daq_ready);
 }

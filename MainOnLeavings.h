@@ -14,8 +14,6 @@ extern void setTimeOut(unsigned long dt);
 extern BankAnalogInputs bankInputs;
 extern BankLeds bankLeds;
 extern MyLed7 *led7s;
-//extern uint16_t Mv;
-extern bool ev_key[], ev_cmd[];
 
 
 /**
@@ -26,7 +24,7 @@ void (*mainOnLeavings[])(void) = {
 	[]() {
 		// LEAVING IDLE
 		setTimeOut(120000);
-		checkCommands = false;
+		bankKp->checkCommands(false);
 	},
 
 	// LEAVING OTHER
