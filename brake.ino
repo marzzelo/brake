@@ -10,48 +10,7 @@
 //						  /\  ._ _|     o ._   _    |\/|  _   _   _.    ) |_  |_  / \
 //						 /--\ | (_| |_| | | | (_)   |  | (/_ (_| (_|   /_  _) |_) \_/
 //															  _|
-/*
- *
- * # OPERACIÓN
- *
- * ## DISPLAY: P (IDLE)
- * - Presionar START para comenzar el ensayo
- *
- * ## DISPLAY: E (ST_CHECKING_COND)
- * - Verificar las siguientes condiciones:
- *   - Velocidad de masa nula
- *   - Velocidad de rueda nula
- *   - Presiones de horquilla y freno nulas
- *   - Temperaturas por debajo del límite caliente
- *
- * ## DISPLAY: 0 (ST_COND_OK)
- * - Arrancar masa
- *
- * ## DISPLAY: 1 (ST_SPEEDING)
- * - Acelerar masa hasta alcanzar Vmax
- *
- * ## DISPLAY: 2 (ST_MAX_VEL)
- * - Aterrizar rueda
- *
- * ## DISPLAY: 3 (ST_LANDING)
- * - Aumentar presión de horquilla hasta la presión nominal del ensayo (simula peso del avión)
- * - ERROR: si la velocidad de masa disminuye por debajo de la velocidad de frenado antes de aplicar el freno.
- *
- * ## DISPLAY: 4 (ST_LANDED)
- * - Disminuir o Aumentar velocidad de masa hasta ingresar al rango de frenado MvBmin < Mv < MvBmax
- *
- * ## DISPLAY: 5 (ST_BRAKING_VEL)
- * - Aplicar freno
- * - REGRESO A [4]: si la velocidad de masa sale del rango de frenado antes de que la presión de freno alcance la presión nominal
- *
- * ## DISPLAY: 6 (ST_BRAKING)
- * - Esperar la detención total de la masa y la rueda
- * - ERROR: si la presión de freno disminuye demasiado antes de la detención total de la rueda y masa
- *
- * ## DISPLAY: F (ST_TEST_COMPLETE)
- * - Fin del ensayo, presionar Start para reiniciar.
- *
- *************************************************************************************************/
+
 #define fadea
 #define debug
 
@@ -129,9 +88,9 @@ MenuFSM *menu = new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
 /*********************************
  * RX - PC KEYBOARD OR PROCESSING
  *********************************/
-char str[40];  // comandos desde keyboard o Processing
-Rx *keyboard = new Rx(str, 40);
-volatile bool dataReady = false;
+//char str[40];  // comandos desde keyboard o Processing
+//Rx *keyboard = new Rx(str, 40);
+//volatile bool dataReady = false;
 
 bool checkCommands = true;
 volatile bool keypad_data_ready;
@@ -182,8 +141,8 @@ void setup() {
 	tasker = new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
 
 	// Keyboard handlers
-	keyboard->setDataReadyHandler(dataReadyHandler);
-	keyboard->setKeyPressedHandler(keyPressedHandler);
+//	keyboard->setDataReadyHandler(dataReadyHandler);
+//	keyboard->setKeyPressedHandler(keyPressedHandler);
 
 	// Timer
 	Timer1.stop();
@@ -482,4 +441,45 @@ void checkAngle() {
 #include "MenuOnLeavings.h"
 
 
-
+/*
+ *
+ * # OPERACIÓN
+ *
+ * ## DISPLAY: P (IDLE)
+ * - Presionar START para comenzar el ensayo
+ *
+ * ## DISPLAY: E (ST_CHECKING_COND)
+ * - Verificar las siguientes condiciones:
+ *   - Velocidad de masa nula
+ *   - Velocidad de rueda nula
+ *   - Presiones de horquilla y freno nulas
+ *   - Temperaturas por debajo del límite caliente
+ *
+ * ## DISPLAY: 0 (ST_COND_OK)
+ * - Arrancar masa
+ *
+ * ## DISPLAY: 1 (ST_SPEEDING)
+ * - Acelerar masa hasta alcanzar Vmax
+ *
+ * ## DISPLAY: 2 (ST_MAX_VEL)
+ * - Aterrizar rueda
+ *
+ * ## DISPLAY: 3 (ST_LANDING)
+ * - Aumentar presión de horquilla hasta la presión nominal del ensayo (simula peso del avión)
+ * - ERROR: si la velocidad de masa disminuye por debajo de la velocidad de frenado antes de aplicar el freno.
+ *
+ * ## DISPLAY: 4 (ST_LANDED)
+ * - Disminuir o Aumentar velocidad de masa hasta ingresar al rango de frenado MvBmin < Mv < MvBmax
+ *
+ * ## DISPLAY: 5 (ST_BRAKING_VEL)
+ * - Aplicar freno
+ * - REGRESO A [4]: si la velocidad de masa sale del rango de frenado antes de que la presión de freno alcance la presión nominal
+ *
+ * ## DISPLAY: 6 (ST_BRAKING)
+ * - Esperar la detención total de la masa y la rueda
+ * - ERROR: si la presión de freno disminuye demasiado antes de la detención total de la rueda y masa
+ *
+ * ## DISPLAY: F (ST_TEST_COMPLETE)
+ * - Fin del ensayo, presionar Start para reiniciar.
+ *
+ *************************************************************************************************/

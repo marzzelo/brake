@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-09-30 13:57:33
+//This file has been generated on 2021-10-01 22:03:48
 
 #include "Arduino.h"
 #define fadea
@@ -58,7 +58,6 @@ extern MenuFSM* menu;
 #define ZERO_WHEEL_VEL		5
 extern char str[];
 extern Rx* keyboard;
-extern volatile bool dataReady;
 extern bool checkCommands;
 extern volatile bool keypad_data_ready;
 extern char _t250ms;
@@ -97,7 +96,7 @@ void T1_ISR(void) ;
 void state_reset() ;
 void checkAngle() ;
 
-
 #include "brake.ino"
+
 
 #endif
