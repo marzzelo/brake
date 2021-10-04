@@ -125,7 +125,7 @@ bool tr_any_idle() { // 1
 /**
  * ## Cumplidas las condiciones, esperar inicio de giro de masa
  */
-bool tr_condok_speeding() { // 2
+bool tr_condok_speeding() {
 	uint16_t Mv = bankInputs.getRpm();
 	Serial << "\nST_COND_OK> mass vel: " << _FLOAT(Mv, 3)
 	<< " ** INICIAR GIRO **";
@@ -141,7 +141,7 @@ bool tr_condok_speeding() { // 2
 /**
  * ## Se alcanza la máxima velocidad de masa.
  */
-bool tr_speeding_maxvel() { // 3
+bool tr_speeding_maxvel() {
 	uint16_t Mv = bankInputs.getRpm();
 
 	Serial << "\nST_SPEEDING> Mv: " << _FLOAT(Mv, 3)
@@ -158,7 +158,7 @@ bool tr_speeding_maxvel() { // 3
 /**
  * ## Se alcanza el estado LANDING cuando la velocidad de rueda alcanza el valor nominal fijado en el menu del sistema.
  */
-bool tr_maxvel_landing() { // 4
+bool tr_maxvel_landing() {
 	uint16_t Mv = bankInputs.getRpm();
 	uint16_t wv = bankInputs.getWv();
 

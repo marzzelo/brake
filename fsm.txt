@@ -2,7 +2,10 @@ digraph {
     START [shape = point ]
   START -> IDLE [label = "  Start"]
   IDLE -> CHECKING [label = btn0_p  fontname="Courier"]
-  CHECKING -> COND_OK [label = "!Mv_gt_0 &&\n!Wv_gt_0 &&\n!Ph_gt_0 &&\n!Pf_gt_0   " fontname="Courier"];
+  IDLE -> CHECKING [label = "keypad:2"  fontname="Courier"]
+  IDLE -> MONITORING [label = "keypad:5"  fontname="Courier"]
+  MONITORING -> IDLE [label = " btn3_p"  fontname="Courier"] 
+  CHECKING -> COND_OK [label = "!Mv_gt_0 &&\n!Wv_gt_0 &&\n!Ph_gt_0 &&\n!Pf_gt_0 &&\n!(T1_ge_Thot||\nT2_ge_Thot)" fontname="Courier"];
   COND_OK -> SPEEDING [label = " Mv_gt_0"  fontname="Courier"]
   SPEEDING -> MAX_VEL [label = " Mv_gt_MAX"  fontname="Courier"]
   MAX_VEL -> LANDING [label = " Wv_ge_LANDINGv"  fontname="Courier"]
@@ -12,10 +15,12 @@ digraph {
   LANDED -> BRAKING_VEL [label = " Mv_le_BRAKEv_max &&\nMv_ge_BRAKEv_min"  fontname="Courier"]
   BRAKING_VEL -> BRAKING [label = " Pf_ge_Pf1"  fontname="Courier"]
   BRAKING_VEL -> LANDED [label = " !(Mv_le_BRAKEv_max &&\nMv_ge_BRAKEv_min)"  fontname="Courier"]
-  BRAKING -> TEST_OK [label = " Mv_eq_0 &&\nWv_eq_0   "  fontname="Courier"]
-  BRAKING -> BRAKING_VEL [label = " Mv_gt_0"  fontname="Courier"]
-  TEST_OK -> IDLE [label = " btn3_p"  fontname="Courier"]
+  BRAKING -> COMPLETE [label = " Mv_eq_0 &&\nWv_eq_0   "  fontname="Courier"]
+  /* BRAKING -> BRAKING_VEL [label = " Mv_gt_0"  fontname="Courier"] */
+  BRAKING -> ERROR [label = " !Pf_gt_0"  fontname="Courier"]
+  COMPLETE -> IDLE [label = " btn3_p"  fontname="Courier"]
   ERROR -> IDLE [label = " btn3_p"  fontname="Courier"]
+  
   
 subgraph clusterLeds {
     node [style=filled, color=white, shape=rectangle];
@@ -36,13 +41,15 @@ BRAKING -> led7
 ANY [shape = rectangle, style=dashed color="#4444ff"]
 ANY -> IDLE [label = " btn3_p\nor TimeOut"]
   
-  /* CHECKING -> IDLE [label = " btn3_p"  fontname="Courier"]
+  /*
+  CHECKING -> IDLE [label = " btn3_p"  fontname="Courier"]
   COND_OK -> IDLE [label = " btn3_p"  fontname="Courier"]
   SPEEDING -> IDLE [label = " btn3_p"  fontname="Courier"]
   MAX_VEL -> IDLE [label = " btn3_p"  fontname="Courier"]
   LANDING -> IDLE [label = " btn3_p"  fontname="Courier"]
   LANDED -> IDLE [label = " btn3_p"  fontname="Courier"]
   BRAKING_VEL -> IDLE [label = " btn3_p"  fontname="Courier"]
-  BRAKING -> IDLE [label = " btn3_p"  fontname="Courier"] */
-
+  BRAKING -> IDLE [label = " btn3_p"  fontname="Courier"] 
+  
+  */
 }

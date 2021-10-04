@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-10-02 17:07:54
+//This file has been generated on 2021-10-04 07:55:01
 
 #include "Arduino.h"
 #define fadea
@@ -22,7 +22,6 @@
 #include "MenuFSM.h"
 #include "MainFSM.h"
 #include "Printer.h"
-extern bool cmd_menu_sent;
 extern bool btn_pressed[];
 extern bool Mv_gt_0;
 extern bool Mv_gt_MAX;
@@ -38,7 +37,6 @@ extern bool Pf_gt_0;
 extern bool Pf_ge_Pf1;
 extern bool T1_ge_Thot;
 extern bool T2_ge_Thot;
-extern bool reset_requested;
 extern bool timeOut;
 extern bool eventsChecked;
 extern BankLeds bankLeds;
@@ -84,7 +82,7 @@ void T1_ISR(void) ;
 void state_reset() ;
 void checkAngle() ;
 
-#include "brake.ino"
 
+#include "brake.ino"
 
 #endif
