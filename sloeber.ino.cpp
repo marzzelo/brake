@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-10-04 07:55:01
+//This file has been generated on 2021-10-05 14:39:43
 
 #include "Arduino.h"
 #define fadea
@@ -22,23 +22,6 @@
 #include "MenuFSM.h"
 #include "MainFSM.h"
 #include "Printer.h"
-extern bool btn_pressed[];
-extern bool Mv_gt_0;
-extern bool Mv_gt_MAX;
-extern bool Mv_ge_BRAKEv_min;
-extern bool Mv_le_BRAKEv_max;
-extern bool Mv_eq_0;
-extern bool Wv_gt_0;
-extern bool Wv_ge_LANDINGv;
-extern bool Wv_eq_0;
-extern bool Ph_gt_0;
-extern bool Ph_ge_Ph1;
-extern bool Pf_gt_0;
-extern bool Pf_ge_Pf1;
-extern bool T1_ge_Thot;
-extern bool T2_ge_Thot;
-extern bool timeOut;
-extern bool eventsChecked;
 extern BankLeds bankLeds;
 extern BankAnalogInputs bankInputs;
 extern BankKeyPad* bankKp;
@@ -55,7 +38,6 @@ extern MyTasker* tasker;
 #define ZERO_MASS_VEL		5
 #define ZERO_WHEEL_VEL		5
 extern char _t250ms;
-extern unsigned long _t0;
 #include "MainTransitions.h"
 #include "MainOnEnterings.h"
 #include "MainOnLeavings.h"
@@ -65,8 +47,6 @@ extern unsigned long _t0;
 
 void setup() ;
 void loop() ;
-void checkEvents() ;
-void setTimeOut(unsigned long dt) ;
 void onBtn0() ;
 void onBtn1() ;
 void onBtn2() ;

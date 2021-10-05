@@ -11,7 +11,7 @@
 
 void ent_idle() {
 	bankLeds.beep();
-	state_reset();
+//	state_reset();
 	bankKp->checkCommands(true);
 
 	printer.print_header("Brake Test", true);

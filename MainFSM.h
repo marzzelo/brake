@@ -31,6 +31,9 @@ class MainFSM: public StateMachine {
 public:
 	MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void (*onLeavings[])(void));
 
+	bool Update();
+
+
 	/**
 	 * # Estados para la FSM principal del sistema
 	 */
@@ -97,5 +100,7 @@ public:
 	};
 
 };
+
+
 
 #endif /* MAINFSM_H_ */

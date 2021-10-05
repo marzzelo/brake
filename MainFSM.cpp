@@ -140,5 +140,16 @@ MainFSM::MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void),
 
 	SetOnLeaving(ST_MONITORING, onLeavings[EXIT_MONITORING]);
 
+
 }
+
+
+//extern void checkEvents();
+
+bool MainFSM::Update() {
+	//checkEvents();			// Actualizar booleans
+	return StateMachine::Update();
+}
+
+
 

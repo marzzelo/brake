@@ -30,29 +30,7 @@
 #include "MainFSM.h"
 #include "Printer.h"
 
-bool btn_pressed[4];
 
-bool Mv_gt_0;
-bool Mv_gt_MAX;
-bool Mv_ge_BRAKEv_min;
-bool Mv_le_BRAKEv_max;
-bool Mv_eq_0;
-
-bool Wv_gt_0;
-bool Wv_ge_LANDINGv;
-bool Wv_eq_0;
-
-bool Ph_gt_0;
-bool Ph_ge_Ph1;
-
-bool Pf_gt_0;
-bool Pf_ge_Pf1;
-
-bool T1_ge_Thot;
-bool T2_ge_Thot;
-
-bool timeOut;
-bool eventsChecked;
 
 
 //	  _
@@ -88,7 +66,7 @@ MyTasker *tasker;
  * TIMERS
  ***************************/
 char _t250ms, _t500ms, _t1s;
-unsigned long _t0, _dt;
+
 
 
 
@@ -116,21 +94,9 @@ void setup() {
 	_t1s = T1S;
 
 
-	/*********************************
-	 * STATE MACHINES
-	 *********************************/
-#define DO_NOT_LAUNCH_ENTERING	false
-#define DO_NOT_LAUNCH_LEAVING	false
-#define DO_LAUNCH_ENTERING		true
-
-	brake->SetState(MainFSM::ST_IDLE, DO_NOT_LAUNCH_LEAVING, DO_LAUNCH_ENTERING);
-	menu->SetState(MenuFSM::ST_MENU_IDLE, DO_NOT_LAUNCH_LEAVING, DO_NOT_LAUNCH_ENTERING);
-
-
-//	lcd.begin(16, 2);
-//
-//	lcd.setCursor(0, 0);
-//	lcd.print(F("TEST 123"));
+	// GO IDLE!
+	brake->SetState(MainFSM::ST_IDLE, false, true);
+	menu->SetState(MenuFSM::ST_MENU_IDLE, false, false);
 
 //	bank.eePreset();
 
@@ -158,60 +124,6 @@ void loop() {
 
 	}
 
-}
-
-
-
-//////////////////////////////////////////////////////////////////
-// EVENT CHECKING
-//////////////////////////////////////////////////////////////////
-/**
- * Se ejecuta antes de llamar a checkEvents de la FSM principal.
- * A partir de las lecturas de las entradas analógicas habilitadas, calcula varias variables
- * booleanas que serán utilizadas en la FSM principal para generar las transiciones.
- */
-void checkEvents() {
-
-	for (int btnIndex = 0; btnIndex < 4; ++btnIndex)
-		btn_pressed[btnIndex] = bankButtons.read(btnIndex); // read() clears pressed state.
-
-	if (btn_pressed[1]) {
-		bankInputs.nextDisplayVar();
-	}
-
-	// Velocidad de masa - available() es comprobado previamente en loop: if(bankInputs.ready())
-	uint16_t Mv = bankInputs.getRpm();
-	Mv_eq_0 = Mv <= ZERO_MASS_VEL;
-	Mv_gt_0 = Mv > ZERO_MASS_VEL;
-	Mv_gt_MAX = Mv >= bankInputs.testParms.max_mass_vel;
-	Mv_le_BRAKEv_max = Mv <= bankInputs.testParms.brake_mass_vel_max;
-	Mv_ge_BRAKEv_min = Mv >= bankInputs.testParms.brake_mass_vel_min;
-
-	// Velocidad de rueda
-	Wv_eq_0 = bankInputs.wheel_daq_value <= ZERO_WHEEL_VEL;
-	Wv_ge_LANDINGv = bankInputs.wheel_daq_value	>= bankInputs.testParms.landing_wheel_vel / bankInputs.calFactors.ka_wheel;
-	Wv_gt_0 = bankInputs.wheel_daq_value > ZERO_WHEEL_VEL;
-
-	// Presiones
-	Ph_gt_0 = bankInputs.ph_daq_value >= ZERO_PH;
-	Ph_ge_Ph1 = bankInputs.ph_daq_value	>= bankInputs.testParms.ph_threshold / bankInputs.calFactors.ka_ph;
-	Pf_gt_0 = bankInputs.pf_daq_value > ZERO_PF;
-	Pf_ge_Pf1 = bankInputs.pf_daq_value	>= bankInputs.testParms.pf_threshold / bankInputs.calFactors.ka_pf;
-
-	// Temperaturas
-	T1_ge_Thot = bankInputs.t1_daq_value >= bankInputs.testParms.t1_hot / bankInputs.calFactors.ka_t1;
-	T2_ge_Thot = bankInputs.t2_daq_value >= bankInputs.testParms.t2_hot / bankInputs.calFactors.ka_t2;
-
-	// Tiempo
-	timeOut = (millis() - _t0) > _dt;
-
-	// Activar DAQ e inicializar FreqCounter
-	bankInputs.start();
-}
-
-void setTimeOut(unsigned long dt) {
-	_t0 = millis();
-	_dt = dt;
 }
 
 

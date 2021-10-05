@@ -146,6 +146,10 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 
 	SetOnLeaving (ST_MENU_MAIN, onLeavings[EXIT_MAIN]);
 
+
+	// GO IDLE!
+	SetState(MenuFSM::ST_MENU_IDLE, false, false);
+
 }
 
 
