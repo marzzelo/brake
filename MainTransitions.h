@@ -92,21 +92,6 @@ void checkEvents() {
 	Mv_le_BRAKEv_max = 		Mv <= bankInputs.testParms.brake_mass_vel_max;
 	Mv_ge_BRAKEv_min = 		Mv >= bankInputs.testParms.brake_mass_vel_min;
 
-//	// Velocidad de rueda
-//	Wv_eq_0 = 				bankInputs.wheel_daq_value <= ZERO_WHEEL_VEL;
-//	Wv_ge_LANDINGv = 		bankInputs.wheel_daq_value	>= bankInputs.testParms.landing_wheel_vel / bankInputs.calFactors.ka_wheel;
-//	Wv_gt_0 = 				bankInputs.wheel_daq_value > ZERO_WHEEL_VEL;
-//
-//	// Presiones
-//	Ph_gt_0 = 				bankInputs.ph_daq_value >= ZERO_PH;
-//	Ph_ge_Ph1 = 			bankInputs.ph_daq_value	>= bankInputs.testParms.ph_threshold / bankInputs.calFactors.ka_ph;
-//	Pf_gt_0 = 				bankInputs.pf_daq_value > ZERO_PF;
-//	Pf_ge_Pf1 = 			bankInputs.pf_daq_value	>= bankInputs.testParms.pf_threshold / bankInputs.calFactors.ka_pf;
-//
-//	// Temperaturas
-//	T1_ge_Thot = 			bankInputs.t1_daq_value >= bankInputs.testParms.t1_hot / bankInputs.calFactors.ka_t1;
-//	T2_ge_Thot = 			bankInputs.t2_daq_value >= bankInputs.testParms.t2_hot / bankInputs.calFactors.ka_t2;
-
 
 	// Velocidad de rueda
 	Wv_eq_0 = 				Wv <= ZERO_WHEEL_VEL;

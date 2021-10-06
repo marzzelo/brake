@@ -113,14 +113,14 @@ void setup() {
 //				|
 void loop() {
 
-	bankKp->check();// Check comandos por teclado - comenzados con "*"  (ej.: "*5#")
+	bankKp->check();			// Check comandos por teclado - comenzados con "*"  (ej.: "*5#")
 
-	menu->Update();	// chequea FSM de Menú principal
+	menu->Update();				// chequea FSM de Menú principal
 
-	if (bankInputs.ready()) {// Datos digitalizados y conteo de pulsos disponible ?
+	if (bankInputs.ready()) {	// Datos digitalizados y conteo de pulsos disponible?
 
-		checkEvents();			// Actualizar booleans
-		brake->Update();
+		checkEvents();			// Adquirir datos y actualizar condiciones booleanas
+		brake->Update();		// Avanzar máquina de estados principal
 
 	}
 
@@ -213,6 +213,8 @@ void state_reset() {
 	bankKp->start();
 }
 
+
+// Encoder callback
 void checkAngle() {
 	bankInputs.encoder->tick(); // just call tick() to check the state.
 }
