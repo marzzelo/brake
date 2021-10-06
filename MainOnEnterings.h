@@ -128,7 +128,15 @@ void ent_complete() {
 	bankLeds.relayOffAll();
 	bankLeds.relayOn(7);
 
-	Serial << "\n**TEST FINALIZADO** <RESET> para REINICIAR";
+	printer.print_header("TEST FINALIZADO - RESULTADOS");
+
+	printer.make_item("Tiempo de Frenado t: %s s", bankInputs.getTime());
+	printer.make_item("Distancia de Frenado d: %s m", bankInputs.getDistance());
+	printer.make_item("Temperatura final T1: %s °C", T1);
+	printer.make_item("Temperatura final T2: %s °C", T2);
+	printer.print_separator();
+
+	Serial << "\n\n<RESET> para REINICIAR";
 }
 
 

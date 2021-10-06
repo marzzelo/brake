@@ -51,11 +51,12 @@ void BankAnalogInputs::enable() {
 void BankAnalogInputs::start() {
 	_daq_enabled = true;
 	_daq_ready = false;
-	FreqCount.begin(_period);
+	//FreqCount.begin(_period);
 }
 
 bool BankAnalogInputs::ready() {
-	return (FreqCount.available() && _daq_ready);
+//	return (FreqCount.available() && _daq_ready);
+	return (_daq_ready);
 }
 
 void BankAnalogInputs::saveSettings() {
@@ -122,6 +123,8 @@ void BankAnalogInputs::setAngleOffset(int angleOffset) {
 }
 
 double BankAnalogInputs::getRpm() {
+	if (!FreqCount.available())
+		return _last_rpm;
 
 	uint32_t accum = _freqBuff[_filter] = FreqCount.read();
 	int i;
@@ -145,7 +148,8 @@ double BankAnalogInputs::getRpm() {
 	}
 
 	mass_rpm = pulses * 1000.0 / _period;
-	return mass_rpm;
+	FreqCount.begin(_period);
+	return _last_rpm = mass_rpm;
 }
 
 double BankAnalogInputs::getDistance() {

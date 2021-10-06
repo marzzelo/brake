@@ -44,8 +44,7 @@
  * - Velocidad de la rueda
  * - Presión de horquilla
  * - Presión de freno
- *
- * Controla también la entrada de pulsos:
+ * - Posición, velocidad y dirección del encoder
  * - Velocidad de Masa (lector óptico)
  */
 class BankAnalogInputs {
@@ -100,17 +99,12 @@ private:
 	void (*_checkPosition)();
 	Reference _display_var = Reference::ANGLE;;
 	EncoderData _encoderData;
+	double _last_rpm = 28.0;				//<! buffers rpm
 
 
 public:
 	TestParms testParms;
 	CalFactors calFactors;
-
-	void setup();
-	void saveSettings();
-	void loadSettings();
-	void eePreset();
-
 	RotaryEncoder *encoder = nullptr;
 
 	volatile double mass_rpm;			//<! velocidad volanta
@@ -121,7 +115,13 @@ public:
 	volatile double t1_daq_value;		//<! Temperatura 1
 	volatile double t2_daq_value;		//<! Temperatura 2
 
+
 	BankAnalogInputs(void (*checkPosition)(), int period = 1000, int filter = 1);
+
+	void setup();
+	void saveSettings();
+	void loadSettings();
+	void eePreset();
 
 	void enable();
 	void start();
