@@ -24,7 +24,7 @@ void (*mainOnLeavings[])(void) = {
 	[]() {
 		// LEAVING IDLE
 		setTimeOut(120000);
-		bankKp->checkCommands(false);
+		bankKp->setCheckCommands(false);
 	},
 
 	// LEAVING OTHER

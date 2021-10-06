@@ -68,7 +68,7 @@ MyTasker *tasker;
 char _t250ms, _t500ms, _t1s;
 
 
-
+bool eventsChecked;
 
 //	  __
 //	 (_   _ _|_     ._
@@ -196,21 +196,6 @@ void T1_ISR(void) {
 	bankKp->update();
 	tasker->update();
 
-}
-
-
-void state_reset() {
-	bankInputs.start();
-	eventsChecked = false;
-
-	bankKp->setDataReady(false);
-
-	for (int btnIndex = 0; btnIndex < 4; ++btnIndex)
-		btn_pressed[btnIndex] = false;
-
-	bankLeds.relayOffAll();
-
-	bankKp->start();
 }
 
 

@@ -17,12 +17,11 @@
 
 class BankButtons {
 
-private:
-	bool btn_pressed[4] = {false};
-
 public:
 
 	Button *btn[4];
+
+	volatile bool btn_pressed[4] = {false};
 
 	BankButtons(Button::ButtonPressedHandler onBtn0,
 			Button::ButtonPressedHandler onBtn1,

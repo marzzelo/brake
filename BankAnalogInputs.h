@@ -39,6 +39,29 @@
 #define PIN_IN2 		19	// White // SELECT PINS 2, 3, 18, 19, 20 or 21
 
 
+#define ZERO_PH				5
+#define ZERO_PF				5
+#define ZERO_MASS_VEL		5
+#define ZERO_WHEEL_VEL		5
+
+enum Condition {
+	MV_GT_0,
+	MV_GT_MAX,
+	MV_GE_BRAKEV_MIN,
+	MV_LE_BRAKEV_MAX,
+	MV_EQ_0,
+	WV_GT_0,
+	WV_GE_LANDINGV,
+	WV_EQ_0,
+	PH_GT_0,
+	PH_GE_PH1,
+	PF_GT_0,
+	PF_GE_PF1,
+	T1_GE_THOT,
+	T2_GE_THOT,
+	TIMEOUT
+};
+
 /**
  * Controla todas las entradas analógicas del Banco de Freno, incluyendo:
  * - Velocidad de la rueda
@@ -50,7 +73,6 @@
 class BankAnalogInputs {
 
 private:
-
 	struct TestParms {
 		double max_mass_vel;
 		double brake_mass_vel_min;
@@ -93,6 +115,7 @@ private:
 	int _filter;
 	volatile double _distance;			//<! Distancia recorrida durante el frenado
 	double _t0 = 0;
+	double _dt = 0;
 	bool _counting;
 	uint32_t _freqBuff[8] = {0};
 	double _angleOffset = 0;
@@ -126,6 +149,8 @@ public:
 	void enable();
 	void start();
 	bool ready();
+	bool check(Condition cond);
+	void setTimeOut(unsigned long dt);
 
 	double getDistance();		//<! distancia recorrida en metros (desde el inicio del frenado)
 	double getTime();

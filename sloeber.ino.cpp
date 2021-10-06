@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-10-05 14:39:43
+//This file has been generated on 2021-10-06 13:32:12
 
 #include "Arduino.h"
 #define fadea
@@ -38,6 +38,7 @@ extern MyTasker* tasker;
 #define ZERO_MASS_VEL		5
 #define ZERO_WHEEL_VEL		5
 extern char _t250ms;
+extern bool eventsChecked;
 #include "MainTransitions.h"
 #include "MainOnEnterings.h"
 #include "MainOnLeavings.h"
@@ -59,7 +60,6 @@ void Task1ms() ;
 void Task10ms() ;
 void Task100ms() ;
 void T1_ISR(void) ;
-void state_reset() ;
 void checkAngle() ;
 
 

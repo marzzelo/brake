@@ -17,7 +17,7 @@ void (*menuOnEnterings[])(void) = {
 	// -> IDLE  (index = 0)
 	[]() {
 		bankKp->asterisk('*');
-		bankKp->checkCommands(true);
+		bankKp->setCheckCommands(true);
 		bankLeds.display('P');
 //		Serial << F("\n------\nENTERING ST_MENU_IDLE\n\n");
 		brake->SetState(MainFSM::ST_IDLE, false, true);
@@ -28,7 +28,7 @@ void (*menuOnEnterings[])(void) = {
 	[]() {
 		bankKp->asterisk('.');
 		bankKp->start();
-		bankKp->checkCommands(true);
+		bankKp->setCheckCommands(true);
 		bankKp->ev_key[0] = false;  // clear eventual buffered event;
 
 		Serial << "\n\n\n\n\n\n";

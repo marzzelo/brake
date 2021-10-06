@@ -75,6 +75,55 @@ void BankAnalogInputs::loadSettings() {
 	EEPROM.get(eeAddress, testParms);
 }
 
+bool BankAnalogInputs::check(Condition cond) {
+	switch (cond) {
+
+	case Condition::MV_EQ_0:
+		return getRpm() <= ZERO_MASS_VEL;
+
+	case Condition::MV_GT_0:
+			return getRpm() > ZERO_MASS_VEL;
+
+	case Condition::MV_GE_BRAKEV_MIN:
+		return getRpm() >= testParms.brake_mass_vel_min;
+
+	case Condition::MV_LE_BRAKEV_MAX:
+		return getRpm() <= testParms.brake_mass_vel_max;
+
+	case Condition::WV_EQ_0:
+		return getWv() <= ZERO_WHEEL_VEL;
+
+	case Condition::WV_GT_0:
+		return getWv() > ZERO_WHEEL_VEL;
+
+	case Condition::WV_GE_LANDINGV:
+		return getWv() >= testParms.landing_wheel_vel;
+
+	case Condition::PH_GT_0:
+		return getPh() > ZERO_PH;
+
+	case Condition::PH_GE_PH1:
+		return getPh() >= testParms.ph_threshold;
+
+	case Condition::PF_GT_0:
+		return getPf() > ZERO_PF;
+
+	case Condition::PF_GE_PF1:
+		return getPh() >= testParms.pf_threshold;
+
+	case Condition::TIMEOUT:
+		return (millis() - _t0) > _dt;
+
+	default:
+		return false;
+	}
+}
+
+void BankAnalogInputs::setTimeOut(unsigned long dt) {
+	_t0 = millis();
+	_dt = dt;
+}
+
 void BankAnalogInputs::eePreset() {
 	/*********************************
 	 * CALIBRATION PRESET

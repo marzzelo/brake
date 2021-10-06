@@ -82,7 +82,7 @@ public:
 		_keypad_data_ready = state;
 	}
 
-	void checkCommands(bool state) {
+	void setCheckCommands(bool state) {
 		_checkCommands = state;
 	}
 
