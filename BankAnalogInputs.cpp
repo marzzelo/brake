@@ -169,7 +169,7 @@ void BankAnalogInputs::update() {
 	}
 }
 
-void BankAnalogInputs::setAngleOffset(int angleOffset) {
+void BankAnalogInputs::setAngleOffset(double angleOffset) {
 	_angleOffset = angleOffset;
 }
 
@@ -246,14 +246,11 @@ double BankAnalogInputs::stopCounting() {
 BankAnalogInputs::EncoderData BankAnalogInputs::encoderRead() {
 	long newPos = BankAnalogInputs::encoder->getPosition();
 
-	if (_encoderData.position != newPos) {
-		_encoderData.angle = newPos * 360.0 / 2000.0 + _angleOffset;
-		angle = _encoderData.angle;
-		_encoderData.position = newPos;
-		_encoderData.direction =
-				(int) (BankAnalogInputs::encoder->getDirection());
-		_encoderData.rpm = BankAnalogInputs::encoder->getRPM();
-	}
+	_encoderData.angle = newPos * 360.0 / 2000.0 + _angleOffset;
+	_encoderData.position = newPos;
+	_encoderData.direction = (int) (BankAnalogInputs::encoder->getDirection());
+	_encoderData.rpm = BankAnalogInputs::encoder->getRPM();
+
 	return _encoderData;
 }
 
@@ -262,7 +259,7 @@ double BankAnalogInputs::getDisplayVar() {
 
 	case Reference::ANGLE:
 		// Update Led Selector here  <-----
-		return angle;
+		return encoderRead().angle;
 		break;
 
 	case Reference::MASS:

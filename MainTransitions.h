@@ -322,19 +322,17 @@ bool tr_braking_error() {
  */
 bool tr_monitoring_idle() {
 
-	if (millis() % 1000 == 0) {
-		if (mon()) {
-			Serial << "\n" << bankInputs->getTime();
-			Serial << "\t" << bankInputs->getRpm();
-			Serial << "\t" << bankInputs->getWv();
-			Serial << "\t" << bankInputs->getPh();
-			Serial << "\t" << bankInputs->getPf();
-			Serial << "\t" << bankInputs->getT1();
-			Serial << "\t" << bankInputs->getT2();
-			Serial << "\t" << bankInputs->getDistance();
-			Serial << "\t" << bankInputs->encoderRead().angle;
-			Serial << "\t Display:" << bankInputs->getDisplayVar();
-		}
+	if (millis() % 100 == 0) {
+		Serial << "\n" << bankInputs->getTime();
+		Serial << "\t" << bankInputs->getRpm();
+		Serial << "\t" << bankInputs->getWv();
+		Serial << "\t" << bankInputs->getPh();
+		Serial << "\t" << bankInputs->getPf();
+		Serial << "\t" << bankInputs->getT1();
+		Serial << "\t" << bankInputs->getT2();
+		Serial << "\t" << bankInputs->getDistance();
+		Serial << "\t" << bankInputs->encoderRead().angle;
+		Serial << "\t" << bankInputs->getDisplayVar();	// debug only
 	}
 	return bankButtons->read(3);
 }

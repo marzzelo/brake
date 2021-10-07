@@ -118,7 +118,7 @@ private:
 	double _dt = 0;
 	bool _counting;
 	uint32_t _freqBuff[8] = {0};
-	double _angleOffset = 0;
+	double _angleOffset = 0.0;
 	void (*_checkPosition)();
 	Reference _display_var = Reference::ANGLE;;
 	EncoderData _encoderData;
@@ -131,7 +131,7 @@ public:
 	RotaryEncoder *encoder = nullptr;
 
 	volatile double mass_rpm;			//<! velocidad volanta
-	volatile double angle;				//<! posición angular encoder
+//	volatile double angle;				//<! posición angular encoder --> use encoderRead().angle
 	volatile double wheel_daq_value;	//<! Velocidad de rueda (calibrar mediante menú)
 	volatile double ph_daq_value;		//<! Presión de horquilla (calibrar mediante menú)
 	volatile double pf_daq_value;		//<! Presión de freno (calibrar mediante menú)
@@ -166,7 +166,7 @@ public:
 	double stopCounting();
 
 	void update();
-	void setAngleOffset(int angleOffset);
+	void setAngleOffset(double angleOffset);
 	void nextDisplayVar();
 	double getDisplayVar();
 

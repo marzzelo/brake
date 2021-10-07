@@ -123,6 +123,13 @@ void loop() {
 
 	brake->Update();			// compute system FSM transitions
 
+	checkButtons();
+
+}
+
+
+
+void checkButtons() {
 	// verify btn1 pressed while in variables-monitoring state
 	if (brake->GetState() == MainFSM::State::ST_MONITORING) {
 		if (bankButtons->read(1)) {
@@ -131,8 +138,15 @@ void loop() {
 		}
 	}
 
-}
+	// reset encoder angle
+	if (bankButtons->read(2)) {
+		bankLeds->beep();
 
+		double offset = - bankInputs->encoderRead().position * 360.0 / 2000.0;
+		Serial << "\n offset: " << offset;
+		bankInputs->setAngleOffset(offset);
+	}
+}
 
 
 /******************************************

@@ -2,11 +2,9 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-10-07 10:32:04
+//This file has been generated on 2021-10-07 11:54:20
 
 #include "Arduino.h"
-#define fadea
-#define debug
 #include "Rx.h"
 #include "CmdSplitter.h"
 #include "Streaming.h"
@@ -22,6 +20,7 @@
 #include "MenuFSM.h"
 #include "MainFSM.h"
 #include "Printer.h"
+#define SERIAL_MONITORING
 extern BankButtons* bankButtons;
 extern BankLeds* bankLeds;
 extern BankAnalogInputs* bankInputs;
@@ -38,7 +37,6 @@ extern MyTasker* tasker;
 #define ZERO_PF				5
 #define ZERO_MASS_VEL		5
 #define ZERO_WHEEL_VEL		5
-#define SERIAL_MONITORING
 extern char _t250ms;
 #include "MainTransitions.h"
 #include "MainOnEnterings.h"
@@ -50,6 +48,7 @@ extern char _t250ms;
 bool mon() ;
 void setup() ;
 void loop() ;
+void checkButtons() ;
 void onBtn0() ;
 void onBtn1() ;
 void onBtn2() ;
