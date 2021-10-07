@@ -19,16 +19,15 @@
 
 */
 
-#define ADD_TRANSITION_FROM_MAIN_KEY(key) 	[]() { if (bankKp->ev_key[(key)]) { bankKp->ev_key[(key)] = false; return true;} return false; }
+#define ADD_TRANSITION_FROM_MAIN_KEY(key) 	[]() { return bankKp->readKey((key)); }
 
 
 bool updateParam(double &param, uint16_t daqValue) {
-	if (bankKp->dataReady()) {	// espera comando terminado en #
-		bankLeds.beep(100, 1, 1);
-		double dblReadVal = String(bankKp->buffer()).toDouble();// convierte entrada a Double
-		param = dblReadVal / daqValue;// calcula el factor de calibraciÃ³n para param
-//		Serial << "\n-------\nNew Value: " << _FLOAT(param, 3);
-		bankInputs.saveSettings();
+	if (bankKp->dataReady()) {
+		bankLeds->beep(100, 1, 1);
+		double dblReadVal = String(bankKp->buffer()).toDouble();
+		param = dblReadVal / daqValue;
+		bankInputs->saveSettings();
 		return true;  // --> to main menu
 	}
 	return false;  // keep reading keypad
@@ -45,11 +44,7 @@ bool (*menuTransitions[])(void) = {
 	// IDLE TO MAIN (array index: 0)
 	//////////////////////////////////////////
 	[]() {
-		if (bankKp->ev_key[1]) {
-			bankKp->ev_key[1] = false;
-			return true;
-		}
-		return false;
+		return bankKp->readKey(1);
 	},
 
 	//////////////////////////////////////////
@@ -92,42 +87,40 @@ bool (*menuTransitions[])(void) = {
 
 	// WHEELCAL -> MAIN
 	[]() {
-		return updateParam(bankInputs.calFactors.ka_wheel, bankInputs.wheel_daq_value);
+		return updateParam(bankInputs->calFactors.ka_wheel, bankInputs->wheel_daq_value);
 	},
 
 	// PHCAL -> MAIN
 	[]() {
-		return updateParam(bankInputs.calFactors.ka_ph, bankInputs.ph_daq_value);
+		return updateParam(bankInputs->calFactors.ka_ph, bankInputs->ph_daq_value);
 	},
 
 	// PFCAL -> MAIN
 	[]() {
-		return updateParam(bankInputs.calFactors.ka_pf, bankInputs.pf_daq_value);
+		return updateParam(bankInputs->calFactors.ka_pf, bankInputs->pf_daq_value);
 	},
 
 	// T1CAL -> MAIN
 	[]() {
-		return updateParam(bankInputs.calFactors.ka_t1, bankInputs.t1_daq_value);
+		return updateParam(bankInputs->calFactors.ka_t1, bankInputs->t1_daq_value);
 	},
 
 	// T2CAL -> MAIN
 	[]() {
-		return updateParam(bankInputs.calFactors.ka_t2, bankInputs.t2_daq_value);
+		return updateParam(bankInputs->calFactors.ka_t2, bankInputs->t2_daq_value);
 	},
 
 	// ALPHACAL -> MAIN
 	[]() {
 
-		if (bankKp->ready()) {	// espera comando terminado en #
-			bankLeds.beep(100, 1, 1);
-			double dblReadVal = String(bankKp->buffer()).toDouble();// convierte entrada a Double
+		if (bankKp->ready()) {
+			bankLeds->beep(100, 1, 1);
 
-			// calcula el factor de calibraciÃ³n para param
-			bankInputs.calFactors.kb_alpha = int(dblReadVal - bankInputs.encoder->getPosition() * 360 / 2000);
-			bankInputs.setAngleOffset(bankInputs.calFactors.kb_alpha);
+			double dblReadVal = String(bankKp->buffer()).toDouble();
 
-			Serial << "\n-------\nNew Value: " << _FLOAT(bankInputs.calFactors.kb_alpha, 3);
-			bankInputs.saveSettings();
+			bankInputs->calFactors.kb_alpha = int(dblReadVal - bankInputs->encoder->getPosition() * 360 / 2000);
+			bankInputs->setAngleOffset(bankInputs->calFactors.kb_alpha);
+			bankInputs->saveSettings();
 			return true;  // --> to main menu
 		}
 
@@ -137,37 +130,37 @@ bool (*menuTransitions[])(void) = {
 
 	// MVMAX -> MAIN
 	[]() {
-		return updateParam(bankInputs.testParms.max_mass_vel, 1);
+		return updateParam(bankInputs->testParms.max_mass_vel, 1);
 	},
 
 	// BVMAX -> MAIN
 	[]() {
-		return updateParam(bankInputs.testParms.brake_mass_vel_max, 1);
+		return updateParam(bankInputs->testParms.brake_mass_vel_max, 1);
 	},
 
 	// BVMIN -> MAIN
 	[]() {
-		return updateParam(bankInputs.testParms.brake_mass_vel_min, 1);
+		return updateParam(bankInputs->testParms.brake_mass_vel_min, 1);
 	},
 
 	// PHLIM -> MAIN
 	[]() {
-		return updateParam(bankInputs.testParms.ph_threshold, 1);
+		return updateParam(bankInputs->testParms.ph_threshold, 1);
 	},
 
 	// PFLIM -> MAIN
 	[]() {
-		return updateParam(bankInputs.testParms.pf_threshold, 1);
+		return updateParam(bankInputs->testParms.pf_threshold, 1);
 	},
 
 	// T1HOT -> MAIN
 	[]() {
-		return updateParam(bankInputs.testParms.t1_hot, 1);
+		return updateParam(bankInputs->testParms.t1_hot, 1);
 	},
 
 	// T2HOT -> MAIN
 	[]() {
-		return updateParam(bankInputs.testParms.t2_hot, 1);
+		return updateParam(bankInputs->testParms.t2_hot, 1);
 	},
 
 

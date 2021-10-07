@@ -17,101 +17,11 @@
 
 */
 
-extern BankButtons bankButtons;
+extern BankButtons *bankButtons;
 
+double tf;	//<! final braking time
 
-uint16_t Mv;
-uint16_t Wv;
-uint16_t Ph;
-uint16_t T1;
-uint16_t T2;
-uint16_t Pf;
-
-bool Mv_gt_0;
-bool Mv_gt_MAX;
-bool Mv_ge_BRAKEv_min;
-bool Mv_le_BRAKEv_max;
-bool Mv_eq_0;
-
-bool Wv_gt_0;
-bool Wv_ge_LANDINGv;
-bool Wv_eq_0;
-
-bool Ph_gt_0;
-bool Ph_ge_Ph1;
-
-bool Pf_gt_0;
-bool Pf_ge_Pf1;
-
-bool T1_ge_Thot;
-bool T2_ge_Thot;
-
-bool timeOut;
-
-
-unsigned long _t0, _dt;
-
-
-
-void setTimeOut(unsigned long dt) {
-	_t0 = millis();
-	_dt = dt;
-}
-
-
-//////////////////////////////////////////////////////////////////
-// EVENT CHECKING
-//////////////////////////////////////////////////////////////////
-/**
- * A partir de las lecturas de las entradas analógicas habilitadas, calcula varias variables
- * booleanas que serán utilizadas en la FSM principal para generar las transiciones.
- */
-void checkEvents() {
-
-	if (bankButtons.read(1)) {
-		bankLeds.beep();
-		bankInputs.nextDisplayVar();
-	}
-
-	// Velocidad de masa - available() es comprobado previamente en loop: if(bankInputs.ready())
-	Mv = 					bankInputs.getRpm();
-	Wv = 					bankInputs.getWv();
-	Ph = 					bankInputs.getPh();
-	Pf = 					bankInputs.getPf();
-	T1 = 					bankInputs.getT1();
-	T2 = 					bankInputs.getT2();
-
-
-	Mv_eq_0 = 				Mv <= ZERO_MASS_VEL;
-	Mv_gt_0 = 				Mv > ZERO_MASS_VEL;
-	Mv_gt_MAX = 			Mv >= bankInputs.testParms.max_mass_vel;
-	Mv_le_BRAKEv_max = 		Mv <= bankInputs.testParms.brake_mass_vel_max;
-	Mv_ge_BRAKEv_min = 		Mv >= bankInputs.testParms.brake_mass_vel_min;
-
-
-	// Velocidad de rueda
-	Wv_eq_0 = 				Wv <= ZERO_WHEEL_VEL;
-	Wv_ge_LANDINGv = 		Wv >= bankInputs.testParms.landing_wheel_vel;
-	Wv_gt_0 = 				Wv > ZERO_WHEEL_VEL;
-
-	// Presiones
-	Ph_gt_0 = 				Ph >= ZERO_PH;
-	Ph_ge_Ph1 = 			Ph	>= bankInputs.testParms.ph_threshold;
-
-	Pf_gt_0 = 				Pf > ZERO_PF;
-	Pf_ge_Pf1 = 			Pf >= bankInputs.testParms.pf_threshold;;
-
-	// Temperaturas
-	T1_ge_Thot = 			T1 >= bankInputs.testParms.t1_hot;
-	T2_ge_Thot = 			T2 >= bankInputs.testParms.t2_hot;
-
-
-	// Tiempo
-	timeOut = 				(millis() - _t0) > _dt;
-
-	// Activar DAQ e inicializar FreqCounter
-	bankInputs.start();
-}
+extern bool mon();
 
 /*****************************************************
  *
@@ -119,15 +29,10 @@ void checkEvents() {
  *
  *****************************************************/
 /**
- * ## Presionando el botón START o keyPad *2 se inicia el ensayo.
+ * ## Presionando el botón START o keyPad 2 se inicia el ensayo.
  */
 bool tr_idle_checking() {
-	if (bankKp->ev_key[2]) {		// cmd[2]:  *2#
-		bankKp->ev_key[2] = false;
-		return true;
-	}
-
-	return bankButtons.read(0);
+	return bankButtons->read(0) || bankKp->readKey(2);
 }
 
 /*****************************************************
@@ -143,66 +48,66 @@ bool tr_idle_checking() {
  * - Presión de freno nula
  * - Temperaturas por debajo del límite caliente
  */
-bool tr_checking_condok() {	// 0
+bool tr_checking_condok() {
 
 	bool cond_ok = true;
+	bool ttd = mon();	// limit message printing to every 1 second
 
-	if (bankInputs.check(MV_GT_0)) {
+	if (bankInputs->check(MV_GT_0)) {
 		cond_ok = false;
-
-		Serial << "\n** DETENER MASA [" << _FLOAT(Mv, 3) << " rpm]";
+		if (ttd) Serial << "\n** DETENER MASA [" << _FLOAT(bankInputs->getRpm(), 3) << " rpm]";
 	}
 
-	if (bankInputs.check(WV_GT_0)) {
+	if (bankInputs->check(WV_GT_0)) {
 		cond_ok = false;
-		Serial << "\n** DETENER RUEDA [" << _FLOAT(Wv, 3) << " rpm]";
+		if (ttd) Serial << "\n** DETENER RUEDA [" << _FLOAT(bankInputs->getWv(), 3) << " rpm]";
 	}
 
-	if (Ph_gt_0) {
+	if (bankInputs->check(PH_GT_0)) {
 		cond_ok = false;
-		Serial << "\n** REDUCIR PH [" << _FLOAT(Ph, 3) << " bar]";
+		if (ttd) Serial << "\n** REDUCIR PH [" << _FLOAT(bankInputs->getPh(), 3) << " bar]";
 	}
 
-	if (Pf_gt_0) {
+	if (bankInputs->check(PF_GT_0)) {
 		cond_ok = false;
-		Serial << "\n** REDUCIR PF [" << _FLOAT(Pf, 3) << " bar]";
+		if (ttd) Serial << "\n** REDUCIR PF [" << _FLOAT(bankInputs->getPf(), 3) << " bar]";
 	}
 
-	if (T1_ge_Thot || T2_ge_Thot) {
+	if (bankInputs->check(T1_GE_THOT) || bankInputs->check(T2_GE_THOT)) {
 		cond_ok = false;
-		Serial << "\n** Temp Alta [T1: " << _FLOAT(T1, 3) << " °C]";
-		Serial << " [T2: " << _FLOAT(T2, 3) << " °C]";
+		if (ttd) {
+			Serial << "\n** Temp Alta [T1: " << _FLOAT(bankInputs->getT1(), 3) << " °C]";
+			Serial << " [T2: " << _FLOAT(bankInputs->getT2(), 3) << " °C]";
+		}
 	}
 
 	if (!cond_ok) {
-		Serial << "\n----------------------";
+		if (ttd) Serial << "\n----------------------";
 	}
 
 	return cond_ok;
 }
 
 
-
+/**
+ * ## Presionando keypad "5" se ingresa a monitoreo de variables
+ */
 bool tr_idle_monitoring() {
-	if (bankKp->ev_key[5]) {
-		bankKp->ev_key[5] = false;
-		return true;
-	}
-	return false;
+	return bankKp->readKey(5);
 }
 
 
 /**
- * ## Presionando RESET desde cualquier estado se retorna al inicio (IDLE)
+ * ## Presionando RESET (desde cualquier estado) se retorna al inicio (IDLE)
  */
-bool tr_any_idle() { // 1
-	if (timeOut) {
-		bankLeds.beep();
-		Serial << "\nTimeout";
+bool tr_any_idle() {
+	if (bankInputs->check(TIMEOUT)) {
+		bankLeds->beep();
+		if (mon()) Serial << "\nTimeout";
 		return true;
 	}
 
-	return bankButtons.read(3);
+	return bankButtons->read(3);
 }
 
 
@@ -215,9 +120,9 @@ bool tr_any_idle() { // 1
  * ## Cumplidas las condiciones, esperar inicio de giro de masa
  */
 bool tr_condok_speeding() {
-	Serial << "\nST_COND_OK> mass vel: " << _FLOAT(Mv, 3)
+	if (mon()) Serial << "\nST_COND_OK> mass vel: " << _FLOAT(bankInputs->getRpm(), 3)
 	<< " ** INICIAR GIRO **";
-	return Mv_gt_0;
+	return bankInputs->check(MV_GT_0);
 }
 
 
@@ -231,9 +136,9 @@ bool tr_condok_speeding() {
  */
 bool tr_speeding_maxvel() {
 
-	Serial << "\nST_SPEEDING> Mv: " << _FLOAT(Mv, 3)
+	if (mon()) Serial << "\nST_SPEEDING> Mv: " << _FLOAT(bankInputs->getRpm(), 3)
 	<< " ** ACELERAR a 500 rpm **";
-	return Mv_gt_MAX;
+	return bankInputs->check(MV_GT_MAX);
 }
 
 
@@ -246,9 +151,11 @@ bool tr_speeding_maxvel() {
  * ## Se alcanza el estado LANDING cuando la velocidad de rueda alcanza el valor nominal fijado en el menu del sistema.
  */
 bool tr_maxvel_landing() {
-	Serial << "\nST_MAX_VEL> Mv: " << _FLOAT(Mv, 3);
-	Serial << ", Wv: " << _FLOAT(Wv, 3) << " ** ATERRIZAR RUEDA ***";
-	return Wv_ge_LANDINGv;
+	if (mon()) {
+		Serial << "\nST_MAX_VEL> Mv: " << _FLOAT(bankInputs->getRpm(), 3);
+		Serial << ", Wv: " << _FLOAT(bankInputs->getWv(), 3) << " ** ATERRIZAR RUEDA ***";
+	}
+	return bankInputs->check(WV_GE_LANDINGV);
 }
 
 
@@ -257,7 +164,7 @@ bool tr_maxvel_landing() {
  * ## Se retorna al estado SPEEDING si la velocidad de masa cae por debajo de la velocidad máxima
  */
 bool tr_maxvel_speeding() {
-	return Mv_le_BRAKEv_max;
+	return bankInputs->check(MV_LE_BRAKEV_MAX);
 }
 
 
@@ -272,11 +179,13 @@ bool tr_maxvel_speeding() {
  * ## Se alcanza el estado LANDED cuando la presión de horquilla alcanza o supera el valor nominal de aterrizaje.
  */
 bool tr_landing_landed() {
-	Serial << "\nLANDING> Mv: " << _FLOAT(Mv, 3);
-	Serial << ", Wv: " << _FLOAT(Wv, 3);
-	Serial << ", PH: " << _FLOAT(Ph, 3) << " ** AUMENTAR Ph a "
-	<< _FLOAT(bankInputs.testParms.ph_threshold, 3) << " ***";
-	return Ph_ge_Ph1;
+	if (mon()) {
+		Serial << "\nLANDING> Mv: " << _FLOAT(bankInputs->getRpm(), 3);
+		Serial << ", Wv: " << _FLOAT(bankInputs->getWv(), 3);
+		Serial << ", PH: " << _FLOAT(bankInputs->getPh(), 3) << " ** AUMENTAR Ph a " << _FLOAT(bankInputs->testParms.ph_threshold, 3) << " ***";
+	}
+
+	return bankInputs->check(PH_GE_PH1);
 }
 
 
@@ -288,8 +197,8 @@ bool tr_landing_landed() {
  * antes de aplicar el freno.
  */
 bool tr_landing_error() {
-	if (Mv_le_BRAKEv_max) {
-		Serial << "\nERROR: velocidad de masa baja antes de frenar";
+	if (bankInputs->check(MV_LE_BRAKEV_MAX)) {
+		if (mon()) Serial << "\nERROR: velocidad de masa baja antes de frenar";
 		return true;
 	}
 	return false;
@@ -310,15 +219,19 @@ bool tr_landing_error() {
  */
 bool tr_landed_brakingvel() {
 
-	if (!Mv_le_BRAKEv_max) {
-		Serial << "\nST_LANDED> Mv: " << _FLOAT(Mv, 3);
-		Serial << " ** DISMINUIR VELOCIDAD **";
+	if (!bankInputs->check(MV_LE_BRAKEV_MAX)) {
+		if (mon()) {
+			Serial << "\nST_LANDED> Mv: " << _FLOAT(bankInputs->getRpm(), 3);
+			Serial << " ** DISMINUIR VELOCIDAD **";
+		}
 	}
-	if (!Mv_ge_BRAKEv_min) {
-		Serial << "\nST_LANDED> Mv: ";
-		Serial << _FLOAT(Mv, 3) << " ** ACELERAR **";
+	if (!bankInputs->check(MV_GE_BRAKEV_MIN)) {
+		if (mon()) {
+			Serial << "\nST_LANDED> Mv: ";
+			Serial << _FLOAT(bankInputs->getRpm(), 3) << " ** ACELERAR **";
+		}
 	}
-	return (Mv_le_BRAKEv_max && Mv_ge_BRAKEv_min);
+	return (bankInputs->check(MV_LE_BRAKEV_MAX) && bankInputs->check(MV_GE_BRAKEV_MIN));
 }
 
 
@@ -335,10 +248,12 @@ bool tr_landed_brakingvel() {
  * - El valor nominal de presión de freno puede fijarse desde el menú del sistema.
  */
 bool tr_brakingvel_braking() {
-	Serial << "\nST_BRAKING_VEL> PF: " << _FLOAT(Pf, 3);
-	Serial << " ***### APLICAR FRENO ###***";
+	if (mon()) {
+		Serial << "\nST_BRAKING_VEL> PF: " << _FLOAT(bankInputs->getPf(), 3);
+		Serial << " ***### APLICAR FRENO ###***";
+	}
 
-	return Pf_ge_Pf1;
+	return bankInputs->check(PF_GE_PF1);
 }
 
 
@@ -349,8 +264,8 @@ bool tr_brakingvel_braking() {
  * ## Se regresa al estado LANDED si la velocidad de masa sale del rango de frenado antes de que la presión de freno alcance la presión nominal
  */
 bool tr_brakingvel_landed() {
-	if (!(Mv_le_BRAKEv_max && Mv_ge_BRAKEv_min)) {
-		bankLeds.beep();
+	if (!(bankInputs->check(MV_LE_BRAKEV_MAX) && bankInputs->check(MV_GE_BRAKEV_MIN))) {
+		bankLeds->beep();
 		return true;
 	}
 	return false;
@@ -367,14 +282,15 @@ bool tr_brakingvel_landed() {
  * ## Se ingresa a TEST_COMPLETE cuando las velocidades de masa y de rueda se anulan.
  */
 bool tr_braking_complete() {
-	double t = bankInputs.getTime();
-
-	Serial << "\nST_BRAKING> Mv: " << _FLOAT(Mv, 3);
-	Serial << ", Wv: " << _FLOAT(Wv, 3) << ", d: " << _FLOAT(bankInputs.getDistance(), 3);
-	Serial << ", t: " << _FLOAT(t, 3);
-	Serial << " ** MANTENER Pf HASTA DETENER ** ";
-
-	return (Mv_eq_0 && Wv_eq_0);
+	tf = bankInputs->getTime();
+	if (mon()) {
+		Serial << "\nST_BRAKING> Mv: " << _FLOAT(bankInputs->getRpm(), 3);
+		Serial << ", Wv: " << _FLOAT(bankInputs->getWv(), 3) << ", d: " << _FLOAT(bankInputs->getDistance(), 3);
+		Serial << ", t: " << _FLOAT(tf, 3);
+		Serial << " ** MANTENER Pf HASTA DETENER ** ";
+		Serial << " (Pf: " << _FLOAT(bankInputs->getPf(), 3) << ")";
+	}
+	return (bankInputs->check(MV_EQ_0) && bankInputs->check(WV_EQ_0));
 }
 
 
@@ -385,8 +301,8 @@ bool tr_braking_complete() {
  * ## Se disminuyó demasiado la presión de freno durante el frenado
  */
 bool tr_braking_error() {
-	if (!Pf_gt_0) {
-		Serial << "\nPresión de freno baja durante el frenado";
+	if (!bankInputs->check(PF_GE_PF1)) {
+		if (mon()) Serial << "\nPresión de freno baja durante el frenado";
 		return true;
 	}
 	return false;
@@ -405,18 +321,22 @@ bool tr_braking_error() {
  * - Masa detenida
  */
 bool tr_monitoring_idle() {
-	Serial << "\n" << bankInputs.getTime();
-	Serial << "\t" << Mv;
-	Serial << "\t" << Wv;
-	Serial << "\t" << Ph;
-	Serial << "\t" << Pf;
-	Serial << "\t" << T1;
-	Serial << "\t" << T2;
-	Serial << "\t" << bankInputs.getDistance();
-	Serial << "\t" << bankInputs.encoderRead().angle;
-	Serial << "\t Display:" << bankInputs.getDisplayVar();
 
-	return bankButtons.read(3);
+	if (millis() % 1000 == 0) {
+		if (mon()) {
+			Serial << "\n" << bankInputs->getTime();
+			Serial << "\t" << bankInputs->getRpm();
+			Serial << "\t" << bankInputs->getWv();
+			Serial << "\t" << bankInputs->getPh();
+			Serial << "\t" << bankInputs->getPf();
+			Serial << "\t" << bankInputs->getT1();
+			Serial << "\t" << bankInputs->getT2();
+			Serial << "\t" << bankInputs->getDistance();
+			Serial << "\t" << bankInputs->encoderRead().angle;
+			Serial << "\t Display:" << bankInputs->getDisplayVar();
+		}
+	}
+	return bankButtons->read(3);
 }
 
 

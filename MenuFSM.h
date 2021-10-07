@@ -55,14 +55,14 @@ public:
 		ST_MENU_T1HOT_PAR,		//!< Submenú para establecer temp1 hot
 		ST_MENU_T2HOT_PAR,		//!< Submenú para establecer temp2 hot
 
-		MENU_COUNT			//!< reserved
+		MENU_COUNT				//!< reserved
 	};
 
 
 	enum Transitions {
 		TR_IDLE_MAIN = 0,
 
-		TR_MAIN_IDLE = 1,
+		TR_MAIN_IDLE,
 		TR_MAIN_WHEELCAL,
 		TR_MAIN_PHCAL,
 		TR_MAIN_PFCAL,
@@ -70,7 +70,7 @@ public:
 		TR_MAIN_T2CAL,
 		TR_MAIN_ALPHACAL,
 
-		TR_MAIN_MVMAX = 8,
+		TR_MAIN_MVMAX,
 		TR_MAIN_BVMAX,
 		TR_MAIN_BVMIN,
 		TR_MAIN_PHLIM,
@@ -78,20 +78,20 @@ public:
 		TR_MAIN_T1HOT,
 		TR_MAIN_T2HOT,
 
-		TR_WHEELCAL_MAIN = 15,
+		TR_WHEELCAL_MAIN,
 		TR_PHCAL_MAIN,
 		TR_PFCAL_MAIN,
 		TR_T1CAL_MAIN,
 		TR_T2CAL_MAIN,
 		TR_ALPHACAL_MAIN,
 
-		TR_MVMAX_MAIN = 21,
+		TR_MVMAX_MAIN,
 		TR_BVMAX_MAIN,
 		TR_BVMIN_MAIN,
 		TR_PHLIM_MAIN,
 		TR_PFLIM_MAIN,
 		TR_T1HOT_MAIN,
-		TR_T2HOT_MAIN = 27
+		TR_T2HOT_MAIN
 
 	};
 
@@ -106,13 +106,13 @@ public:
 		ENT_T2CAL,
 		ENT_ALPHACAL,
 
-		ENT_MVMAX = 8,
+		ENT_MVMAX,
 		ENT_BVMAX,
 		ENT_BVMIN,
 		ENT_PHLIM,
 		ENT_PFLIM,
 		ENT_T1HOT,
-		ENT_T2HOT = 14,
+		ENT_T2HOT,
 	};
 
 

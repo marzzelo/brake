@@ -11,8 +11,6 @@
 //						 /--\ | (_| |_| | | | (_)   |  | (/_ (_| (_|   /_  _) |_) \_/
 //															  _|
 
-#define fadea
-#define debug
 
 #include "Rx.h"
 #include "CmdSplitter.h"
@@ -22,7 +20,7 @@
 #include "MyTasker.h"
 #include "StateMachineLib.h"
 #include "LiquidCrystal.h"
-#include "BankButtons.h"
+#include "bankButtons.h"
 #include "BankLeds.h"
 #include "BankAnalogInputs.h"
 #include "BankKeyPad.h"
@@ -30,17 +28,17 @@
 #include "MainFSM.h"
 #include "Printer.h"
 
-
+#define SERIAL_MONITORING
 
 
 //	  _
 //	 /  |  _.  _  _  _   _
 //	 \_ | (_| _> _> (/_ _>
 //
-BankButtons bankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
-BankLeds bankLeds;
-BankAnalogInputs bankInputs(checkAngle, 500, 5);
-BankKeyPad *bankKp = new BankKeyPad(keyPadPressedHandler, keyPadDataReadyHandler, &bankLeds);
+BankButtons *bankButtons = new BankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
+BankLeds *bankLeds = new BankLeds();
+BankAnalogInputs *bankInputs = new BankAnalogInputs(checkAngle, 500, 5);
+BankKeyPad *bankKp = new BankKeyPad(keyPadPressedHandler, keyPadDataReadyHandler, bankLeds);
 
 MainFSM *brake = new MainFSM(mainTransitions, mainOnEnterings, mainOnLeavings);
 MenuFSM *menu = new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
@@ -67,8 +65,13 @@ MyTasker *tasker;
  ***************************/
 char _t250ms, _t500ms, _t1s;
 
-
-bool eventsChecked;
+// decreases terminal-messages-printing-rate (1 message every 1 sec)
+bool mon() {
+#ifndef SERIAL_MONITORING
+	return false;
+#endif
+	return (millis() % 1000 == 0);
+}
 
 //	  __
 //	 (_   _ _|_     ._
@@ -77,8 +80,7 @@ bool eventsChecked;
 void setup() {
 
 	Serial.begin(115200);
-	while (!Serial) {
-	}
+	while (!Serial) {}	// clears serial buff
 
 	tasker = new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
 
@@ -98,10 +100,12 @@ void setup() {
 	brake->SetState(MainFSM::ST_IDLE, false, true);
 	menu->SetState(MenuFSM::ST_MENU_IDLE, false, false);
 
-//	bank.eePreset();
+//	bank.eePreset();			// default calibration/parameter values
 
-	bankInputs.loadSettings();	// Carga datos de calibración y parámetros de ensayo desde EEprom
-	bankInputs.start(); 		// Inicia el contador de pulsos
+	bankButtons->reset();		// clears buttons buffer
+
+	bankInputs->loadSettings();	// Loads calibration/test parameters from EEprom
+	bankInputs->start(); 		// Enables DAQ
 }
 
 
@@ -113,51 +117,43 @@ void setup() {
 //				|
 void loop() {
 
-	bankKp->check();			// Check comandos por teclado - comenzados con "*"  (ej.: "*5#")
+	bankKp->check();			// Check keypad KEYS & COMMANDS
 
-	menu->Update();				// chequea FSM de Menú principal
+	menu->Update();				// compute main menu FSM transitions
 
-	if (bankInputs.ready()) {	// Datos digitalizados y conteo de pulsos disponible?
+	brake->Update();			// compute system FSM transitions
 
-		checkEvents();			// Adquirir datos y actualizar condiciones booleanas
-		brake->Update();		// Avanzar máquina de estados principal
-
+	// verify btn1 pressed while in variables-monitoring state
+	if (brake->GetState() == MainFSM::State::ST_MONITORING) {
+		if (bankButtons->read(1)) {
+			bankLeds->beep();
+			bankInputs->nextDisplayVar();
+		}
 	}
 
 }
 
 
 
-//	  _                           _
-//	 |_)    _|_ _|_  _  ._   _   /   _. | | |_   _.  _ |   _
-//	 |_) |_| |_  |_ (_) | | _>   \_ (_| | | |_) (_| (_ |< _>
-//
+/******************************************
+ * BUTTONS Callbacks
+ ******************************************/
 void onBtn0() {
-	bankButtons.setPressed(0);
+	bankButtons->setPressed(0);
 }
 
 void onBtn1() {
-	bankButtons.setPressed(1);
+	bankButtons->setPressed(1);
 }
 
 void onBtn2() {
-	bankButtons.setPressed(2);
+	bankButtons->setPressed(2);
 }
 
 void onBtn3() {
-	bankButtons.setPressed(3);
+	bankButtons->setPressed(3);
 }
 
-/******************************************
- * PC KEYBOARD Callbacks
- ******************************************/
-void dataReadyHandler() {
-
-}
-
-void keyPressedHandler(char key) {
-
-}
 
 /******************************************
  * KEY PAD Callbacks
@@ -168,40 +164,38 @@ void keyPadDataReadyHandler() {
 
 void keyPadPressedHandler(char key) {
 	Serial << ((key == '*') ? bankKp->getAsterisk() : key);
-	bankLeds.display(key);
-	bankLeds.beep(20, 1, 1);
+	bankLeds->display(key);
+	bankLeds->beep(20, 1, 1);
 }
 
 /******************************************
  * TASKER Callbacks
  ******************************************/
 void Task1ms() {
-	bankButtons.update();
-	bankLeds.update();
+	bankButtons->update();
+	bankLeds->update();
 }
 
 void Task10ms() {
-
+	//
 }
 
 void Task100ms() {
-	bankInputs.update();
+	bankInputs->update();
 }
 
 /******************************************
  * TIMER 1  ISR
  ******************************************/
 void T1_ISR(void) {
-
 	bankKp->update();
 	tasker->update();
-
 }
 
 
 // Encoder callback
 void checkAngle() {
-	bankInputs.encoder->tick(); // just call tick() to check the state.
+	bankInputs->encoder->tick(); // just call tick() to check the state.
 }
 
 
@@ -221,46 +215,3 @@ void checkAngle() {
 
 #include "MenuOnLeavings.h"
 
-
-/*
- *
- * # OPERACIÓN
- *
- * ## DISPLAY: P (IDLE)
- * - Presionar START para comenzar el ensayo
- *
- * ## DISPLAY: E (ST_CHECKING_COND)
- * - Verificar las siguientes condiciones:
- *   - Velocidad de masa nula
- *   - Velocidad de rueda nula
- *   - Presiones de horquilla y freno nulas
- *   - Temperaturas por debajo del límite caliente
- *
- * ## DISPLAY: 0 (ST_COND_OK)
- * - Arrancar masa
- *
- * ## DISPLAY: 1 (ST_SPEEDING)
- * - Acelerar masa hasta alcanzar Vmax
- *
- * ## DISPLAY: 2 (ST_MAX_VEL)
- * - Aterrizar rueda
- *
- * ## DISPLAY: 3 (ST_LANDING)
- * - Aumentar presión de horquilla hasta la presión nominal del ensayo (simula peso del avión)
- * - ERROR: si la velocidad de masa disminuye por debajo de la velocidad de frenado antes de aplicar el freno.
- *
- * ## DISPLAY: 4 (ST_LANDED)
- * - Disminuir o Aumentar velocidad de masa hasta ingresar al rango de frenado MvBmin < Mv < MvBmax
- *
- * ## DISPLAY: 5 (ST_BRAKING_VEL)
- * - Aplicar freno
- * - REGRESO A [4]: si la velocidad de masa sale del rango de frenado antes de que la presión de freno alcance la presión nominal
- *
- * ## DISPLAY: 6 (ST_BRAKING)
- * - Esperar la detención total de la masa y la rueda
- * - ERROR: si la presión de freno disminuye demasiado antes de la detención total de la rueda y masa
- *
- * ## DISPLAY: F (ST_TEST_COMPLETE)
- * - Fin del ensayo, presionar Start para reiniciar.
- *
- *************************************************************************************************/

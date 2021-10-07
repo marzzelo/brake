@@ -51,7 +51,6 @@ void BankAnalogInputs::enable() {
 void BankAnalogInputs::start() {
 	_daq_enabled = true;
 	_daq_ready = false;
-	//FreqCount.begin(_period);
 }
 
 bool BankAnalogInputs::ready() {
@@ -82,7 +81,10 @@ bool BankAnalogInputs::check(Condition cond) {
 		return getRpm() <= ZERO_MASS_VEL;
 
 	case Condition::MV_GT_0:
-			return getRpm() > ZERO_MASS_VEL;
+		return getRpm() > ZERO_MASS_VEL;
+
+	case Condition::MV_GT_MAX:
+			return getRpm() > testParms.max_mass_vel;
 
 	case Condition::MV_GE_BRAKEV_MIN:
 		return getRpm() >= testParms.brake_mass_vel_min;
@@ -109,7 +111,7 @@ bool BankAnalogInputs::check(Condition cond) {
 		return getPf() > ZERO_PF;
 
 	case Condition::PF_GE_PF1:
-		return getPh() >= testParms.pf_threshold;
+		return getPf() >= testParms.pf_threshold;
 
 	case Condition::TIMEOUT:
 		return (millis() - _t0) > _dt;
@@ -231,6 +233,7 @@ double BankAnalogInputs::getT2() {
 
 void BankAnalogInputs::startCounting() {
 	_distance = 0;
+	_t0 = millis();
 	_counting = true;
 }
 
@@ -239,9 +242,6 @@ double BankAnalogInputs::stopCounting() {
 	return _distance;
 }
 
-void BankAnalogInputs::resetTimer() {
-	_t0 = millis();
-}
 
 BankAnalogInputs::EncoderData BankAnalogInputs::encoderRead() {
 	long newPos = BankAnalogInputs::encoder->getPosition();
@@ -261,7 +261,7 @@ double BankAnalogInputs::getDisplayVar() {
 	switch (_display_var) {
 
 	case Reference::ANGLE:
-		// Update Selector LED here  <-----
+		// Update Led Selector here  <-----
 		return angle;
 		break;
 

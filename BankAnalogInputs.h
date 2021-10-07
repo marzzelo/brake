@@ -164,7 +164,7 @@ public:
 
 	void startCounting();
 	double stopCounting();
-	void resetTimer();
+
 	void update();
 	void setAngleOffset(int angleOffset);
 	void nextDisplayVar();

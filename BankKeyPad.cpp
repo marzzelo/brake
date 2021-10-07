@@ -35,7 +35,7 @@ int BankKeyPad::getCmd(char *strCmd, const char *table[]) {
 }
 
 /**
- * KEYPAD COMMANDS
+ * KEYPAD KEYS & COMMANDS
  * Verifica si hay un comando terminado con # en el buffer del keyPad.
  * En caso afirmativo, setea las flags ev_key[n] o ev_cmd[n].
  * Las flags deberán ser reseteadas cuando sean servidas.
@@ -50,10 +50,8 @@ void BankKeyPad::check() {
 		int cc = getCmd(getBuff(), cmdTable);
 
 		if (cc < 16) {
-//			Serial << "\nkey: " << cc;
 			ev_key[cc] = true;
 		} else if (cc < _END) {
-//			Serial << "\nevt: " << (cc - 16);
 			ev_cmd[cc - 16] = true;
 		} else {
 			Serial << "\ncomando inválido: " << cc;

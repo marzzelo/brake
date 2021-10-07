@@ -144,13 +144,9 @@ MainFSM::MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void),
 }
 
 
-//extern void checkEvents();
-
 bool MainFSM::Update() {
-//	if (bankInputs.ready()) {
-//		checkEvents();			// Actualizar booleans
-		return StateMachine::Update();
-//	}
+	// modifiers/conditionals here
+	return StateMachine::Update();
 }
 
 

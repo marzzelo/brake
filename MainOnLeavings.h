@@ -11,8 +11,8 @@
 
 extern void state_reset();
 extern void setTimeOut(unsigned long dt);
-extern BankAnalogInputs bankInputs;
-extern BankLeds bankLeds;
+extern BankAnalogInputs *bankInputs;
+extern BankLeds *bankLeds;
 extern MyLed7 *led7s;
 
 
@@ -23,18 +23,18 @@ extern MyLed7 *led7s;
 void (*mainOnLeavings[])(void) = {
 	[]() {
 		// LEAVING IDLE
-		setTimeOut(120000);
+		bankInputs->setTimeOut(120000);
 		bankKp->setCheckCommands(false);
 	},
 
 	// LEAVING OTHER
 	[]() {
-		setTimeOut(120000);
+		bankInputs->setTimeOut(120000);
 	},
 
 	// LEAVING MONITORING
 	[] () {
-		bankLeds.relayStopAll();
+		bankLeds->relayStopAll();
 	}
 };
 
