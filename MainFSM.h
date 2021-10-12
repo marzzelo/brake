@@ -27,6 +27,9 @@
 
 #define N_TRANSITIONS	35
 
+/**
+ * # Máquina de estados principal
+ */
 class MainFSM: public StateMachine {
 public:
 	MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void (*onLeavings[])(void));
@@ -72,7 +75,7 @@ public:
 		TR_BRAKINGVEL_LANDED,
 		TR_BRAKING_COMPLETE,
 		TR_BRAKING_ERROR,
-		TR_MONITORING_IDLE = 15,
+		TR_MONITORING_IDLE,
 	};
 
 
