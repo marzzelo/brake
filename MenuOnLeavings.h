@@ -24,7 +24,7 @@ void (*menuOnLeavings[])(void) = {
 
 	// MENU MAIN ->
 	[ ] ( ) {
-		bankKp->setCheckCommands(false);
+		bankKp->checkCommands = false;
 		bankKp->start( );
 	},
 

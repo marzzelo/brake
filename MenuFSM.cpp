@@ -61,9 +61,9 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 
 	AddTransition(ST_MENU_MAIN, ST_MENU_PFLIM_PAR, transitions[TR_MAIN_PFLIM]);
 
-	AddTransition(ST_MENU_MAIN, ST_MENU_T1HOT_PAR, transitions[TR_MAIN_MVMAX]);
+	AddTransition(ST_MENU_MAIN, ST_MENU_T1HOT_PAR, transitions[TR_MAIN_T1HOT]);
 
-	AddTransition(ST_MENU_MAIN, ST_MENU_T2HOT_PAR, transitions[TR_MAIN_MVMAX]);
+	AddTransition(ST_MENU_MAIN, ST_MENU_T2HOT_PAR, transitions[TR_MAIN_T2HOT]);
 
 
 	//////////////////////////////////////////

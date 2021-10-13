@@ -113,7 +113,7 @@ bool (*menuTransitions[])(void) = {
 	// ALPHACAL -> MAIN
 	[]() {
 
-		if (bankKp->ready()) {
+		if (bankKp->dataReady()) {
 			bankLeds->beep(100, 1, 1);
 
 			double dblReadVal = String(bankKp->buffer()).toDouble();

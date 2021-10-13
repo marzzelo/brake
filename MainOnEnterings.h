@@ -12,8 +12,7 @@ void ent_idle() {
 	bankLeds->beep();
 	bankLeds->relayOffAll();
 
-	bankKp->setCheckCommands(true);
-	bankKp->setDataReady(false);
+	bankKp->checkCommands = true;
 	bankKp->start();
 
 	bankButtons->reset();
@@ -36,7 +35,7 @@ void ent_checking() {
 	bankLeds->relayStart(0);
 	bankLeds->beep();
 
-	Serial << "\nST_CHECKING_COND... [Esperando condiciones de inicio: Mv=0, Wv=0, Ph=0, Pf=0]";
+	Serial << "\nST_CHECKING_COND... [Esperando condiciones de inicio: Mv=0, Wv=0, Ph=0, Pf=0, T1&T2<Thot]";
 }
 
 void ent_condok() {

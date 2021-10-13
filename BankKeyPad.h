@@ -41,21 +41,10 @@ private:
 	byte colPins[COLS] = { KP_COL0, KP_COL1, KP_COL2 }; //connect to the column pinouts of the keypad
 
 
-	enum _cmdEnum {
-		KEY0, KEY1, KEY2, KEY3, KEY4, KEY5, KEY6, KEY7, KEY8, KEY9, KEY10, KEY11, KEY12, KEY13, KEY14, KEY15,
-		CMD0, CMD1, CMD2, CMD3, CMD4, CMD5, CMD6, CMD7, CMD8, CMD9,
-		_END
-	};
-
-
 	Keypad *keyPad;
-
-	BankLeds *_bankLeds;
 
 	bool _keyPadEnabled = true;
 	volatile bool _keypad_data_ready;
-
-	bool _checkCommands = true;
 
 	int getCmd(char *strCmd, const char *table[]);
 
@@ -63,44 +52,27 @@ private:
 			"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
 			"*0", "*1", "*2", "*3", "*4", "*5", "*6", "*7", "*8", "*9" };
 
-	bool ev_key[16] = { false };
-	bool ev_cmd[10] = { false };
-
 
 public:
-	BankKeyPad(void (*_keyPressedHandler)(char), void (*_dataReadyHandler)(void), BankLeds *bankLeds);  // constructor
 
+	enum CmdEnum {
+		KEY0, KEY1, KEY2, KEY3, KEY4, KEY5, KEY6, KEY7, KEY8, KEY9, KEY10, KEY11, KEY12, KEY13, KEY14, KEY15,
+		CMD0, CMD1, CMD2, CMD3, CMD4, CMD5, CMD6, CMD7, CMD8, CMD9,
+		_END
+	};
 
+	BankKeyPad(void (*_keyPressedHandler)(char), void (*_dataReadyHandler)(void));  // constructor
 
-	char* getBuff() {
-		return this->keyBuff;
-	}
+	bool checkCommands;
 
-	void check();
+	bool ev_key[16] = { false };
+	bool ev_cmd[11] = { false };
 
-	bool readKey(int key) {
-		bool state = ev_key[key];
-		ev_key[key] = false;
-		return state;
-	}
+	int BankKeyPad::getCommand();
 
-	bool readCmd(int cmd) {
-		bool state = ev_cmd[cmd];
-		ev_cmd[cmd] = false;
-		return state;
-	}
+	bool readKey(int key);
 
-	void setDataReady(bool state) {
-		_keypad_data_ready = state;
-	}
-
-	void setCheckCommands(bool state) {
-		_checkCommands = state;
-	}
-
-	bool ready() {
-		return _dataReady;
-	}
+	bool readCmd(int cmd);
 
 };
 

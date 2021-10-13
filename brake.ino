@@ -30,24 +30,6 @@
 
 #define SERIAL_MONITORING
 
-
-//	  _
-//	 /  |  _.  _  _  _   _
-//	 \_ | (_| _> _> (/_ _>
-//
-BankButtons *bankButtons = new BankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
-BankLeds *bankLeds = new BankLeds();
-BankAnalogInputs *bankInputs = new BankAnalogInputs(checkAngle, 500, 5);
-BankKeyPad *bankKp = new BankKeyPad(keyPadPressedHandler, keyPadDataReadyHandler, bankLeds);
-
-MainFSM *brake = new MainFSM(mainTransitions, mainOnEnterings, mainOnLeavings);
-MenuFSM *menu = new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
-
-LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
-Printer printer(60);
-MyTasker *tasker;
-
-
 /*********************************
  * TIMER ACCUMULATORS
  *********************************/
@@ -73,15 +55,35 @@ bool mon() {
 	return (millis() % 1000 == 0);
 }
 
+
+//	  _
+//	 /  |  _.  _  _  _   _
+//	 \_ | (_| _> _> (/_ _>
+//
+BankButtons *bankButtons = new BankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
+BankLeds *bankLeds = new BankLeds();
+BankAnalogInputs *bankInputs = new BankAnalogInputs(checkAngle, 500, 5);
+BankKeyPad *bankKp = new BankKeyPad(keyPadPressedHandler, keyPadDataReadyHandler);
+
+MainFSM *brake = new MainFSM(mainTransitions, mainOnEnterings, mainOnLeavings);
+MenuFSM *menu = new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
+
+LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
+Printer printer(60);
+MyTasker *tasker;
+
+
 //	  __
 //	 (_   _ _|_     ._
 //	 __) (/_ |_ |_| |_)
 //					|
 void setup() {
 
+	// Serial Port
 	Serial.begin(115200);
 	while (!Serial) {}	// clears serial buff
 
+	// Tasker
 	tasker = new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
 
 	// Timer
@@ -96,19 +98,16 @@ void setup() {
 	_t1s = T1S;
 
 
-	// GO IDLE!
+	// State Machines GO IDLE!
 	brake->SetState(MainFSM::ST_IDLE, false, true);
 	menu->SetState(MenuFSM::ST_MENU_IDLE, false, false);
 
 //	bank.eePreset();			// default calibration/parameter values
 
 	bankButtons->reset();		// clears buttons buffer
-
 	bankInputs->loadSettings();	// Loads calibration/test parameters from EEprom
 	bankInputs->start(); 		// Enables DAQ
 }
-
-
 
 
 //
@@ -117,35 +116,10 @@ void setup() {
 //				|
 void loop() {
 
-	bankKp->check();			// Check keypad KEYS & COMMANDS
-
 	menu->Update();				// compute main menu FSM transitions
 
 	brake->Update();			// compute system FSM transitions
 
-	checkButtons();
-
-}
-
-
-
-void checkButtons() {
-	// verify btn1 pressed while in variables-monitoring state
-	if (brake->GetState() == MainFSM::State::ST_MONITORING) {
-		if (bankButtons->read(1)) {
-			bankLeds->beep();
-			bankInputs->nextDisplayVar();
-		}
-	}
-
-	// reset encoder angle
-	if (bankButtons->read(2)) {
-		bankLeds->beep();
-
-		double offset = - bankInputs->encoderRead().position * 360.0 / 2000.0;
-		Serial << "\n offset: " << offset;
-		bankInputs->setAngleOffset(offset);
-	}
 }
 
 
@@ -161,7 +135,11 @@ void onBtn1() {
 }
 
 void onBtn2() {
-	bankButtons->setPressed(2);
+//	bankButtons->setPressed(2);
+	bankLeds->beep();
+	double offset = - bankInputs->encoderRead().position * 360.0 / 2000.0;
+	Serial << "\n offset: " << offset;
+	bankInputs->setAngleOffset(offset);
 }
 
 void onBtn3() {
@@ -173,7 +151,25 @@ void onBtn3() {
  * KEY PAD Callbacks
  ******************************************/
 void keyPadDataReadyHandler() {
-	bankKp->setDataReady(true);
+	if (!bankKp->checkCommands)
+			return;
+
+	bankLeds->beep(100, 1, 1);
+
+	int cc = bankKp->getCommand();
+
+	if (cc < 16) {
+		bankKp->ev_key[cc] = true;
+//		Serial << "\nkey: " << cc;
+	} else if (cc < bankKp->CmdEnum::_END) {
+		bankKp->ev_cmd[cc - 16] = true;
+//		Serial << "\ncomando: " << cc;
+	} else {
+		Serial << "\ncomando inválido: " << cc;
+	}
+
+	bankKp->start();
+
 }
 
 void keyPadPressedHandler(char key) {
@@ -182,35 +178,41 @@ void keyPadPressedHandler(char key) {
 	bankLeds->beep(20, 1, 1);
 }
 
+
+/******************************************
+ * Encoder Callback
+ ******************************************/
+void checkAngle() {
+	bankInputs->encoder->tick(); // just call tick() to check the state.
+}
+
+
 /******************************************
  * TASKER Callbacks
  ******************************************/
 void Task1ms() {
 	bankButtons->update();
 	bankLeds->update();
+	bankKp->update();
 }
 
 void Task10ms() {
-	//
+	bankInputs->update();
 }
 
 void Task100ms() {
-	bankInputs->update();
+	//
 }
 
 /******************************************
  * TIMER 1  ISR
  ******************************************/
 void T1_ISR(void) {
-	bankKp->update();
 	tasker->update();
 }
 
 
-// Encoder callback
-void checkAngle() {
-	bankInputs->encoder->tick(); // just call tick() to check the state.
-}
+
 
 
 //	  _  __         _

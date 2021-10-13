@@ -322,6 +322,11 @@ bool tr_braking_error() {
  */
 bool tr_monitoring_idle() {
 
+	if (bankButtons->read(1)) {
+		bankLeds->beep();
+		bankInputs->nextDisplayVar();
+	}
+
 	if (millis() % 100 == 0) {
 		Serial << "\n" << bankInputs->getTime();
 		Serial << "\t" << bankInputs->getRpm();

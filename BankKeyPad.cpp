@@ -8,11 +8,12 @@
 #include "BankKeyPad.h"
 
 BankKeyPad::BankKeyPad(void (*keyPadPressedHandler)(char),
-		void (*keyPadDataReadyHandler)(void), BankLeds *bankLeds) :
-		KeyPadRX(keyBuff, 40, this->keyPad),
-		_bankLeds(bankLeds) {
+		void (*keyPadDataReadyHandler)(void)) :
+		KeyPadRX(keyBuff, 40, this->keyPad) {
 
 	this->keyPad = new Keypad(keys, rowPins, colPins, ROWS, COLS); // keyPad
+
+	checkCommands = true;
 
 	// KeyPad handlers
 	this->setDataReadyHandler(keyPadDataReadyHandler);
@@ -34,30 +35,21 @@ int BankKeyPad::getCmd(char *strCmd, const char *table[]) {
 	return p;
 }
 
-/**
- * KEYPAD KEYS & COMMANDS
- * Verifica si hay un comando terminado con # en el buffer del keyPad.
- * En caso afirmativo, setea las flags ev_key[n] o ev_cmd[n].
- * Las flags deberán ser reseteadas cuando sean servidas.
- */
-void BankKeyPad::check() {
-	if (!_checkCommands)
-		return;
 
-	if (_dataReady) {
-		_bankLeds->beep(100, 1, 1);
+int BankKeyPad::getCommand() {
+	return getCmd(keyBuff, cmdTable);
+}
 
-		int cc = getCmd(getBuff(), cmdTable);
 
-		if (cc < 16) {
-			ev_key[cc] = true;
-		} else if (cc < _END) {
-			ev_cmd[cc - 16] = true;
-		} else {
-			Serial << "\ncomando inválido: " << cc;
-		}
+bool BankKeyPad::readKey(int key) {
+	bool state = ev_key[key];
+	ev_key[key] = false;
+	return state;
+}
 
-		start();
-	}
+bool BankKeyPad::readCmd(int cmd) {
+	bool state = ev_cmd[cmd];
+	ev_cmd[cmd] = false;
+	return state;
 }
 
