@@ -31,8 +31,12 @@
  * # Máquina de estados principal
  */
 class MainFSM: public StateMachine {
+
+private:
+	void (*_onUpdate)(void);
+
 public:
-	MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void (*onLeavings[])(void));
+	MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void (*onLeavings[])(void), void (*onUpdate)(void));
 
 	bool Update();
 

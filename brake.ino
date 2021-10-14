@@ -1,13 +1,13 @@
 //
 //
 //				  ____    _    _   _  ____ ___    ____  _____   _____ ____  _____ _   _  ___
-//				 | __ )  / \  | \ | |/ ___/ _ \  |  _ \| ____| |  ___|  _ \| ____| \ | |/ _ \
+//				 | __ )  / \  | \ | |/ ___/ _ \  |  _ \| ____| |  ___|  _ \| ____| \ | |/ _ \    ;
 //				 |  _ \ / _ \ |  \| | |  | | | | | | | |  _|   | |_  | |_) |  _| |  \| | | | |
 //				 | |_) / ___ \| |\  | |__| |_| | | |_| | |___  |  _| |  _ <| |___| |\  | |_| |
 //				 |____/_/   \_\_| \_|\____\___/  |____/|_____| |_|   |_| \_\_____|_| \_|\___/
 //
 //																	   _   _   _   _
-//						  /\  ._ _|     o ._   _    |\/|  _   _   _.    ) |_  |_  / \
+//						  /\  ._ _|     o ._   _    |\/|  _   _   _.    ) |_  |_  / \			;
 //						 /--\ | (_| |_| | | | (_)   |  | (/_ (_| (_|   /_  _) |_) \_/
 //															  _|
 
@@ -30,22 +30,11 @@
 
 #define SERIAL_MONITORING
 
-/*********************************
- * TIMER ACCUMULATORS
- *********************************/
-#define T250MS 	25
-#define T500MS 	50
-#define T1S 	100
-
 #define ZERO_PH				5
 #define ZERO_PF				5
 #define ZERO_MASS_VEL		5
 #define ZERO_WHEEL_VEL		5
 
-/***************************
- * TIMERS
- ***************************/
-char _t250ms, _t500ms, _t1s;
 
 // decreases terminal-messages-printing-rate (1 message every 1 sec)
 bool mon() {
@@ -60,17 +49,17 @@ bool mon() {
 //	 /  |  _.  _  _  _   _
 //	 \_ | (_| _> _> (/_ _>
 //
-BankButtons *bankButtons = new BankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
-BankLeds *bankLeds = new BankLeds();
-BankAnalogInputs *bankInputs = new BankAnalogInputs(checkAngle, 500, 5);
-BankKeyPad *bankKp = new BankKeyPad(keyPadPressedHandler, keyPadDataReadyHandler);
-
-MainFSM *brake = new MainFSM(mainTransitions, mainOnEnterings, mainOnLeavings);
-MenuFSM *menu = new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
+BankButtons 		*bankButtons;
+BankLeds 			*bankLeds;
+BankAnalogInputs 	*bankInputs;
+BankKeyPad 			*bankKp;
+MainFSM 			*brake;
+MenuFSM 			*menu;
+MyTasker 			*tasker;
 
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 Printer printer(60);
-MyTasker *tasker;
+
 
 
 //	  __
@@ -83,19 +72,19 @@ void setup() {
 	Serial.begin(115200);
 	while (!Serial) {}	// clears serial buff
 
-	// Tasker
-	tasker = new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
+	bankButtons = 	new BankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
+	bankLeds = 		new BankLeds();
+	bankInputs = 	new BankAnalogInputs(checkAngle, 500, 5);
+	bankKp = 		new BankKeyPad(keyPadPressedHandler, keyPadDataReadyHandler);
+	brake = 		new MainFSM(mainTransitions, mainOnEnterings, mainOnLeavings, nullptr);
+	menu =	 		new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
+	tasker = 		new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
 
 	// Timer
 	Timer1.stop();
 	Timer1.initialize(1000);
 	Timer1.attachInterrupt(T1_ISR);
 	Timer1.start();
-
-	// Counters
-	_t250ms = T250MS;
-	_t500ms = T500MS;
-	_t1s = T1S;
 
 
 	// State Machines GO IDLE!
@@ -104,7 +93,7 @@ void setup() {
 
 //	bank.eePreset();			// default calibration/parameter values
 
-	bankButtons->reset();		// clears buttons buffer
+//	bankButtons->reset();		// clears buttons buffer
 	bankInputs->loadSettings();	// Loads calibration/test parameters from EEprom
 	bankInputs->start(); 		// Enables DAQ
 }
@@ -210,8 +199,6 @@ void Task100ms() {
 void T1_ISR(void) {
 	tasker->update();
 }
-
-
 
 
 

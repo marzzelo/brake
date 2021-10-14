@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-10-13 14:03:18
+//This file has been generated on 2021-10-14 08:37:22
 
 #include "Arduino.h"
 #include "Rx.h"
@@ -21,6 +21,14 @@
 #include "MainFSM.h"
 #include "Printer.h"
 #define SERIAL_MONITORING
+#define T250MS 	25
+#define T500MS 	50
+#define T1S 	100
+#define ZERO_PH				5
+#define ZERO_PF				5
+#define ZERO_MASS_VEL		5
+#define ZERO_WHEEL_VEL		5
+extern char _t250ms;
 extern BankButtons* bankButtons;
 extern BankLeds* bankLeds;
 extern BankAnalogInputs* bankInputs;
@@ -30,14 +38,6 @@ extern MenuFSM* menu;
 extern LiquidCrystal lcd;
 extern Printer printer;
 extern MyTasker* tasker;
-#define T250MS 	25
-#define T500MS 	50
-#define T1S 	100
-#define ZERO_PH				5
-#define ZERO_PF				5
-#define ZERO_MASS_VEL		5
-#define ZERO_WHEEL_VEL		5
-extern char _t250ms;
 #include "MainTransitions.h"
 #include "MainOnEnterings.h"
 #include "MainOnLeavings.h"
@@ -54,11 +54,12 @@ void onBtn2() ;
 void onBtn3() ;
 void keyPadDataReadyHandler() ;
 void keyPadPressedHandler(char key) ;
+void checkAngle() ;
 void Task1ms() ;
 void Task10ms() ;
 void Task100ms() ;
 void T1_ISR(void) ;
-void checkAngle() ;
+void onUpdate() ;
 
 
 #include "brake.ino"

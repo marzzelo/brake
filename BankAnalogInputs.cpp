@@ -17,8 +17,7 @@
 
  */
 
-BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period,
-		int filter) :
+BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period,	int filter) :
 		_period(period), _filter(filter), _checkPosition(checkPosition) {
 
 	// turn built-in led off
@@ -32,13 +31,13 @@ BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period,
 	pinMode(PIN_IN1, INPUT_PULLUP);
 	pinMode(PIN_IN2, INPUT_PULLUP);
 
-	BankAnalogInputs::encoder = new RotaryEncoder(PIN_IN1, PIN_IN2,
-			RotaryEncoder::LatchMode::TWO03);
-	_encoderData.position = encoder->getPosition();
-	_encoderData.direction = (int) (encoder->getDirection());
-	_encoderData.rpm = encoder->getRPM();
+	BankAnalogInputs::encoder = new RotaryEncoder(PIN_IN1, PIN_IN2,	RotaryEncoder::LatchMode::TWO03);
 
-	// register interrupt routine
+//	_encoderData.position = encoder->getPosition();
+//	_encoderData.direction = (int) (encoder->getDirection());
+//	_encoderData.rpm = encoder->getRPM();
+
+	// register interrupt routine (encoder)
 	attachInterrupt(digitalPinToInterrupt(PIN_IN1), _checkPosition, CHANGE);
 	attachInterrupt(digitalPinToInterrupt(PIN_IN2), _checkPosition, CHANGE);
 

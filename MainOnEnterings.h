@@ -11,23 +11,22 @@
 void ent_idle() {
 	bankLeds->beep();
 	bankLeds->relayOffAll();
+	bankLeds->display('P');
 
 	bankKp->checkCommands = true;
 	bankKp->start();
 
 	bankButtons->reset();
 
-	printer.print_header("Brake Test", true);
+	printer.print_header("Brake Test v1.0 release 10/2021", true);
 	printer.print_item("Presionar START para comenzar");
 	printer.print_item("o ingresar   1     para Configurar ensayo");
 	printer.print_item("             2     para Comenzar ensayo");
 	printer.print_item("             5     para Monitoreo de variables");
 	printer.print_separator();
 	Serial << "\n\n==> ";
-
-	bankLeds->display('P');
 }
-;
+
 
 void ent_checking() {
 	bankInputs->start();

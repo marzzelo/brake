@@ -15,9 +15,8 @@
 
 #include "MainFSM.h"
 
-MainFSM::MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void),
-		void (*onLeavings[])(void)) :
-		StateMachine(State::COUNT, N_TRANSITIONS) {
+MainFSM::MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void (*onLeavings[])(void), void (*onUpdate)(void)) :
+		StateMachine(State::COUNT, N_TRANSITIONS), _onUpdate(onUpdate) {
 
 
 
@@ -145,7 +144,8 @@ MainFSM::MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void),
 
 
 bool MainFSM::Update() {
-	// modifiers/conditionals here
+
+	if (_onUpdate != nullptr) _onUpdate();
 	return StateMachine::Update();
 }
 
