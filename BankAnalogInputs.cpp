@@ -289,13 +289,40 @@ double BankAnalogInputs::getDisplayVar() {
 	}
 }
 
-void BankAnalogInputs::nextDisplayVar() {
+char *BankAnalogInputs::nextDisplayVar() {
 	int dv = (int) _display_var;
+
+//	char buff[5];
 
 	if (++dv == (int) Reference::END)
 		dv = 1;
 
 	_display_var = (Reference) dv;
 
+	switch (_display_var) {
+	case 1:
+		sprintf(_buff, "%s", "MAS ");
+		break;
+	case 2:
+		sprintf(_buff, "%s", "ANG ");
+		break;
+	case 3:
+		sprintf(_buff, "%s", "RUE ");
+		break;
+	case 4:
+		sprintf(_buff, "%s", "PH  ");
+		break;
+	case 5:
+		sprintf(_buff, "%s", "PF  ");
+		break;
+	case 6:
+		sprintf(_buff, "%s", "T1  ");
+		break;
+	case 7:
+		sprintf(_buff, "%s", "T2  ");
+		break;
+	}
+
+	return _buff;
 }
 

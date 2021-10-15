@@ -18,6 +18,8 @@ void ent_idle() {
 
 	bankButtons->reset();
 
+	tm1638->dispstr("FADEA-21");
+
 	printer.print_header("Brake Test v1.0 release 10/2021", true);
 	printer.print_item("Presionar START para comenzar");
 	printer.print_item("o ingresar   1     para Configurar ensayo");
@@ -143,6 +145,8 @@ void ent_monitoring() {
 	// bankLeds->relayStartAll();
 	bankLeds->beep();
 	bankInputs->startCounting();
+
+	tm1638->dispstr(bankInputs->nextDisplayVar());
 
 	Serial << "\n\n\nsep=\t\nt[s]\tMv\tWv\tPh\tPf\tT1\tT2\td\tangle";
 }

@@ -27,6 +27,7 @@
 #include "MenuFSM.h"
 #include "MainFSM.h"
 #include "Printer.h"
+#include "TM1638.h"
 
 #define SERIAL_MONITORING
 
@@ -34,6 +35,10 @@
 #define ZERO_PF				5
 #define ZERO_MASS_VEL		5
 #define ZERO_WHEEL_VEL		5
+
+#define STB					10
+#define CLK					11
+#define DIO					12
 
 
 // decreases terminal-messages-printing-rate (1 message every 1 sec)
@@ -55,6 +60,7 @@ BankAnalogInputs 	*bankInputs;
 BankKeyPad 			*bankKp;
 MainFSM 			*brake;
 MenuFSM 			*menu;
+TM1638				*tm1638;
 MyTasker 			*tasker;
 
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
@@ -78,6 +84,7 @@ void setup() {
 	bankKp = 		new BankKeyPad(keyPadPressedHandler, keyPadDataReadyHandler);
 	brake = 		new MainFSM(mainTransitions, mainOnEnterings, mainOnLeavings, nullptr);
 	menu =	 		new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
+	tm1638 = 		new TM1638(STB, CLK, DIO);
 	tasker = 		new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
 
 	// Timer

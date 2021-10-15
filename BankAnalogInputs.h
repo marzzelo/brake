@@ -123,6 +123,7 @@ private:
 	Reference _display_var = Reference::ANGLE;;
 	EncoderData _encoderData;
 	double _last_rpm = 28.0;				//<! buffers rpm
+	char _buff[5];
 
 
 public:
@@ -167,7 +168,7 @@ public:
 
 	void update();
 	void setAngleOffset(double angleOffset);
-	void nextDisplayVar();
+	char *nextDisplayVar();
 	double getDisplayVar();
 
 };
