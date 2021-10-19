@@ -42,19 +42,8 @@
 
 
 // decreases terminal-messages-printing-rate (1 message every 1 sec)
-// if SERIAL_MONITORING defined, returns 2 every 1ms, else returns 1.
-
-#ifdef SERIAL_MONITORING
-#define RETVAL	2
-#else
-#define RETVAL	1
-#endif
-
 int mon() {
-	if (millis() % 1000 == 0) {
-		return RETVAL;
-	}
-	return 0;
+	return (millis() % 1000 == 0);
 }
 
 
@@ -133,6 +122,7 @@ void loop() {
  ******************************************/
 void onBtn0() {
 	bankButtons->setPressed(0);
+	Serial << "\btn0 pressed!";
 }
 
 void onBtn1() {
@@ -140,7 +130,6 @@ void onBtn1() {
 }
 
 void onBtn2() {
-//	bankButtons->setPressed(2);
 	bankLeds->beep();
 	double offset = - bankInputs->encoderRead().position * 360.0 / 2000.0;
 	Serial << "\n offset: " << offset;
@@ -149,6 +138,7 @@ void onBtn2() {
 
 void onBtn3() {
 	bankButtons->setPressed(3);
+	Serial << "\btn3 pressed!";
 }
 
 

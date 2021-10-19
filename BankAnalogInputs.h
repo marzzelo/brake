@@ -170,7 +170,7 @@ public:
 	void update();
 	void setAngleOffset(double angleOffset);
 
-	void setDisplayVarIndex(int index);
+	int setDisplayVarIndex(int index);
 	int getDisplayVarIndex();
 	char *nextDisplayVar();		// returns DisplayVarName
 	double getDisplayVarValue();

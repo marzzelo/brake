@@ -39,10 +39,10 @@ extern int mon();
  * Activa led de la variable correspondiente
  */
 void displayVar(int index = NULL) {
-	if (index) {
+	if (index != NULL) {
 		bankInputs->setDisplayVarIndex(index);
 	}
-	tm1638->dispmix(bankInputs->getDisplayVarName(), bankInputs->getDisplayVarValue(), 0);
+	tm1638->dispmix(bankInputs->getDisplayVarName(), bankInputs->getDisplayVarValue());
 	tm1638->ledOnly(bankInputs->getDisplayVarIndex());
 }
 
@@ -55,7 +55,7 @@ void displayVar(int index = NULL) {
  * ## Presionando el botón START o keyPad 2 se inicia el ensayo.
  */
 bool tr_idle_checking() {
-	return bankButtons->read(0) || bankKp->readKey(2);
+	return (bankButtons->read(0) || bankKp->readKey(2));
 }
 
 /*****************************************************
@@ -75,12 +75,14 @@ bool tr_checking_condok() {
 
 	bool cond_ok = true;
 	bool ttd = mon();	// limit message printing to every 1 second
+	bool displaybussy = false;
 
 	if (bankInputs->check(MV_GT_0)) {
 		cond_ok = false;
 		if (ttd) {
 			Serial << "\n** DETENER MASA [" << _FLOAT(bankInputs->getRpm(), 3) << " rpm]";
-			tm1638->dispstr(" MV GT 0");
+			tm1638->dispstr("MAS GT 0");
+			displaybussy = true;
 		}
 	}
 
@@ -88,7 +90,10 @@ bool tr_checking_condok() {
 		cond_ok = false;
 		if (ttd) {
 			Serial << "\n** DETENER RUEDA [" << _FLOAT(bankInputs->getWv(), 3) << " rpm]";
-			tm1638->dispstr(" WV GT 0");
+			if (!displaybussy) {
+				tm1638->dispstr("RUE GT 0");
+				displaybussy = true;
+			}
 		}
 	}
 
@@ -96,7 +101,10 @@ bool tr_checking_condok() {
 		cond_ok = false;
 		if (ttd) {
 			Serial << "\n** REDUCIR PH [" << _FLOAT(bankInputs->getPh(), 3) << " bar]";
-			tm1638->dispstr(" PH GT 0");
+			if (!displaybussy) {
+				tm1638->dispstr("PH  GT 0");
+				displaybussy = true;
+			}
 		}
 	}
 
@@ -104,7 +112,10 @@ bool tr_checking_condok() {
 		cond_ok = false;
 		if (ttd) {
 			Serial << "\n** REDUCIR PF [" << _FLOAT(bankInputs->getPf(), 3) << " bar]";
-			tm1638->dispstr(" PF GT 0");
+			if (!displaybussy) {
+				tm1638->dispstr("PF  GT 0");
+				displaybussy = true;
+			}
 		}
 	}
 
@@ -114,7 +125,10 @@ bool tr_checking_condok() {
 		if (ttd) {
 			Serial << "\n** Temp Alta [T1: " << _FLOAT(bankInputs->getT1(), 3) << " °C]";
 			Serial << " [T2: " << _FLOAT(bankInputs->getT2(), 3) << " °C]";
-			tm1638->dispstr("TMP ALTA");
+			if (!displaybussy) {
+				tm1638->dispstr("TMP ALTA");
+				displaybussy = true;
+			}
 		}
 	}
 
@@ -140,7 +154,7 @@ bool tr_idle_monitoring() {
 bool tr_any_idle() {
 	if (bankInputs->check(TIMEOUT)) {
 		bankLeds->beep();
-		if (mon()) Serial << "\nTimeout";
+		Serial << "\nTimeout";
 		return true;
 	}
 
@@ -157,8 +171,7 @@ bool tr_any_idle() {
  * ## Cumplidas las condiciones, esperar inicio de giro de masa
  */
 bool tr_condok_speeding() {
-	if (mon() > 1) Serial << "\nST_COND_OK> mass vel: " << _FLOAT(bankInputs->getRpm(), 3) << " ** INICIAR GIRO **";
-	if (mon()) tm1638->dispstr("INICIAR ");
+	if (mon()) Serial << "\nST_COND_OK> mass vel: " << _FLOAT(bankInputs->getRpm(), 3) << " ** INICIAR GIRO **";
 
 	return bankInputs->check(MV_GT_0);
 }
@@ -174,9 +187,8 @@ bool tr_condok_speeding() {
  */
 bool tr_speeding_maxvel() {
 
-	if (mon() > 1) Serial << "\nST_SPEEDING> Mv: " << _FLOAT(bankInputs->getRpm(), 3) << " ** ACELERAR a 500 rpm **";
 	if (mon()) {
-		tm1638->ledOnly(BankAnalogInputs::MASS);
+		Serial << "\nST_SPEEDING> Mv: " << _FLOAT(bankInputs->getRpm(), 3) << " ** ACELERAR a 500 rpm **";
 		tm1638->dispmix("ACEL", bankInputs->getRpm());
 	}
 	return bankInputs->check(MV_GT_MAX);
@@ -192,12 +204,10 @@ bool tr_speeding_maxvel() {
  * ## Se alcanza el estado LANDING cuando la velocidad de rueda alcanza el valor nominal fijado en el menu del sistema.
  */
 bool tr_maxvel_landing() {
-	if (mon() > 1) {
+	if (mon()) {
 		Serial << "\nST_MAX_VEL> Mv: " << _FLOAT(bankInputs->getRpm(), 3);
 		Serial << ", Wv: " << _FLOAT(bankInputs->getWv(), 3) << " ** ATERRIZAR RUEDA ***";
-	}
-	if (mon()) {
-		displayVar();
+		displayVar(); // Mass vel
 	}
 	return bankInputs->check(WV_GE_LANDINGV);
 }
@@ -227,10 +237,8 @@ bool tr_landing_landed() {
 		Serial << "\nLANDING> Mv: " << _FLOAT(bankInputs->getRpm(), 3);
 		Serial << ", Wv: " << _FLOAT(bankInputs->getWv(), 3);
 		Serial << ", PH: " << _FLOAT(bankInputs->getPh(), 3) << " ** AUMENTAR Ph a " << _FLOAT(bankInputs->testParms.ph_threshold, 3) << " ***";
-//		tm1638->ledOnly(LED_PH);
-//		tm1638->dispmix("Ph", bankInputs->getPh());
-		bankInputs->setDisplayVarIndex(BankAnalogInputs::PH);
-		displayVar();
+
+		displayVar(); // Ph
 	}
 
 	return bankInputs->check(PH_GE_PH1);
@@ -274,20 +282,16 @@ bool tr_landed_brakingvel() {
 		if (mon()) {
 			Serial << "\nST_LANDED> Mv: " << _FLOAT(bankInputs->getRpm(), 3);
 			Serial << " ** DISMINUIR VELOCIDAD **";
-//			tm1638->ledOnly(LED_RPM);
-//			tm1638->dispmix("redu", bankInputs->getRpm());
-			bankInputs->setDisplayVarIndex(BankAnalogInputs::MASS);
-			displayVar();
+
+			tm1638->dispmix("REDU", bankInputs->getRpm());
 		}
 	}
 	if (!bankInputs->check(MV_GE_BRAKEV_MIN)) {
 		if (mon()) {
 			Serial << "\nST_LANDED> Mv: ";
 			Serial << _FLOAT(bankInputs->getRpm(), 3) << " ** ACELERAR **";
-//			tm1638->ledOnly(LED_RPM);
-//			tm1638->dispmix("acel", bankInputs->getRpm());
-			bankInputs->setDisplayVarIndex(BankAnalogInputs::MASS);
-			displayVar();
+
+			tm1638->dispmix("ACEL", bankInputs->getRpm());
 		}
 	}
 	return (bankInputs->check(MV_LE_BRAKEV_MAX) && bankInputs->check(MV_GE_BRAKEV_MIN));
@@ -310,10 +314,8 @@ bool tr_brakingvel_braking() {
 	if (mon()) {
 		Serial << "\nST_BRAKING_VEL> PF: " << _FLOAT(bankInputs->getPf(), 3);
 		Serial << " ***### APLICAR FRENO ###***";
-//		tm1638->ledOnly(LED_PF);
-//		tm1638->dispmix("Pf", bankInputs->getPf());
-		bankInputs->setDisplayVarIndex(BankAnalogInputs::PF);
-		displayVar();
+
+		tm1638->dispmix("FREN", bankInputs->getPf());
 	}
 
 	return bankInputs->check(PF_GE_PF1);
@@ -352,12 +354,10 @@ bool tr_braking_complete() {
 		Serial << ", t: " << _FLOAT(tf, 3);
 		Serial << " ** MANTENER Pf HASTA DETENER ** ";
 		Serial << " (Pf: " << _FLOAT(bankInputs->getPf(), 3) << ")";
-//		tm1638->ledOnly(LED_RPM);
-//		tm1638->dispmix("vel ", bankInputs->getRpm());
-		bankInputs->setDisplayVarIndex(BankAnalogInputs::MASS);
-		displayVar();
+
+		displayVar();  // Wheel
 	}
-	return (bankInputs->check(MV_EQ_0) && bankInputs->check(WV_EQ_0));
+	return (bankInputs->check(WV_EQ_0));
 }
 
 
@@ -369,12 +369,9 @@ bool tr_braking_complete() {
  */
 bool tr_braking_error() {
 	if (!bankInputs->check(PF_GE_PF1)) {
-		if (mon()) {
-			Serial << "\nPresión de freno baja durante el frenado";
-			tm1638->ledOnly(BankAnalogInputs::ERROR);
-//			tm1638->dispstr("ERR Pf");
-			displayVar();
-		}
+		Serial << "\nPresión de freno baja durante el frenado";
+		tm1638->ledOnly(BankAnalogInputs::ERROR);
+		tm1638->dispstr("ERR Pf");
 		return true;
 	}
 	return false;
@@ -398,11 +395,7 @@ bool tr_monitoring_idle() {
 
 	if (bankButtons->read(1)) {
 		bankLeds->beep();
-
 		bankInputs->nextDisplayVar();
-//		displayVar();
-//		tm1638->dispstr(bankInputs->nextDisplayVar());
-//		tm1638->ledOnly(bankInputs->getDisplayVarIndex());
 	}
 
 	if (millis() % 100 == 0) {
@@ -415,10 +408,7 @@ bool tr_monitoring_idle() {
 		Serial << "\t" << bankInputs->getT2();
 		Serial << "\t" << bankInputs->getDistance();
 		Serial << "\t" << bankInputs->encoderRead().angle;
-//		Serial << "\t" << bankInputs->getDisplayVarName();	// debug only
 
-//		dtostrf(bankInputs->getDisplayVarValue(), 4, 0, buff);
-//		tm1638->dispstr(buff, 4);
 		displayVar();
 	}
 	return bankButtons->read(3);

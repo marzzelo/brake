@@ -35,10 +35,6 @@ BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period,
 	BankAnalogInputs::encoder = new RotaryEncoder(PIN_IN1, PIN_IN2,
 			RotaryEncoder::LatchMode::TWO03);
 
-//	_encoderData.position = encoder->getPosition();
-//	_encoderData.direction = (int) (encoder->getDirection());
-//	_encoderData.rpm = encoder->getRPM();
-
 	// register interrupt routine (encoder)
 	attachInterrupt(digitalPinToInterrupt(PIN_IN1), _checkPosition, CHANGE);
 	attachInterrupt(digitalPinToInterrupt(PIN_IN2), _checkPosition, CHANGE);
@@ -55,7 +51,6 @@ void BankAnalogInputs::start() {
 }
 
 bool BankAnalogInputs::ready() {
-//	return (FreqCount.available() && _daq_ready);
 	return (_daq_ready);
 }
 
@@ -290,8 +285,8 @@ double BankAnalogInputs::getDisplayVarValue() {
 	}
 }
 
-void BankAnalogInputs::setDisplayVarIndex(int index) {
-	_display_var = index;
+int BankAnalogInputs::setDisplayVarIndex(int index) {
+	return (_display_var = index);
 }
 
 int BankAnalogInputs::getDisplayVarIndex() {
@@ -334,8 +329,6 @@ char* BankAnalogInputs::getDisplayVarName() {
 
 char* BankAnalogInputs::nextDisplayVar() {
 	int dv = (int) _display_var;
-
-//	char buff[5];
 
 	if (++dv == (int) VarNames::ERROR)
 		dv = 0;
