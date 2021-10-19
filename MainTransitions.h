@@ -371,7 +371,7 @@ bool tr_braking_error() {
 	if (!bankInputs->check(PF_GE_PF1)) {
 		Serial << "\nPresión de freno baja durante el frenado";
 		tm1638->ledOnly(BankAnalogInputs::ERROR);
-		tm1638->dispstr("ERR Pf");
+		tm1638->dispstr("ERROR Pf");
 		return true;
 	}
 	return false;

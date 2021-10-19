@@ -193,6 +193,7 @@ void Task1ms() {
 
 void Task10ms() {
 	bankInputs->update();
+	tm1638->update();
 }
 
 void Task100ms() {

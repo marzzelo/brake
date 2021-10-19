@@ -109,6 +109,9 @@ bool BankAnalogInputs::check(Condition cond) {
 	case Condition::PF_GE_PF1:
 		return getPf() >= testParms.pf_threshold;
 
+	case Condition::PF_LT_PF1:
+			return getPf() < testParms.pf_threshold * 0.75;
+
 	case Condition::TIMEOUT:
 		return (millis() - _t0) > _dt;
 

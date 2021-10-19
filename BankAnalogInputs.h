@@ -57,6 +57,7 @@ enum Condition {
 	PH_GE_PH1,
 	PF_GT_0,
 	PF_GE_PF1,
+	PF_LT_PF1,
 	T1_GE_THOT,
 	T2_GE_THOT,
 	TIMEOUT
