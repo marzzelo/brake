@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-10-15 13:54:26
+//This file has been generated on 2021-10-18 14:49:01
 
 #include "Arduino.h"
 #include "Rx.h"
@@ -29,6 +29,7 @@
 #define STB					10
 #define CLK					11
 #define DIO					12
+#define RETVAL	2
 extern BankButtons* bankButtons;
 extern BankLeds* bankLeds;
 extern BankAnalogInputs* bankInputs;
@@ -46,7 +47,7 @@ extern Printer printer;
 #include "MenuOnEnterings.h"
 #include "MenuOnLeavings.h"
 
-bool mon() ;
+int mon() ;
 void setup() ;
 void loop() ;
 void onBtn0() ;

@@ -72,6 +72,11 @@ enum Condition {
  */
 class BankAnalogInputs {
 
+public:
+	enum VarNames {
+		MASS, ANGLE, WHEEL, PH, PF, T1, T2, ERROR, END
+	};
+
 private:
 	struct TestParms {
 		double max_mass_vel;
@@ -103,10 +108,6 @@ private:
 		unsigned long rpm;
 	};
 
-	enum Reference {
-		MASS = 1, ANGLE, WHEEL, PH, PF, T1, T2, END
-	};
-
 
 	int _period; 						//!< Periodo de muestreo de pulsos (FreqCount.h)
 	int _pos = 0;  						//!< Rotary Encoder Position;
@@ -120,7 +121,7 @@ private:
 	uint32_t _freqBuff[8] = {0};
 	double _angleOffset = 0.0;
 	void (*_checkPosition)();
-	Reference _display_var = Reference::ANGLE;;
+	VarNames _display_var = VarNames::ANGLE;
 	EncoderData _encoderData;
 	double _last_rpm = 28.0;				//<! buffers rpm
 	char _buff[5];
@@ -168,8 +169,12 @@ public:
 
 	void update();
 	void setAngleOffset(double angleOffset);
-	char *nextDisplayVar();
-	double getDisplayVar();
+
+	void setDisplayVarIndex(int index);
+	int getDisplayVarIndex();
+	char *nextDisplayVar();		// returns DisplayVarName
+	double getDisplayVarValue();
+	char *getDisplayVarName();
 
 };
 

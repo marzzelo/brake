@@ -8,16 +8,17 @@
 #include "BankAnalogInputs.h"
 
 /*
-					 _                _               ___                   _
-					/ \   _ __   __ _| | ___   __ _  |_ _|_ __  _ __  _   _| |_ ___
-				   / _ \ | '_ \ / _` | |/ _ \ / _` |  | || '_ \| '_ \| | | | __/ __|
-				  / ___ \| | | | (_| | | (_) | (_| |  | || | | | |_) | |_| | |_\__ \
+ _                _               ___                   _
+ / \   _ __   __ _| | ___   __ _  |_ _|_ __  _ __  _   _| |_ ___
+ / _ \ | '_ \ / _` | |/ _ \ / _` |  | || '_ \| '_ \| | | | __/ __|
+ / ___ \| | | | (_| | | (_) | (_| |  | || | | | |_) | |_| | |_\__ \
 				 /_/   \_\_| |_|\__,_|_|\___/ \__, | |___|_| |_| .__/ \__,_|\__|___/
-											  |___/            |_|
+ |___/            |_|
 
  */
 
-BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period,	int filter) :
+BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period,
+		int filter) :
 		_period(period), _filter(filter), _checkPosition(checkPosition) {
 
 	// turn built-in led off
@@ -31,7 +32,8 @@ BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period,	int filt
 	pinMode(PIN_IN1, INPUT_PULLUP);
 	pinMode(PIN_IN2, INPUT_PULLUP);
 
-	BankAnalogInputs::encoder = new RotaryEncoder(PIN_IN1, PIN_IN2,	RotaryEncoder::LatchMode::TWO03);
+	BankAnalogInputs::encoder = new RotaryEncoder(PIN_IN1, PIN_IN2,
+			RotaryEncoder::LatchMode::TWO03);
 
 //	_encoderData.position = encoder->getPosition();
 //	_encoderData.direction = (int) (encoder->getDirection());
@@ -83,7 +85,7 @@ bool BankAnalogInputs::check(Condition cond) {
 		return getRpm() > ZERO_MASS_VEL;
 
 	case Condition::MV_GT_MAX:
-			return getRpm() > testParms.max_mass_vel;
+		return getRpm() > testParms.max_mass_vel;
 
 	case Condition::MV_GE_BRAKEV_MIN:
 		return getRpm() >= testParms.brake_mass_vel_min;
@@ -241,7 +243,6 @@ double BankAnalogInputs::stopCounting() {
 	return _distance;
 }
 
-
 BankAnalogInputs::EncoderData BankAnalogInputs::encoderRead() {
 	long newPos = BankAnalogInputs::encoder->getPosition();
 
@@ -253,35 +254,35 @@ BankAnalogInputs::EncoderData BankAnalogInputs::encoderRead() {
 	return _encoderData;
 }
 
-double BankAnalogInputs::getDisplayVar() {
+double BankAnalogInputs::getDisplayVarValue() {
 	switch (_display_var) {
 
-	case Reference::ANGLE:
+	case VarNames::ANGLE:
 		// Update Led Selector here  <-----
 		return encoderRead().angle;
 		break;
 
-	case Reference::MASS:
+	case VarNames::MASS:
 		return mass_rpm;  // do NOT use getRpm()
 		break;
 
-	case Reference::WHEEL:
+	case VarNames::WHEEL:
 		return getWv();
 		break;
 
-	case Reference::PF:
+	case VarNames::PF:
 		return getPf();
 		break;
 
-	case Reference::PH:
+	case VarNames::PH:
 		return getPh();
 		break;
 
-	case Reference::T1:
+	case VarNames::T1:
 		return getT1();
 		break;
 
-	case Reference::T2:
+	case VarNames::T2:
 	default:
 		return getT2();
 		break;
@@ -289,40 +290,59 @@ double BankAnalogInputs::getDisplayVar() {
 	}
 }
 
-char *BankAnalogInputs::nextDisplayVar() {
-	int dv = (int) _display_var;
+void BankAnalogInputs::setDisplayVarIndex(int index) {
+	_display_var = index;
+}
 
-//	char buff[5];
+int BankAnalogInputs::getDisplayVarIndex() {
+	return _display_var;
+}
 
-	if (++dv == (int) Reference::END)
-		dv = 1;
-
-	_display_var = (Reference) dv;
-
+char* BankAnalogInputs::getDisplayVarName() {
 	switch (_display_var) {
-	case 1:
-		sprintf(_buff, "%s", "MAS ");
+
+//	MASS, ANGLE, WHEEL, PH, PF, T1, T2, ERROR, END
+
+	case MASS:
+		sprintf(_buff, "%s", "MASA");
 		break;
-	case 2:
-		sprintf(_buff, "%s", "ANG ");
+	case ANGLE:
+		sprintf(_buff, "%s", "ANGL");
 		break;
-	case 3:
-		sprintf(_buff, "%s", "RUE ");
+	case WHEEL:
+		sprintf(_buff, "%s", "RUED");
 		break;
-	case 4:
+	case PH:
 		sprintf(_buff, "%s", "PH  ");
 		break;
-	case 5:
+	case PF:
 		sprintf(_buff, "%s", "PF  ");
 		break;
-	case 6:
+	case T1:
 		sprintf(_buff, "%s", "T1  ");
 		break;
-	case 7:
+	case T2:
 		sprintf(_buff, "%s", "T2  ");
+		break;
+	default:
+		sprintf(_buff, "%s", "ERR ");
 		break;
 	}
 
 	return _buff;
 }
+
+char* BankAnalogInputs::nextDisplayVar() {
+	int dv = (int) _display_var;
+
+//	char buff[5];
+
+	if (++dv == (int) VarNames::ERROR)
+		dv = 0;
+
+	_display_var = (VarNames) dv;
+
+	return getDisplayVarName();
+}
+
 

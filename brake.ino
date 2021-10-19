@@ -42,12 +42,21 @@
 
 
 // decreases terminal-messages-printing-rate (1 message every 1 sec)
-bool mon() {
-#ifndef SERIAL_MONITORING
-	return false;
+// if SERIAL_MONITORING defined, returns 2 every 1ms, else returns 1.
+
+#ifdef SERIAL_MONITORING
+#define RETVAL	2
+#else
+#define RETVAL	1
 #endif
-	return (millis() % 1000 == 0);
+
+int mon() {
+	if (millis() % 1000 == 0) {
+		return RETVAL;
+	}
+	return 0;
 }
+
 
 
 //	  _

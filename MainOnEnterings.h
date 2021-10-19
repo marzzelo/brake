@@ -18,6 +18,7 @@ void ent_idle() {
 
 	bankButtons->reset();
 
+//	tm1638->dispstr("= -°()");
 	tm1638->dispstr("FADEA-21");
 
 	printer.print_header("Brake Test v1.0 release 10/2021", true);
@@ -120,6 +121,7 @@ void ent_error() {
 	}
 
 	Serial << "\n**TEST ERROR** <RESET> para REINICIAR";
+	tm1638->dispstr("ERROR VEL");
 }
 
 void ent_complete() {
@@ -138,6 +140,7 @@ void ent_complete() {
 	printer.print_separator();
 
 	Serial << "\n\n<RESET> para REINICIAR";
+	tm1638->dispstr("FINAL OK");
 }
 
 void ent_monitoring() {
@@ -146,7 +149,8 @@ void ent_monitoring() {
 	bankLeds->beep();
 	bankInputs->startCounting();
 
-	tm1638->dispstr(bankInputs->nextDisplayVar());
+	tm1638->dispstr(bankInputs->getDisplayVarName());
+	tm1638->ledOnly(bankInputs->getDisplayVarIndex());
 
 	Serial << "\n\n\nsep=\t\nt[s]\tMv\tWv\tPh\tPf\tT1\tT2\td\tangle";
 }
