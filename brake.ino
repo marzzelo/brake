@@ -197,7 +197,8 @@ void Task10ms() {
 }
 
 void Task100ms() {
-	//
+//	int btn = tm1638->firstPressed();
+//	Serial << "\nbtn: " << btn;
 }
 
 /******************************************

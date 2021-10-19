@@ -18,7 +18,7 @@ void ent_idle() {
 
 	bankButtons->reset();
 
-	tm1638->dispstr("FADEA-21 EXPERIMENTAL");
+	tm1638->dispstr("FADEA-21 CcCcCcCcCc");
 	tm1638->ledsOff();
 
 	printer.print_header("Brake Test v1.0 release 10/2021", true);

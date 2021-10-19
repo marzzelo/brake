@@ -398,6 +398,13 @@ bool tr_monitoring_idle() {
 		bankInputs->nextDisplayVar();
 	}
 
+	int btn = tm1638->firstPressed();
+
+	if ( btn >= 0) {
+		bankLeds->beep();
+		bankInputs->setDisplayVarIndex(btn);
+	}
+
 	if (millis() % 100 == 0) {
 		Serial << "\n" << bankInputs->getTime();
 		Serial << "\t" << bankInputs->getRpm();

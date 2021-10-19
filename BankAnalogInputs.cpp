@@ -311,16 +311,16 @@ char* BankAnalogInputs::getDisplayVarName() {
 		sprintf(_buff, "%s", "RUED");
 		break;
 	case PH:
-		sprintf(_buff, "%s", "PH  ");
+		sprintf(_buff, "%s", "Ph.  ");
 		break;
 	case PF:
-		sprintf(_buff, "%s", "PF  ");
+		sprintf(_buff, "%s", "PFr. ");
 		break;
 	case T1:
-		sprintf(_buff, "%s", "T1  ");
+		sprintf(_buff, "%s", "T1° ");
 		break;
 	case T2:
-		sprintf(_buff, "%s", "T2  ");
+		sprintf(_buff, "%s", "T2° ");
 		break;
 	default:
 		sprintf(_buff, "%s", "ERR ");
