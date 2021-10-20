@@ -122,7 +122,7 @@ void loop() {
  ******************************************/
 void onBtn0() {
 	bankButtons->setPressed(0);
-	Serial << "\btn0 pressed!";
+//	Serial << "\btn0 pressed!";
 }
 
 void onBtn1() {
@@ -138,7 +138,7 @@ void onBtn2() {
 
 void onBtn3() {
 	bankButtons->setPressed(3);
-	Serial << "\btn3 pressed!";
+//	Serial << "\btn3 pressed!";
 }
 
 
@@ -198,7 +198,12 @@ void Task10ms() {
 
 void Task100ms() {
 //	int btn = tm1638->firstPressed();
-//	Serial << "\nbtn: " << btn;
+//
+//	if ( btn >= 0) {
+//		bankLeds->beep();
+//		Serial << "\nBtn" << btn;
+//		bankInputs->setDisplayVarIndex(btn);
+//	}
 }
 
 /******************************************

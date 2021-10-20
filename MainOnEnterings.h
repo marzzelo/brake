@@ -18,8 +18,11 @@ void ent_idle() {
 
 	bankButtons->reset();
 
-	tm1638->dispstr("FADEA-21 CcCcCcCcCc");
+	tm1638->setShiftVel(TM1638::VEL_FAST);
+	tm1638->setBrightness(TM1638::BRI_INTENSE);
+	tm1638->dispstr("FAdEA-21 bAnco dE FrEno - EnSAYOS EStructurALES");
 	tm1638->ledsOff();
+
 
 	printer.print_header("Brake Test v1.0 release 10/2021", true);
 	printer.print_item("Presionar START para comenzar");
@@ -137,22 +140,30 @@ void ent_error() {
 }
 
 void ent_complete() {
+	char buff[48] = {" "};
+	char str_tf[6] = {" "};
+	char str_dist[6] = {" "};
+
 	bankLeds->beep();
 	bankLeds->blink('F');
 	bankLeds->relayOffAll();
 	bankLeds->relayOn(7);
 
-	printer.print_header("TEST FINALIZADO - RESULTADOS");
+	double distance = bankInputs->getDistance();
 
+	printer.print_header("TEST FINALIZADO - RESULTADOS");
 	printer.make_item("Tiempo de Frenado t: %s s", tf);
-	printer.make_item("Distancia de Frenado d: %s m",
-			bankInputs->getDistance());
+	printer.make_item("Distancia de Frenado d: %s m", distance);
 	printer.make_item("Temperatura final T1: %s °C", bankInputs->getT1());
 	printer.make_item("Temperatura final T2: %s °C", bankInputs->getT2());
 	printer.print_separator();
 
 	Serial << "\n\n<RESET> para REINICIAR";
-	tm1638->dispstr("FINAL OK");
+
+	dtostrf(tf, 0, 2, str_tf);
+	dtostrf(distance, 0, 2, str_dist);
+	sprintf(buff, "FINAL. tF= %s seg - dF= %s mts ", str_tf, str_dist);
+	tm1638->dispstr(buff);
 }
 
 void ent_monitoring() {

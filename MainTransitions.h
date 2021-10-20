@@ -406,6 +406,7 @@ bool tr_monitoring_idle() {
 	}
 
 	if (millis() % 100 == 0) {
+		static int cnt = 0;
 		Serial << "\n" << bankInputs->getTime();
 		Serial << "\t" << bankInputs->getRpm();
 		Serial << "\t" << bankInputs->getWv();
@@ -416,8 +417,12 @@ bool tr_monitoring_idle() {
 		Serial << "\t" << bankInputs->getDistance();
 		Serial << "\t" << bankInputs->encoderRead().angle;
 
-		displayVar();
+		if (cnt++ == 3) {
+			displayVar();
+			cnt = 0;
+		}
 	}
+
 	return bankButtons->read(3);
 }
 
