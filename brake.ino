@@ -28,6 +28,7 @@
 #include "MainFSM.h"
 #include "Printer.h"
 #include "TM1638.h"
+#include "Confirmator.h"
 
 #define SERIAL_MONITORING
 
@@ -60,6 +61,7 @@ MainFSM 			*brake;
 MenuFSM 			*menu;
 TM1638				*tm1638;
 MyTasker 			*tasker;
+Confirmator			*confirmator;
 
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 Printer printer(60);
@@ -76,7 +78,7 @@ void setup() {
 	Serial.begin(115200);
 	while (!Serial) {}	// clears serial buff
 
-	bankButtons = 	new BankButtons(onBtn0, onBtn1, onBtn2, onBtn3);
+	bankButtons = 	new BankButtons(onBtn0, onLongBtn0, onBtn1, onLongBtn1);
 	bankLeds = 		new BankLeds();
 	bankInputs = 	new BankAnalogInputs(checkAngle, 500, 5);
 	bankKp = 		new BankKeyPad(keyPadPressedHandler, keyPadDataReadyHandler);
@@ -84,6 +86,7 @@ void setup() {
 	menu =	 		new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
 	tm1638 = 		new TM1638(STB, CLK, DIO);
 	tasker = 		new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
+	confirmator =	new Confirmator();
 
 	// Timer
 	Timer1.stop();
@@ -122,24 +125,26 @@ void loop() {
  ******************************************/
 void onBtn0() {
 	bankButtons->setPressed(0);
-//	Serial << "\btn0 pressed!";
+//	Serial << "\nbtn0 pressed!";
+}
+
+void onLongBtn0() {
+	bankButtons->setLongPressed(0);
+//	Serial << "\nbtn0 long-pressed!";
 }
 
 void onBtn1() {
 	bankButtons->setPressed(1);
+//	Serial << "\nbtn1 pressed!";
 }
 
-void onBtn2() {
+void onLongBtn1() {
 	bankLeds->beep();
 	double offset = - bankInputs->encoderRead().position * 360.0 / 2000.0;
-	Serial << "\n offset: " << offset;
+	Serial << "\noffset: " << offset;
 	bankInputs->setAngleOffset(offset);
 }
 
-void onBtn3() {
-	bankButtons->setPressed(3);
-//	Serial << "\btn3 pressed!";
-}
 
 
 /******************************************
@@ -169,7 +174,6 @@ void keyPadDataReadyHandler() {
 
 void keyPadPressedHandler(char key) {
 	Serial << ((key == '*') ? bankKp->getAsterisk() : key);
-	bankLeds->display(key);
 	bankLeds->beep(20, 1, 1);
 }
 
@@ -197,13 +201,7 @@ void Task10ms() {
 }
 
 void Task100ms() {
-//	int btn = tm1638->firstPressed();
-//
-//	if ( btn >= 0) {
-//		bankLeds->beep();
-//		Serial << "\nBtn" << btn;
-//		bankInputs->setDisplayVarIndex(btn);
-//	}
+
 }
 
 /******************************************

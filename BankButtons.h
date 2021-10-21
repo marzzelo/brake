@@ -1,4 +1,5 @@
 /*
+
  * BankButtons.h
  *
  *  Created on: 6 sep. 2021
@@ -10,47 +11,41 @@
 
 #include "Button.h"
 
-#define BTN0 	31		//<! Start
-#define BTN1 	33		//<! Select
-#define BTN2 	35
-#define BTN3 	37		//<! Reset
+#define BTN0 	31		//<! Start / Reset
+#define BTN1 	33		//<! Select / Tare
 
 class BankButtons {
 
 private:
-	volatile bool btn_pressed[4] = {false};
+	volatile bool btn_pressed[2] = {false};
+	volatile bool btn_longpressed[2] = {false};
 
 public:
 
-	Button *btn[4];
+	enum ButtonState {
+		RELEASED = 0,
+		PRESSED,
+		LONG_PRESSED,
+	};
 
+	Button *btn[2];
 
+	BankButtons(
+		Button::ButtonPressedHandler onBtn0,
+		Button::ButtonPressedHandler onLongBtn0,
+		Button::ButtonPressedHandler onBtn1,
+		Button::ButtonPressedHandler onLongBtn1
+	);
 
-	BankButtons(Button::ButtonPressedHandler onBtn0,
-			Button::ButtonPressedHandler onBtn1,
-			Button::ButtonPressedHandler onBtn2,
-			Button::ButtonPressedHandler onBtn3);
+	uint8_t read(int btnIndex);
 
-	bool read(int btnIndex) {
-		bool state = btn_pressed[btnIndex];
-		btn_pressed[btnIndex] = false;
-		return state;
-	}
+	void setPressed(int btnIndex);
 
-	void setPressed(int btnIndex) {
-		btn_pressed[btnIndex] = true;
-	}
+	void setLongPressed(int btnIndex);
 
-	void update() {
-		for (int btnIndex = 0; btnIndex < 4; ++btnIndex) {
-			btn[btnIndex]->update();
-		}
-	}
+	void update();
 
-	void reset() {
-		for (int btnIndex = 0; btnIndex < 4; ++btnIndex)
-			read(btnIndex);
-	}
+	void reset();
 
 };
 

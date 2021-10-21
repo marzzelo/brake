@@ -13,7 +13,6 @@ extern void state_reset();
 extern void setTimeOut(unsigned long dt);
 extern BankAnalogInputs *bankInputs;
 extern BankLeds *bankLeds;
-extern MyLed7 *led7s;
 
 
 /**

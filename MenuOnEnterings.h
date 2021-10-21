@@ -18,8 +18,6 @@ void (*menuOnEnterings[])(void) = {
 	[]() {
 		bankKp->asterisk('*');
 		bankKp->checkCommands = true;
-		bankLeds->display('P');
-//		Serial << F("\n------\nENTERING ST_MENU_IDLE\n\n");
 		brake->SetState(MainFSM::ST_IDLE, false, true);
 	},
 

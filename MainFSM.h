@@ -25,7 +25,7 @@
 #include "Arduino.h"
 
 
-#define N_TRANSITIONS	35
+#define N_TRANSITIONS	26
 
 /**
  * # Máquina de estados principal
@@ -80,6 +80,7 @@ public:
 		TR_BRAKING_COMPLETE,
 		TR_BRAKING_ERROR,
 		TR_MONITORING_IDLE,
+		TR_COMPLETE_IDLE,
 	};
 
 

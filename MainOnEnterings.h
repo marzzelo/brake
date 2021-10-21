@@ -11,7 +11,6 @@
 void ent_idle() {
 	bankLeds->beep();
 	bankLeds->relayOffAll();
-	bankLeds->display('P');
 
 	bankKp->checkCommands = true;
 	bankKp->start();
@@ -36,7 +35,6 @@ void ent_idle() {
 
 void ent_checking() {
 	bankInputs->start();
-	bankLeds->blink('E');
 	bankLeds->relayStart(0);
 	bankLeds->beep();
 
@@ -47,18 +45,16 @@ void ent_checking() {
 
 void ent_condok() {
 	Serial << "\nST_COND_OK... [Esperando Mv > 0]";
-	bankLeds->display(0);
-	bankLeds->relayOn(0);
+	bankLeds->relayOnly(0);
 	bankLeds->beep();
+	confirmator->reset(3);
 
 	tm1638->dispstr("Iniciar ");
 }
 
 void ent_speeding() {
 	bankLeds->beep();
-	bankLeds->display(1);
-	bankLeds->relayOff(0);
-	bankLeds->relayOn(1);
+	bankLeds->relayOnly(1);
 
 	bankInputs->setDisplayVarIndex(BankAnalogInputs::MASS);
 
@@ -71,9 +67,7 @@ void ent_speeding() {
 
 void ent_maxvel() {
 	bankLeds->beep();
-	bankLeds->display(2);
-	bankLeds->relayOff(1);
-	bankLeds->relayOn(2);
+	bankLeds->relayOnly(2);
 
 	displayVar(BankAnalogInputs::WHEEL);
 
@@ -83,9 +77,7 @@ void ent_maxvel() {
 
 void ent_landing() {
 	bankLeds->beep();
-	bankLeds->display(3);
-	bankLeds->relayOff(2);
-	bankLeds->relayOn(3);
+	bankLeds->relayOnly(3);
 
 	displayVar(BankAnalogInputs::PH);
 
@@ -95,9 +87,7 @@ void ent_landing() {
 
 void ent_landed() {
 	bankLeds->beep();
-	bankLeds->display(4);
-	bankLeds->relayOff(3);
-	bankLeds->relayOn(4);
+	bankLeds->relayOnly(4);
 
 	displayVar(BankAnalogInputs::MASS);
 
@@ -108,9 +98,7 @@ void ent_landed() {
 
 void ent_brakingvel() {
 	bankLeds->beep();
-	bankLeds->display(5);
-	bankLeds->relayOff(4);
-	bankLeds->relayOn(5);
+	bankLeds->relayOnly(5);
 
 	displayVar(BankAnalogInputs::PF);
 
@@ -120,9 +108,7 @@ void ent_brakingvel() {
 
 void ent_braking() {
 	bankLeds->beep();
-	bankLeds->display(6);
-	bankLeds->relayOff(5);
-	bankLeds->relayOn(6);
+	bankLeds->relayOnly(6);
 	bankInputs->startCounting();
 
 	displayVar(BankAnalogInputs::WHEEL);
@@ -132,42 +118,47 @@ void ent_braking() {
 
 void ent_error() {
 	bankLeds->beep();
-	bankLeds->blink('E');
 	bankLeds->relayOffAll();
 	bankLeds->relayStart(7);
+	tm1638->ledOnly(BankAnalogInputs::ERROR);
 
 	Serial << "\n**TEST ERROR** <RESET> para REINICIAR";
 }
 
 void ent_complete() {
-	char buff[48] = {" "};
-	char str_tf[6] = {" "};
-	char str_dist[6] = {" "};
+//	char buff[48] = {"\0"};
+//	char str_tf[6] = {"\0"};
+//	char str_dist[6] = {"\0"};
 
 	bankLeds->beep();
-	bankLeds->blink('F');
-	bankLeds->relayOffAll();
-	bankLeds->relayOn(7);
+	bankLeds->relayOnly(7);
+	tm1638->ledsOff();
 
-	double distance = bankInputs->getDistance();
+	bankInputs->stopCounting();
 
-	printer.print_header("TEST FINALIZADO - RESULTADOS");
-	printer.make_item("Tiempo de Frenado t: %s s", tf);
-	printer.make_item("Distancia de Frenado d: %s m", distance);
-	printer.make_item("Temperatura final T1: %s °C", bankInputs->getT1());
-	printer.make_item("Temperatura final T2: %s °C", bankInputs->getT2());
-	printer.print_separator();
+//	double distance = bankInputs->getDistance();
+//	double T1 = bankInputs->getT1();
+//	double T2 = bankInputs->getT2();
 
-	Serial << "\n\n<RESET> para REINICIAR";
+	printer.print_header("TEST FINALIZADO");
 
-	dtostrf(tf, 0, 2, str_tf);
-	dtostrf(distance, 0, 2, str_dist);
-	sprintf(buff, "FINAL. tF= %s seg - dF= %s mts ", str_tf, str_dist);
-	tm1638->dispstr(buff);
+	bankInputs->setTimeOut(3000);
+
+//	printer.make_item("Tiempo de Frenado t: %s s", tf);
+//	printer.make_item("Distancia de Frenado d: %s m", distance);
+//	printer.make_item("Temperatura final T1: %s °C", T1);
+//	printer.make_item("Temperatura final T2: %s °C", T2);
+//	printer.print_separator();
+//
+//	Serial << "\n\n<RESET> para REINICIAR";
+//
+//	dtostrf(tf, 0, 2, str_tf);
+//	dtostrf(distance, 0, 2, str_dist);
+//	snprintf(buff, 48, "-FINAL- t=%s I d=%s", str_tf, str_dist);
+	tm1638->dispstr("-FINAL- ");
 }
 
 void ent_monitoring() {
-	bankLeds->blink('M');
 	bankLeds->beep();
 	bankInputs->startCounting();
 

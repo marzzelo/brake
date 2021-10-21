@@ -9,16 +9,6 @@
 #define BANKLEDS_H_
 
 #include "SuperLed.h"
-#include "MyLed7.h"
-
-#define SEGM0	22
-#define SEGM1	24
-#define SEGM2	26
-#define SEGM3	28
-#define SEGM4	30
-#define SEGM5	32
-#define SEGM6	34
-#define SEGM7	36
 
 #define RELAY0	2
 #define RELAY1	3
@@ -38,8 +28,6 @@ private:
 	SuperLed *relay[8];
 	SuperLed *buzz;
 
-	MyLed7 *led7s;
-
 public:
 	BankLeds();
 
@@ -51,21 +39,15 @@ public:
 
 	void beep(unsigned long ton, unsigned long toff, unsigned long nCycles);
 
-	void relayStart(int relayIndex) {
-		relay[relayIndex]->start();
-	}
+	void relayStart(int relayIndex);
 
-	void relayStop(int relayIndex) {
-		relay[relayIndex]->stop();
-	}
+	void relayStop(int relayIndex);
 
-	void relayOff(int relayIndex) {
-		relay[relayIndex]->set(LOW);
-	}
+	void relayOff(int relayIndex);
 
-	void relayOn(int relayIndex) {
-		relay[relayIndex]->set(HIGH);
-	}
+	void relayOn(int relayIndex);
+
+	void relayOnly(int relayIndex);
 
 	void relayOnAll(int = HIGH);
 
@@ -74,16 +56,6 @@ public:
 	void relayStartAll();
 
 	void relayStopAll();
-
-	void display(int symbol, bool dp = false) {
-		led7s->noBlink();
-		led7s->display(symbol, dp);
-	}
-
-	void blink(int symbol, uint16_t period = 200) {
-		led7s->display(symbol, false);
-		led7s->blink(period);
-	}
 
 };
 

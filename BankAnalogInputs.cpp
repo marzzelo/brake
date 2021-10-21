@@ -26,7 +26,7 @@ BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period,
 	digitalWrite(LED_BUILTIN, LOW);
 
 	analogReference(DEFAULT);  // 5.0V
-	FreqCount.begin(period);
+	FreqCount.begin(_period);
 	_counting = false;
 
 	pinMode(PIN_IN1, INPUT_PULLUP);
@@ -71,22 +71,39 @@ void BankAnalogInputs::loadSettings() {
 }
 
 bool BankAnalogInputs::check(Condition cond) {
+	double rpm = getRpm();
+
 	switch (cond) {
 
 	case Condition::MV_EQ_0:
-		return getRpm() <= ZERO_MASS_VEL;
+		if (rpm < 0)
+			return false;
+
+		return rpm <= ZERO_MASS_VEL;
 
 	case Condition::MV_GT_0:
-		return getRpm() > ZERO_MASS_VEL;
+		if (rpm < 0)
+			return false;
+
+		return rpm > ZERO_MASS_VEL;
 
 	case Condition::MV_GT_MAX:
-		return getRpm() > testParms.max_mass_vel;
+		if (rpm < 0)
+			return false;
+
+		return rpm > testParms.max_mass_vel;
 
 	case Condition::MV_GE_BRAKEV_MIN:
-		return getRpm() >= testParms.brake_mass_vel_min;
+		if (rpm < 0)
+			return false;
+
+		return rpm >= testParms.brake_mass_vel_min;
 
 	case Condition::MV_LE_BRAKEV_MAX:
-		return getRpm() <= testParms.brake_mass_vel_max;
+		if (rpm < 0)
+			return false;
+
+		return rpm <= testParms.brake_mass_vel_max;
 
 	case Condition::WV_EQ_0:
 		return getWv() <= ZERO_WHEEL_VEL;
@@ -109,8 +126,14 @@ bool BankAnalogInputs::check(Condition cond) {
 	case Condition::PF_GE_PF1:
 		return getPf() >= testParms.pf_threshold;
 
+	case Condition::ANGLE_EQ_0:
+		return encoderRead().angle <= ZERO_ANGLE;
+
+	case Condition::ANGLE_GT_0:
+		return encoderRead().angle > ZERO_ANGLE;
+
 	case Condition::PF_LT_PF1:
-			return getPf() < testParms.pf_threshold * 0.75;
+		return getPf() < testParms.pf_threshold * 0.75;
 
 	case Condition::TIMEOUT:
 		return (millis() - _t0) > _dt;
@@ -198,7 +221,7 @@ double BankAnalogInputs::getRpm() {
 	}
 
 	mass_rpm = pulses * 1000.0 / _period;
-	FreqCount.begin(_period);
+	//FreqCount.begin(_period);
 	return _last_rpm = mass_rpm;
 }
 
@@ -340,5 +363,4 @@ char* BankAnalogInputs::nextDisplayVar() {
 
 	return getDisplayVarName();
 }
-
 

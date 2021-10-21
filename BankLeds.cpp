@@ -20,10 +20,10 @@ BankLeds::BankLeds() {
 	buzz = new SuperLed(BUZZ, 60, 1, 0);
 	buzz->setCycles(1);
 
-	led7s = new MyLed7(SEGM0, SEGM1, SEGM2, SEGM3, SEGM4, SEGM5, SEGM6, SEGM7);
 }
 
-void BankLeds::beep(unsigned long ton, unsigned long toff, unsigned long nCycles) {
+void BankLeds::beep(unsigned long ton, unsigned long toff,
+		unsigned long nCycles) {
 	buzz->start(ton, toff, nCycles);
 }
 
@@ -33,8 +33,6 @@ void BankLeds::update() {
 	}
 
 	buzz->update();
-
-	led7s->update();
 }
 
 void BankLeds::relayOnAll(int on = HIGH) {
@@ -57,4 +55,25 @@ void BankLeds::relayStopAll() {
 	for (int relayIndex = 0; relayIndex < 8; ++relayIndex) {
 		relay[relayIndex]->stop();
 	}
+}
+
+void BankLeds::relayStart(int relayIndex) {
+	relay[relayIndex]->start();
+}
+
+void BankLeds::relayStop(int relayIndex) {
+	relay[relayIndex]->stop();
+}
+
+void BankLeds::relayOff(int relayIndex) {
+	relay[relayIndex]->set(LOW);
+}
+
+void BankLeds::relayOn(int relayIndex) {
+	relay[relayIndex]->set(HIGH);
+}
+
+void BankLeds::relayOnly(int relayIndex) {
+	relayOffAll();
+	relayOn(relayIndex);
 }

@@ -43,6 +43,7 @@
 #define ZERO_PF				5
 #define ZERO_MASS_VEL		5
 #define ZERO_WHEEL_VEL		5
+#define ZERO_ANGLE			5
 
 enum Condition {
 	MV_GT_0,
@@ -60,6 +61,8 @@ enum Condition {
 	PF_LT_PF1,
 	T1_GE_THOT,
 	T2_GE_THOT,
+	ANGLE_EQ_0,
+	ANGLE_GT_0,
 	TIMEOUT
 };
 

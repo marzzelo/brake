@@ -44,6 +44,8 @@ MainFSM::MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 
 	AddTransition(ST_MAX_VEL, ST_SPEEDING, transitions[TR_MAXVEL_SPEEDING]);
 
+
+
 	AddTransition(ST_MAX_VEL, ST_IDLE, transitions[TR_ANY_IDLE]);
 
 	AddTransition(ST_LANDING, ST_LANDED, transitions[TR_LANDING_LANDED]);
@@ -64,18 +66,19 @@ MainFSM::MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 
 	AddTransition(ST_BRAKING, ST_TEST_COMPLETE, transitions[TR_BRAKING_COMPLETE]);
 
+
+
 	AddTransition(ST_BRAKING, ST_TEST_ERROR, transitions[TR_BRAKING_ERROR]);
 
 	AddTransition(ST_BRAKING, ST_IDLE, transitions[TR_ANY_IDLE]);
 
-	AddTransition(ST_TEST_COMPLETE, ST_IDLE, transitions[TR_ANY_IDLE]);
+//	AddTransition(ST_TEST_COMPLETE, ST_IDLE, transitions[TR_ANY_IDLE]);
 
 	AddTransition(ST_TEST_ERROR, ST_IDLE, transitions[TR_ANY_IDLE]);
 
 	AddTransition(ST_MONITORING, ST_IDLE, transitions[TR_MONITORING_IDLE]);
 
-
-
+	AddTransition(ST_TEST_COMPLETE, ST_IDLE, transitions[TR_COMPLETE_IDLE]);
 
 
 

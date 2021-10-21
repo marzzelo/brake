@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-10-18 14:49:01
+//This file has been generated on 2021-10-21 11:36:08
 
 #include "Arduino.h"
 #include "Rx.h"
@@ -21,6 +21,7 @@
 #include "MainFSM.h"
 #include "Printer.h"
 #include "TM1638.h"
+#include "Confirmator.h"
 #define SERIAL_MONITORING
 #define ZERO_PH				5
 #define ZERO_PF				5
@@ -29,7 +30,6 @@
 #define STB					10
 #define CLK					11
 #define DIO					12
-#define RETVAL	2
 extern BankButtons* bankButtons;
 extern BankLeds* bankLeds;
 extern BankAnalogInputs* bankInputs;
@@ -38,6 +38,7 @@ extern MainFSM* brake;
 extern MenuFSM* menu;
 extern TM1638* tm1638;
 extern MyTasker* tasker;
+extern Confirmator* confirmator;
 extern LiquidCrystal lcd;
 extern Printer printer;
 #include "MainTransitions.h"
@@ -51,9 +52,9 @@ int mon() ;
 void setup() ;
 void loop() ;
 void onBtn0() ;
+void onLongBtn0() ;
 void onBtn1() ;
-void onBtn2() ;
-void onBtn3() ;
+void onLongBtn1() ;
 void keyPadDataReadyHandler() ;
 void keyPadPressedHandler(char key) ;
 void checkAngle() ;
