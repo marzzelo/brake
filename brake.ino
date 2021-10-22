@@ -29,8 +29,20 @@
 #include "Printer.h"
 #include "TM1638.h"
 #include "Confirmator.h"
+#include "Matrix.h"
 
-#define SERIAL_MONITORING
+#define DEBUG 1
+
+#if DEBUG
+#define PRINT(s, x) { Serial.print(F(s)); Serial.print(x); }
+#define PRINTS(x) Serial.print(F(x))
+#define PRINTX(x) Serial.println(x, HEX)
+#else
+#define PRINT(s, x)
+#define PRINTS(x)
+#define PRINTX(x)
+#endif
+
 
 #define ZERO_PH				5
 #define ZERO_PF				5
@@ -40,6 +52,9 @@
 #define STB					10
 #define CLK					11
 #define DIO					12
+
+#define MAX_DEVICES 		8
+#define CS_PIN    			53  // DATA: 51,  CLK: 52
 
 
 // decreases terminal-messages-printing-rate (1 message every 1 sec)
@@ -62,11 +77,10 @@ MenuFSM 			*menu;
 TM1638				*tm1638;
 MyTasker 			*tasker;
 Confirmator			*confirmator;
+Matrix	 			*matrix;
 
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 Printer printer(60);
-
-
 
 //	  __
 //	 (_   _ _|_     ._
@@ -87,6 +101,7 @@ void setup() {
 	tm1638 = 		new TM1638(STB, CLK, DIO);
 	tasker = 		new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
 	confirmator =	new Confirmator();
+	matrix = 		new Matrix(CS_PIN, MAX_DEVICES);
 
 	// Timer
 	Timer1.stop();
@@ -101,9 +116,12 @@ void setup() {
 
 //	bank.eePreset();			// default calibration/parameter values
 
-//	bankButtons->reset();		// clears buttons buffer
 	bankInputs->loadSettings();	// Loads calibration/test parameters from EEprom
 	bankInputs->start(); 		// Enables DAQ
+
+//	matrix->begin();
+//	matrix->setEffects(PA_LEFT, 35, 1000, PA_SCROLL_LEFT, PA_SCROLL_UP);
+	matrix->setMessage("FAdeA - EXPERIMENTAL - ENSAYOS ESTRUCTURALES");
 }
 
 
@@ -198,6 +216,7 @@ void Task1ms() {
 void Task10ms() {
 	bankInputs->update();
 	tm1638->update();
+	matrix->update();
 }
 
 void Task100ms() {

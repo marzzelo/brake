@@ -22,6 +22,8 @@ void ent_idle() {
 	tm1638->dispstr("FAdEA-21 bAnco dE FrEno - EnSAYOS EStructurALES");
 	tm1638->ledsOff();
 
+	matrix->setMessage("FAdeA - EXPERIMENTAL - ENSAYOS ESTRUCTURALES");
+
 
 	printer.print_header("Brake Test v1.0 release 10/2021", true);
 	printer.print_item("Presionar START para comenzar");
@@ -39,6 +41,7 @@ void ent_checking() {
 	bankLeds->beep();
 
 	tm1638->dispstr("Checking");
+	//matrix->text("Checking...");
 
 	Serial << "\nST_CHECKING_COND... [Esperando condiciones de inicio: Mv=0, Wv=0, Ph=0, Pf=0, T1&T2<Thot]";
 }
@@ -50,6 +53,7 @@ void ent_condok() {
 	confirmator->reset(3);
 
 	tm1638->dispstr("Iniciar ");
+	matrix->setMessage("Iniciar Giro");
 }
 
 void ent_speeding() {
@@ -63,6 +67,7 @@ void ent_speeding() {
 
 	Serial << "\n\nST_SPEEDING... [Esperando Mv >= "
 			<< _DEC(bankInputs->testParms.max_mass_vel) << " rpm]";
+
 }
 
 void ent_maxvel() {
