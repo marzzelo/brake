@@ -123,7 +123,7 @@ bool tr_checking_condok() {
 
 			if (!displaybussy) {
 				tm1638->dispstr("PF  GT 0");
-				matrix->text("ERR Pfreno > 0");
+				matrix->text("ERR Pf > 0");
 				displaybussy = true;
 			}
 		}
@@ -490,7 +490,7 @@ bool tr_monitoring_idle() {
 		bankInputs->setTimeOut(250);
 
 		double value = displayVar();
-		snprintf(mbuff, 16, "%s = %d", bankInputs->getDisplayVarName(), round(value));
+		snprintf(mbuff, 16, "%s = %3d", bankInputs->getDisplayVarName(), round(value));
 		matrix->text(mbuff);
 	}
 

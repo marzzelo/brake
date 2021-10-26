@@ -34,12 +34,14 @@
 #include "MMFilter.h"
 #include "Timer.h"
 
-#define DATA_REFRESH_PERIOD		200  // ms
+#define DISPLAY_MESSAGES_PERIOD		500
+#define SERIAL_DAQ_PERIOD			250
 
-#define ZERO_PH				5
-#define ZERO_PF				5
-#define ZERO_MASS_VEL		5
-#define ZERO_WHEEL_VEL		5
+
+#define ZERO_PH				15
+#define ZERO_PF				15
+#define ZERO_MASS_VEL		15
+#define ZERO_WHEEL_VEL		15
 
 #define STB					10
 #define CLK					11
@@ -48,12 +50,6 @@
 #define MAX_DEVICES 		8
 #define CS_PIN    			53  // DATA: 51,  CLK: 52
 
-#define DISPLAY_MESSAGES_PERIOD		500
-#define SERIAL_DAQ_PERIOD			250
-//// decreases terminal-messages-printing-rate (1 message every 1 sec)
-//int mon() {
-//	return (millis() % DATA_REFRESH_PERIOD == 0);
-//}
 
 
 

@@ -43,6 +43,18 @@
 #define NPDAQ(s, x) { Serial.print("\n"); Serial.print(F(s)); Serial.print(x); }
 #define NPDAQS(s) { Serial.print("\n"); Serial.print(F(s)); }
 #define NPDAQX(x) { Serial.print("\n"); Serial.print(x); }
+
+//#define PDAQ(s, x) Serial << (F(s)) << _FLOAT(x, 2)
+//#define PDAQS(s) Serial << (F(s))
+//#define PDAQX(x) Serial << _FLOAT(x, 2)
+//#define TPDAQ(s, x) Serial << "\t" << (F(s)) << _FLOAT(x, 2)
+//#define TPDAQS(s) Serial << "\t" << (F(s))
+//#define TPDAQX(x) Serial << "\t" << _FLOAT(x, 2)
+//#define NPDAQ(s, x) Serial << "\n" << (F(s)) << _FLOAT(x, 2)
+//#define NPDAQS(s) Serial << "\n" << (F(s))
+//#define NPDAQX(x) Serial << "\n" << _FLOAT(x, 2)
+
+
 #else
 #define PDAQ(s, x)
 #define PDAQS(s)

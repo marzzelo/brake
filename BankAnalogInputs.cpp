@@ -205,18 +205,6 @@ double BankAnalogInputs::getRpm() {
 	if (!FreqCount.available())
 		return _last_rpm;
 
-//	uint32_t accum = _freqBuff[_filter] = FreqCount.read();  // read(): pulses per second (or per period)
-//	int i;
-//
-//	for (i = 0; i < _filter; ++i) {
-//		accum += _freqBuff[i];
-//		_freqBuff[i] = _freqBuff[i + 1];   // last i + 1 == _filter
-//	}
-//
-//	double pps = accum / (_filter + 1.0);
-//
-//	mass_rpm = pps * 1000.0 / _period;
-
 	double pps = _mmf[IN_MV]->filter(FreqCount.read());
 
 	if (_counting) {
@@ -245,19 +233,16 @@ double BankAnalogInputs::getTime() {
 double BankAnalogInputs::getWv() {
 	double val = wheel_daq_value * calFactors.ka_wheel;
 	return _mmf[IN_WV]->filter(val);
-//	return val;
 }
 
 double BankAnalogInputs::getPh() {
 	double val = ph_daq_value * calFactors.ka_ph;
 	return _mmf[IN_PH]->filter(val);
-//	return val;
 }
 
 double BankAnalogInputs::getPf() {
 	double val = pf_daq_value * calFactors.ka_pf;
 	return _mmf[IN_PF]->filter(val);
-//	return val;
 }
 
 double BankAnalogInputs::getT1() {
@@ -348,7 +333,7 @@ char* BankAnalogInputs::getDisplayVarName() {
 //	MASS, ANGLE, WHEEL, PH, PF, T1, T2, ERROR, END
 
 	case MASS:
-		sprintf(_buff, "%s", "MASA");
+		sprintf(_buff, "%s", "RPM ");
 		break;
 	case ANGLE:
 		sprintf(_buff, "%s", "ANGL");
