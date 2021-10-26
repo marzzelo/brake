@@ -17,6 +17,7 @@
 
  */
 
+
 extern BankButtons *bankButtons;
 
 double tf;	//<! final braking time
@@ -24,7 +25,8 @@ double tf;	//<! final braking time
 char buff[5];
 char mbuff[16];
 
-extern int mon();
+extern Timer *timerDisplay;
+extern void daqprint();
 
 /**
  * Muestra en displays TM1638 el nombre y el valor de la variable objetivo actual
@@ -70,16 +72,17 @@ bool tr_idle_checking() {
 bool tr_checking_condok() {
 
 	bool cond_ok = true;
-	bool ttd = mon();	// limit message printing to every 1 second
+	bool ttd = timerDisplay->read();	// limit message printing to every DATA_REFRESH_PERIOD useconds
 	bool displaybussy = false;
 
 	if (bankInputs->check(MV_GT_0)) {
 		cond_ok = false;
 		if (ttd) {
-			Serial << "\n** DETENER MASA [" << _FLOAT(bankInputs->getRpm(), 3)
-					<< " rpm]";
+			PRINT("\n** DETENER MASA [", bankInputs->getRpm());
+			PRINTS(" rpm]");
+
 			tm1638->dispstr("MAS GT 0");
-			matrix->text("Vmasa > 0 !");
+			matrix->text("ERR VM > 0");
 			displaybussy = true;
 		}
 	}
@@ -87,11 +90,12 @@ bool tr_checking_condok() {
 	if (bankInputs->check(WV_GT_0)) {
 		cond_ok = false;
 		if (ttd) {
-			Serial << "\n** DETENER RUEDA [" << _FLOAT(bankInputs->getWv(), 3)
-					<< " rpm]";
+			PRINT("\n** DETENER RUEDA [", bankInputs->getWv());
+			PRINTS(" rpm]");
+
 			if (!displaybussy) {
 				tm1638->dispstr("RUE GT 0");
-				matrix->text("Vrueda > 0 !");
+				matrix->text("ERR VR > 0");
 				displaybussy = true;
 			}
 		}
@@ -100,11 +104,12 @@ bool tr_checking_condok() {
 	if (bankInputs->check(PH_GT_0)) {
 		cond_ok = false;
 		if (ttd) {
-			Serial << "\n** REDUCIR PH [" << _FLOAT(bankInputs->getPh(), 3)
-					<< " bar]";
+			PRINT("\n** REDUCIR PH [", bankInputs->getPh());
+			PRINTS(" bar]");
+
 			if (!displaybussy) {
 				tm1638->dispstr("PH  GT 0");
-				matrix->text("Phorq > 0 !");
+				matrix->text("ERR Ph > 0");
 				displaybussy = true;
 			}
 		}
@@ -113,11 +118,12 @@ bool tr_checking_condok() {
 	if (bankInputs->check(PF_GT_0)) {
 		cond_ok = false;
 		if (ttd) {
-			Serial << "\n** REDUCIR PF [" << _FLOAT(bankInputs->getPf(), 3)
-					<< " bar]";
+			PRINT("\n** REDUCIR PF [", bankInputs->getPf());
+			PRINTS(" bar]");
+
 			if (!displaybussy) {
 				tm1638->dispstr("PF  GT 0");
-				matrix->text("Pfreno > 0 !");
+				matrix->text("ERR Pfreno > 0");
 				displaybussy = true;
 			}
 		}
@@ -127,12 +133,14 @@ bool tr_checking_condok() {
 		cond_ok = false;
 
 		if (ttd) {
-			Serial << "\n** Temp Alta [T1: " << _FLOAT(bankInputs->getT1(), 3)
-					<< " °C]";
-			Serial << " [T2: " << _FLOAT(bankInputs->getT2(), 3) << " °C]";
+			PRINT("\n** Temp Alta [T1: ", bankInputs->getT1());
+			PRINTS(" °C]");
+			PRINT(" [T2: ", bankInputs->getT2());
+			PRINTS(" °C]");
+
 			if (!displaybussy) {
 				tm1638->dispstr("TMP ALTA");
-				matrix->text("Temp ALTA!");
+				matrix->text("ERR Temp ALTA");
 				displaybussy = true;
 			}
 		}
@@ -142,11 +150,12 @@ bool tr_checking_condok() {
 		cond_ok = false;
 
 		if (ttd) {
-			Serial << "\nCorregir Inclinación [ANG: "
-					<< _FLOAT(bankInputs->encoderRead().angle, 3) << " °]";
+			PRINT("\nCorregir Inclinación [ANG: ", bankInputs->encoderRead().angle);
+			PRINTS(" °]");
+
 			if (!displaybussy) {
 				tm1638->dispstr("ANG GT 0");
-				matrix->text("Angulo > 0 !");
+				matrix->text("ERR Angulo > 0");
 				displaybussy = true;
 			}
 		}
@@ -154,7 +163,7 @@ bool tr_checking_condok() {
 
 	if (!cond_ok) {
 		if (ttd)
-			Serial << "\n----------------------";
+			PRINTS("\n----------------------");
 	}
 
 	return cond_ok;
@@ -173,7 +182,7 @@ bool tr_idle_monitoring() {
 bool tr_any_idle() {
 	if (bankInputs->check(TIMEOUT)) {
 		bankLeds->beep();
-		Serial << "\nTimeout";
+		PRINTS("\nTimeout");
 		return true;
 	}
 
@@ -191,10 +200,10 @@ bool tr_any_idle() {
 bool tr_condok_speeding() {
 //	static int _events = 0;
 
-	if (mon()) {
+	if (timerDisplay->read()) {
 		double rpm = bankInputs->getRpm();
-		Serial << "\nST_COND_OK> mass vel: " << _FLOAT(rpm, 3)
-				<< " ** INICIAR GIRO **";
+		PRINT("\nST_COND_OK> mass vel: ", rpm);
+		PRINTS(" ** INICIAR GIRO **");
 
 //		snprintf(mbuff, 16, "Vm = %d rpm", round(rpm));
 //		matrix->text(mbuff);
@@ -215,10 +224,12 @@ bool tr_condok_speeding() {
  */
 bool tr_speeding_maxvel() {
 
-	if (mon()) {
+	if (timerDisplay->read()) {
 		double rpm = bankInputs->getRpm();
-		Serial << "\nST_SPEEDING> Mv: " << _FLOAT(bankInputs->getRpm(), 3)
-				<< " ** ACELERAR a 500 rpm **";
+
+		PRINT("\nST_SPEEDING> Mv: ", bankInputs->getRpm());
+		PRINTS(" ** ACELERAR a 500 rpm **");
+
 		tm1638->dispmix("ACEL", bankInputs->getRpm());
 
 		snprintf(mbuff, 16, "Acel %d rpm", round(rpm));
@@ -236,11 +247,11 @@ bool tr_speeding_maxvel() {
  * ## Se alcanza el estado LANDING cuando la velocidad de rueda alcanza el valor nominal fijado en el menu del sistema.
  */
 bool tr_maxvel_landing() {
-	if (mon()) {
+	if (timerDisplay->read()) {
 		double wheel = bankInputs->getWv();
-		Serial << "\nST_MAX_VEL> Mv: " << _FLOAT(bankInputs->getRpm(), 3);
-		Serial << ", Wv: " << _FLOAT(wheel, 3)
-				<< " ** ATERRIZAR RUEDA ***";
+		PRINT("\nST_MAX_VEL> Wv: ", wheel);
+		PRINTS(" ** ATERRIZAR RUEDA ***");
+
 		displayVar(); // Mass vel
 		snprintf(mbuff, 16, "Aterr %d m/s", round(wheel));
 		matrix->text(mbuff);
@@ -264,13 +275,10 @@ bool tr_maxvel_speeding() {
  * ## Se alcanza el estado LANDED cuando la presión de horquilla alcanza o supera el valor nominal de aterrizaje.
  */
 bool tr_landing_landed() {
-	if (mon()) {
+	if (timerDisplay->read()) {
 		double ph = bankInputs->getPh();
-		Serial << "\nLANDING> Mv: " << _FLOAT(bankInputs->getRpm(), 3);
-		Serial << ", Wv: " << _FLOAT(bankInputs->getWv(), 3);
-		Serial << ", PH: " << _FLOAT(ph, 3)
-				<< " ** AUMENTAR Ph a "
-				<< _FLOAT(bankInputs->testParms.ph_threshold, 3) << " ***";
+		PRINT("\nLANDING> PH: ", ph);
+		PRINT(" ** AUMENTAR Ph a ", bankInputs->testParms.ph_threshold);
 
 		displayVar(); // Ph
 		snprintf(mbuff, 16, "PH = %d bar", round(ph));
@@ -286,8 +294,8 @@ bool tr_landing_landed() {
  */
 bool tr_landing_error() {
 	if (bankInputs->check(MV_LE_BRAKEV_MAX)) {
-		if (mon()) {
-			Serial << "\nERROR: velocidad de masa baja antes de frenar";
+		if (timerDisplay->read()) {
+			PRINTS("\nERROR: velocidad de masa baja antes de frenar");
 			tm1638->dispstr("ERR. MASA");
 		}
 		return true;
@@ -308,11 +316,11 @@ bool tr_landing_error() {
 bool tr_landed_brakingvel() {
 
 	if (!bankInputs->check(MV_LE_BRAKEV_MAX)) {
-		if (mon()) {
+		if (timerDisplay->read()) {
 			double rpm = bankInputs->getRpm();
 
-			Serial << "\nST_LANDED> Mv: " << _FLOAT(rpm, 3);
-			Serial << " ** DISMINUIR VELOCIDAD **";
+			PRINT("\nST_LANDED> Mv: ", rpm);
+			PRINTS(" ** DISMINUIR VELOCIDAD **");
 
 			tm1638->dispmix("REDU", rpm);
 			snprintf(mbuff, 16, "Reduc %d rpm", round(rpm));
@@ -320,11 +328,11 @@ bool tr_landed_brakingvel() {
 		}
 	}
 	if (!bankInputs->check(MV_GE_BRAKEV_MIN)) {
-		if (mon()) {
+		if (timerDisplay->read()) {
 			double rpm = bankInputs->getRpm();
 
-			Serial << "\nST_LANDED> Mv: ";
-			Serial << _FLOAT(rpm, 3) << " ** ACELERAR **";
+			PRINT("\nST_LANDED> Mv: ", rpm);
+			PRINTS(" ** ACELERAR **");
 
 			tm1638->dispmix("ACEL", rpm);
 			snprintf(mbuff, 16, "Acelr %d rpm", round(rpm));
@@ -345,11 +353,11 @@ bool tr_landed_brakingvel() {
  * - El valor nominal de presión de freno puede fijarse desde el menú del sistema.
  */
 bool tr_brakingvel_braking() {
-	if (mon()) {
+	if (timerDisplay->read()) {
 		double pf = bankInputs->getPf();
 
-		Serial << "\nST_BRAKING_VEL> PF: " << _FLOAT(pf, 3);
-		Serial << " ***### APLICAR FRENO ###***";
+		PRINT("\nST_BRAKING_VEL> PF: ", pf);
+		PRINTS(" ***### APLICAR FRENO ###***");
 
 		tm1638->dispmix("FREN", pf);
 		snprintf(mbuff, 16, "FRENO %d bar", round(pf));
@@ -383,19 +391,18 @@ bool tr_brakingvel_landed() {
  */
 bool tr_braking_complete() {
 	tf = bankInputs->getTime();
-	if (mon()) {
+	if (timerDisplay->read()) {
 		double wheel = bankInputs->getWv();
 
-		Serial << "\nST_BRAKING> Mv: " << _FLOAT(bankInputs->getRpm(), 3);
-		Serial << ", Wv: " << _FLOAT(wheel, 3) << ", d: "
-				<< _FLOAT(bankInputs->getDistance(), 3);
-		Serial << ", t: " << _FLOAT(tf, 3);
-		Serial << " ** MANTENER Pf HASTA DETENER ** ";
-		Serial << " (Pf: " << _FLOAT(bankInputs->getPf(), 3) << ")";
+		PRINT("\nST_BRAKING> d: ", bankInputs->getDistance());
+		PRINT("\nt: ", tf);
+
+		PRINTS(" ** MANTENER Pf HASTA DETENER ** ");
+		PRINT(" (Pf: ", bankInputs->getPf());
 
 		displayVar();  // Wheel
-		snprintf(mbuff, 16, "Rueda %d m/s", round(wheel));
-		matrix->text(mbuff);
+//		snprintf(mbuff, 16, "Rueda %d m/s", round(wheel));
+//		matrix->text(mbuff);
 	}
 	return (bankInputs->check(WV_EQ_0));
 }
@@ -429,7 +436,7 @@ bool tr_complete_idle() {
 		if (bankInputs->check(TIMEOUT)) {
 			bankLeds->beep();
 			tm1638->dispstr("PRESS RESET TO CONTINUE");
-			matrix->setMessage("PRESIONAR RESET PARA CONTINUAR");
+			matrix->setMessage("PRESS RESET TO CONTINUE");
 			bankInputs->setTimeOut(8000);
 			_msg = 0;
 		}
@@ -463,6 +470,7 @@ bool tr_braking_error() {
  */
 bool tr_monitoring_idle() {
 
+	static long t0mon = millis();
 
 	if (bankButtons->read(1) == BankButtons::PRESSED) {
 		bankLeds->beep();
@@ -476,32 +484,14 @@ bool tr_monitoring_idle() {
 		bankInputs->setDisplayVarIndex(btn);
 	}
 
-	if (millis() % 100 == 0) {
-		static int cnt = 0;
-		double rpm = bankInputs->getRpm();
 
-		Serial << "\n" << bankInputs->getTime();
-		Serial << "\t";
-		if (rpm >= 0)
-			Serial << rpm;
-		else
-			Serial << " ";
-		Serial << "\t" << bankInputs->getWv();
-		Serial << "\t" << bankInputs->getPh();
-		Serial << "\t" << bankInputs->getPf();
-		Serial << "\t" << bankInputs->getT1();
-		Serial << "\t" << bankInputs->getT2();
-		Serial << "\t" << bankInputs->getDistance();
-		Serial << "\t" << bankInputs->encoderRead().angle;
+	if (millis() - t0mon > 500) {
+		t0mon = millis();
+		bankInputs->setTimeOut(250);
 
-		if (cnt++ == 3) {
-			double value = displayVar();
-
-			snprintf(mbuff, 16, "%s = %d", bankInputs->getDisplayVarName(), round(value));
-			matrix->text(mbuff);
-
-			cnt = 0;
-		}
+		double value = displayVar();
+		snprintf(mbuff, 16, "%s = %d", bankInputs->getDisplayVarName(), round(value));
+		matrix->text(mbuff);
 	}
 
 	return (bankButtons->read(0) == BankButtons::LONG_PRESSED);

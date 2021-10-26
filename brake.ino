@@ -11,6 +11,7 @@
 //						 /--\ | (_| |_| | | | (_)   |  | (/_ (_| (_|   /_  _) |_) \_/
 //															  _|
 
+#include "PrintMacros.h"
 
 #include "Rx.h"
 #include "CmdSplitter.h"
@@ -30,19 +31,10 @@
 #include "TM1638.h"
 #include "Confirmator.h"
 #include "Matrix.h"
+#include "MMFilter.h"
+#include "Timer.h"
 
-#define DEBUG 1
-
-#if DEBUG
-#define PRINT(s, x) { Serial.print(F(s)); Serial.print(x); }
-#define PRINTS(x) Serial.print(F(x))
-#define PRINTX(x) Serial.println(x, HEX)
-#else
-#define PRINT(s, x)
-#define PRINTS(x)
-#define PRINTX(x)
-#endif
-
+#define DATA_REFRESH_PERIOD		200  // ms
 
 #define ZERO_PH				5
 #define ZERO_PF				5
@@ -56,11 +48,12 @@
 #define MAX_DEVICES 		8
 #define CS_PIN    			53  // DATA: 51,  CLK: 52
 
-
-// decreases terminal-messages-printing-rate (1 message every 1 sec)
-int mon() {
-	return (millis() % 1000 == 0);
-}
+#define DISPLAY_MESSAGES_PERIOD		500
+#define SERIAL_DAQ_PERIOD			250
+//// decreases terminal-messages-printing-rate (1 message every 1 sec)
+//int mon() {
+//	return (millis() % DATA_REFRESH_PERIOD == 0);
+//}
 
 
 
@@ -79,8 +72,15 @@ MyTasker 			*tasker;
 Confirmator			*confirmator;
 Matrix	 			*matrix;
 
+Timer				*timerDaq, *timerDisplay;
+
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 Printer printer(60);
+
+bool dprint = false;
+double t0 = double(millis());
+
+
 
 //	  __
 //	 (_   _ _|_     ._
@@ -94,14 +94,17 @@ void setup() {
 
 	bankButtons = 	new BankButtons(onBtn0, onLongBtn0, onBtn1, onLongBtn1);
 	bankLeds = 		new BankLeds();
-	bankInputs = 	new BankAnalogInputs(checkAngle, 500, 5);
+	bankInputs = 	new BankAnalogInputs(checkAngle, 500, 8);
 	bankKp = 		new BankKeyPad(keyPadPressedHandler, keyPadDataReadyHandler);
 	brake = 		new MainFSM(mainTransitions, mainOnEnterings, mainOnLeavings, nullptr);
 	menu =	 		new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
 	tm1638 = 		new TM1638(STB, CLK, DIO);
 	tasker = 		new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
-	confirmator =	new Confirmator();
+	confirmator =	new Confirmator(2);
 	matrix = 		new Matrix(CS_PIN, MAX_DEVICES);
+
+	timerDaq = 		new Timer(SERIAL_DAQ_PERIOD);
+	timerDisplay = 	new Timer(DISPLAY_MESSAGES_PERIOD);
 
 	// Timer
 	Timer1.stop();
@@ -118,6 +121,7 @@ void setup() {
 
 	bankInputs->loadSettings();	// Loads calibration/test parameters from EEprom
 	bankInputs->start(); 		// Enables DAQ
+	bankInputs->setTimeOut(250);
 
 //	matrix->begin();
 //	matrix->setEffects(PA_LEFT, 35, 1000, PA_SCROLL_LEFT, PA_SCROLL_UP);
@@ -135,8 +139,28 @@ void loop() {
 
 	brake->Update();			// compute system FSM transitions
 
+	daqprint();
 }
 
+
+
+void daqprint() {
+	if (!dprint) return;
+
+	if (timerDaq->read()) {
+		NPDAQX((millis() - t0)/1000.0);
+		TPDAQX(brake->GetState());
+		TPDAQX(bankInputs->getRpm());
+		TPDAQX(bankInputs->getWv());
+		TPDAQX(bankInputs->getPh());
+		TPDAQX(bankInputs->getPf());
+		TPDAQX(bankInputs->getT1());
+		TPDAQX(bankInputs->getT2());
+		TPDAQX(bankInputs->getDistance());
+		TPDAQX(bankInputs->encoderRead().angle);
+	}
+
+}
 
 /******************************************
  * BUTTONS Callbacks
@@ -159,7 +183,7 @@ void onBtn1() {
 void onLongBtn1() {
 	bankLeds->beep();
 	double offset = - bankInputs->encoderRead().position * 360.0 / 2000.0;
-	Serial << "\noffset: " << offset;
+	NPRINT("offset: ", offset);
 	bankInputs->setAngleOffset(offset);
 }
 
@@ -183,7 +207,7 @@ void keyPadDataReadyHandler() {
 		bankKp->ev_cmd[cc - 16] = true;
 //		Serial << "\ncomando: " << cc;
 	} else {
-		Serial << "\ncomando inválido: " << cc;
+		NPRINT("comando inválido: ", cc);
 	}
 
 	bankKp->start();

@@ -7,8 +7,9 @@
 
 #include "Confirmator.h"
 #include "Streaming.h"
+#include "PrintMacros.h"
 
-Confirmator::Confirmator(uint8_t confirmations = 3) {
+Confirmator::Confirmator(uint8_t confirmations = 2) {
 	_events = 0;
 	_confirmations = confirmations;
 }
@@ -16,9 +17,9 @@ Confirmator::Confirmator(uint8_t confirmations = 3) {
 bool Confirmator::confirm(bool event) {
 
 	if (event) {
-		Serial << "\nevent # " << _events;
+		PRINT("\nevent # ", _events);
 		if (_events++ > _confirmations) {
-			Serial << "\nevent TRIGGERED! ";
+			PRINTS("\nevent TRIGGERED! ");
 			_events = 0;
 			return true;
 		}

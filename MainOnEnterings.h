@@ -8,14 +8,18 @@
 #ifndef MAINONENTERINGS_H_
 #define MAINONENTERINGS_H_
 
+#define PRINT_HEADER() 		PDAQS("\nsep=\t\nt[s]\tSTATE\tMv\tWv\tPh\tPf\tT1\tT2\td\tangle")
+
 void ent_idle() {
 	bankLeds->beep();
 	bankLeds->relayOffAll();
+	dprint = false;
 
 	bankKp->checkCommands = true;
 	bankKp->start();
 
 	bankButtons->reset();
+	bankInputs->reset();
 
 	tm1638->setShiftVel(TM1638::VEL_FAST);
 	tm1638->setBrightness(TM1638::BRI_INTENSE);
@@ -23,8 +27,6 @@ void ent_idle() {
 	tm1638->ledsOff();
 
 	matrix->setMessage("FAdeA - EXPERIMENTAL - ENSAYOS ESTRUCTURALES");
-
-
 	printer.print_header("Brake Test v1.0 release 10/2021", true);
 	printer.print_item("Presionar START para comenzar");
 	printer.print_item("o ingresar   1     para Configurar ensayo");
@@ -41,16 +43,19 @@ void ent_checking() {
 	bankLeds->beep();
 
 	tm1638->dispstr("Checking");
-	//matrix->text("Checking...");
 
-	Serial << "\nST_CHECKING_COND... [Esperando condiciones de inicio: Mv=0, Wv=0, Ph=0, Pf=0, T1&T2<Thot]";
+	PRINTS("\nST_CHECKING_COND... [Esperando condiciones de inicio: Mv=0, Wv=0, Ph=0, Pf=0, T1&T2<Thot]");
+
 }
 
 void ent_condok() {
-	Serial << "\nST_COND_OK... [Esperando Mv > 0]";
+	PRINTS("\nST_COND_OK... [Esperando Mv > 0]");
 	bankLeds->relayOnly(0);
 	bankLeds->beep();
 	confirmator->reset(3);
+
+	PRINT_HEADER();
+	dprint = true;
 
 	tm1638->dispstr("Iniciar ");
 	matrix->setMessage("Iniciar Giro");
@@ -65,8 +70,8 @@ void ent_speeding() {
 	tm1638->ledOnly(BankAnalogInputs::MASS);
 	tm1638->dispstr("Acelerar");
 
-	Serial << "\n\nST_SPEEDING... [Esperando Mv >= "
-			<< _DEC(bankInputs->testParms.max_mass_vel) << " rpm]";
+	PRINT("\n\nST_SPEEDING... [Esperando Mv >= ", bankInputs->testParms.max_mass_vel);
+	PRINTS(" rpm]");
 
 }
 
@@ -75,9 +80,8 @@ void ent_maxvel() {
 	bankLeds->relayOnly(2);
 
 	displayVar(BankAnalogInputs::WHEEL);
-
-	Serial << "\n\nST_MAX_VEL... [Esperando Wv > "
-			<< _DEC(bankInputs->testParms.landing_wheel_vel) << " m/s]";
+	PRINT("\n\nST_MAX_VEL... [Esperando Wv > ", bankInputs->testParms.landing_wheel_vel);
+	PRINTS(" m/s]");
 }
 
 void ent_landing() {
@@ -85,9 +89,10 @@ void ent_landing() {
 	bankLeds->relayOnly(3);
 
 	displayVar(BankAnalogInputs::PH);
-
-	Serial << "\n\nST_LANDING... [Esperando PH >= "
-			<< _DEC(bankInputs->testParms.ph_threshold) << " bar]";
+#if (DEBUG)
+	PRINT("\n\nST_LANDING... [Esperando PH >= ", bankInputs->testParms.ph_threshold);
+	PRINTS(" bar]");
+#endif
 }
 
 void ent_landed() {
@@ -96,9 +101,9 @@ void ent_landed() {
 
 	displayVar(BankAnalogInputs::MASS);
 
-	Serial << "\n\nST_LANDED... [Esperando "
-			<< _DEC(bankInputs->testParms.brake_mass_vel_min) << " < Mv < "
-			<< _DEC(bankInputs->testParms.brake_mass_vel_max) << "]";
+	PRINT("\n\nST_LANDED... [Esperando ", bankInputs->testParms.brake_mass_vel_min);
+	PRINT(" < Mv < ", bankInputs->testParms.brake_mass_vel_max);
+	PRINTS("]");
 }
 
 void ent_brakingvel() {
@@ -107,8 +112,8 @@ void ent_brakingvel() {
 
 	displayVar(BankAnalogInputs::PF);
 
-	Serial << "\n\nST_BRAKING_VEL... [Esperando PF >= "
-			<< _DEC(bankInputs->testParms.pf_threshold) << " bar]";
+	PRINT("\n\nST_BRAKING_VEL... [Esperando PF >= ", bankInputs->testParms.pf_threshold);
+	PRINTS(" bar]");
 }
 
 void ent_braking() {
@@ -117,8 +122,8 @@ void ent_braking() {
 	bankInputs->startCounting();
 
 	displayVar(BankAnalogInputs::WHEEL);
-
-	Serial << "\n\nST_BRAKING... [Esperando Wv = 0 & Mv = 0]";
+	matrix->setMessage("** MANTENER Pf HASTA DETENER **");
+	PRINTS("\n\nST_BRAKING... [Esperando Wv = 0 & Mv = 0]");
 }
 
 void ent_error() {
@@ -127,13 +132,10 @@ void ent_error() {
 	bankLeds->relayStart(7);
 	tm1638->ledOnly(BankAnalogInputs::ERROR);
 
-	Serial << "\n**TEST ERROR** <RESET> para REINICIAR";
+	PRINTS("\n**TEST ERROR** <RESET> para REINICIAR");
 }
 
 void ent_complete() {
-//	char buff[48] = {"\0"};
-//	char str_tf[6] = {"\0"};
-//	char str_dist[6] = {"\0"};
 
 	bankLeds->beep();
 	bankLeds->relayOnly(7);
@@ -141,36 +143,27 @@ void ent_complete() {
 
 	bankInputs->stopCounting();
 
-//	double distance = bankInputs->getDistance();
-//	double T1 = bankInputs->getT1();
-//	double T2 = bankInputs->getT2();
-
+#if (DEBUG)
 	printer.print_header("TEST FINALIZADO");
+#endif
 
 	bankInputs->setTimeOut(3000);
 
-//	printer.make_item("Tiempo de Frenado t: %s s", tf);
-//	printer.make_item("Distancia de Frenado d: %s m", distance);
-//	printer.make_item("Temperatura final T1: %s °C", T1);
-//	printer.make_item("Temperatura final T2: %s °C", T2);
-//	printer.print_separator();
-//
-//	Serial << "\n\n<RESET> para REINICIAR";
-//
-//	dtostrf(tf, 0, 2, str_tf);
-//	dtostrf(distance, 0, 2, str_dist);
-//	snprintf(buff, 48, "-FINAL- t=%s I d=%s", str_tf, str_dist);
 	tm1638->dispstr("-FINAL- ");
+	matrix->text("--- FINAL ---");
 }
 
 void ent_monitoring() {
 	bankLeds->beep();
 	bankInputs->startCounting();
+	bankInputs->setTimeOut(500);
+
+	dprint = true;
 
 	bankInputs->setDisplayVarIndex(BankAnalogInputs::MASS);
 	displayVar();
 
-	Serial << "\n\n\nsep=\t\nt[s]\tMv\tWv\tPh\tPf\tT1\tT2\td\tangle";
+	PRINT_HEADER();
 }
 
 /**

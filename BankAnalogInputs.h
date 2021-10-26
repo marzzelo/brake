@@ -23,6 +23,7 @@
 #include "RotaryEncoder.h"
 #include "EEPROM.h"
 #include "EEpromPlus.h"
+#include "MMFilter.h"
 
 
 #define INPUT_MASS		47	// Frequency Counter
@@ -39,11 +40,11 @@
 #define PIN_IN2 		19	// White // SELECT PINS 2, 3, 18, 19, 20 or 21
 
 
-#define ZERO_PH				5
-#define ZERO_PF				5
-#define ZERO_MASS_VEL		5
-#define ZERO_WHEEL_VEL		5
-#define ZERO_ANGLE			5
+#define ZERO_PH				10
+#define ZERO_PF				10
+#define ZERO_MASS_VEL		10
+#define ZERO_WHEEL_VEL		10
+#define ZERO_ANGLE			10
 
 enum Condition {
 	MV_GT_0,
@@ -64,6 +65,15 @@ enum Condition {
 	ANGLE_EQ_0,
 	ANGLE_GT_0,
 	TIMEOUT
+};
+
+enum Inputs {
+	IN_MV,
+	IN_WV,
+	IN_PF,
+	IN_PH,
+
+	MAX_INPUTS
 };
 
 /**
@@ -117,7 +127,8 @@ private:
 	int _pos = 0;  						//!< Rotary Encoder Position;
 	volatile bool _daq_ready;
 	volatile bool _daq_enabled;
-	int _filter;
+	MMFilter *_mmf[MAX_INPUTS];
+
 	volatile double _distance;			//<! Distancia recorrida durante el frenado
 	double _t0 = 0;
 	double _dt = 0;
@@ -127,7 +138,7 @@ private:
 	void (*_checkPosition)();
 	VarNames _display_var = VarNames::ANGLE;
 	EncoderData _encoderData;
-	double _last_rpm = 28.0;				//<! buffers rpm
+	double _last_rpm = 0.0;				//<! buffers rpm
 	char _buff[5];
 
 
@@ -152,6 +163,7 @@ public:
 	void loadSettings();
 	void eePreset();
 
+	void reset();
 	void enable();
 	void start();
 	bool ready();

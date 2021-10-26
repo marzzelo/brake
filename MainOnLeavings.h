@@ -34,6 +34,7 @@ void (*mainOnLeavings[])(void) = {
 	// LEAVING MONITORING
 	[] () {
 		bankLeds->relayStopAll();
+		dprint = false;
 	}
 };
 

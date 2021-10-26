@@ -17,7 +17,7 @@ private:
 	uint8_t _events;
 
 public:
-	Confirmator(uint8_t confirmations = 3);
+	Confirmator(uint8_t confirmations = 2);
 
 	bool confirm(bool event);
 

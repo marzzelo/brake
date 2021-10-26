@@ -6,16 +6,16 @@ MinVersion = 2.5
 OS = Windows NT 6.1 Service Pack 1
 
 [Axes]
-xMin = -13.87
-xMax = 153.77
-xTickUnit = 10
-xGridUnit = 10
+xMin = -0.0636915611314957
+xMax = 13.1940021304296
+xTickUnit = 1
+xGridUnit = 1
 xShowGrid = 1
 xLabel = t[s]
-yMin = 422.577
-yMax = 1052.493
-yTickUnit = 50
-yGridUnit = 50
+yMin = 457.888967355228
+yMax = 529.55614049262
+yTickUnit = 5
+yGridUnit = 5
 yShowGrid = 1
 yLabel = Signals
 AxesColor = clGray
@@ -32,7 +32,7 @@ AxesStyle = 2
 [PointSeries1]
 FillColor = clRed
 LineColor = clRed
-Size = 2
+Size = 0
 Style = 0
 LineStyle = 0
 Font = Tahoma,10,clBlack
@@ -44,9 +44,8 @@ LegendText = Mv
 [PointSeries2]
 FillColor = clBlue
 LineColor = clBlue
-Size = 2
+Size = 0
 Style = 0
-LineSize = 0
 LineStyle = 0
 Font = Tahoma,10,clBlack
 LabelPosition = 1
@@ -57,9 +56,8 @@ LegendText = Wv
 [PointSeries3]
 FillColor = clFuchsia
 LineColor = clFuchsia
-Size = 2
+Size = 0
 Style = 0
-LineSize = 0
 LineStyle = 0
 Font = Tahoma,10,clBlack
 LabelPosition = 1
@@ -70,7 +68,7 @@ LegendText = Ph
 [PointSeries4]
 FillColor = clGreen
 LineColor = clGreen
-Size = 2
+Size = 0
 Style = 0
 LineStyle = 0
 Font = Tahoma,10,clBlack
@@ -80,9 +78,9 @@ Points = 0.1,504.4;0.2,503.42;0.4,503.42;0.5,502.44;0.6,502.44;0.7,503.42;0.9,50
 LegendText = Pf
 
 [PointSeries5]
-FillColor = clLime
-LineColor = clLime
-Size = 2
+FillColor = clGreen
+LineColor = clGreen
+Size = 0
 Style = 0
 LineStyle = 0
 Font = Tahoma,10,clBlack

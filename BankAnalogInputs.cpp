@@ -8,18 +8,18 @@
 #include "BankAnalogInputs.h"
 
 /*
- _                _               ___                   _
- / \   _ __   __ _| | ___   __ _  |_ _|_ __  _ __  _   _| |_ ___
- / _ \ | '_ \ / _` | |/ _ \ / _` |  | || '_ \| '_ \| | | | __/ __|
- / ___ \| | | | (_| | | (_) | (_| |  | || | | | |_) | |_| | |_\__ \
-				 /_/   \_\_| |_|\__,_|_|\___/ \__, | |___|_| |_| .__/ \__,_|\__|___/
- |___/            |_|
+ 	 _                _               ___                   _
+ 	/ \   _ __   __ _| | ___   __ _  |_ _|_ __  _ __  _   _| |_ ___
+   / _ \ | '_ \ / _` | |/ _ \ / _` |  | || '_ \| '_ \| | | | __/ __|
+  / ___ \| | | | (_| | | (_) | (_| |  | || | | | |_) | |_| | |_\__ \
+ /_/   \_\_| |_|\__,_|_|\___/ \__, | |___|_| |_| .__/ \__,_|\__|___/
+ 	 	 	 	 	 	 	  |___/            |_|
 
  */
 
 BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period,
 		int filter) :
-		_period(period), _filter(filter), _checkPosition(checkPosition) {
+		_period(period), _checkPosition(checkPosition) {
 
 	// turn built-in led off
 	pinMode(LED_BUILTIN, OUTPUT);
@@ -28,6 +28,7 @@ BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period,
 	analogReference(DEFAULT);  // 5.0V
 	FreqCount.begin(_period);
 	_counting = false;
+	_distance = 0;
 
 	pinMode(PIN_IN1, INPUT_PULLUP);
 	pinMode(PIN_IN2, INPUT_PULLUP);
@@ -38,6 +39,11 @@ BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period,
 	// register interrupt routine (encoder)
 	attachInterrupt(digitalPinToInterrupt(PIN_IN1), _checkPosition, CHANGE);
 	attachInterrupt(digitalPinToInterrupt(PIN_IN2), _checkPosition, CHANGE);
+
+	// prepare input signals filters
+	for (int i = 0; i < MAX_INPUTS; ++i) {
+		_mmf[i] = new MMFilter(filter);
+	}
 
 }
 
@@ -199,29 +205,32 @@ double BankAnalogInputs::getRpm() {
 	if (!FreqCount.available())
 		return _last_rpm;
 
-	uint32_t accum = _freqBuff[_filter] = FreqCount.read();
-	int i;
+//	uint32_t accum = _freqBuff[_filter] = FreqCount.read();  // read(): pulses per second (or per period)
+//	int i;
+//
+//	for (i = 0; i < _filter; ++i) {
+//		accum += _freqBuff[i];
+//		_freqBuff[i] = _freqBuff[i + 1];   // last i + 1 == _filter
+//	}
+//
+//	double pps = accum / (_filter + 1.0);
+//
+//	mass_rpm = pps * 1000.0 / _period;
 
-	for (i = 0; i < _filter; ++i) {
-		accum += _freqBuff[i];
-		_freqBuff[i] = _freqBuff[i + 1];   // last i + 1 == _filter
-	}
-
-	double pulses = accum / (_filter + 1.0);
+	double pps = _mmf[IN_MV]->filter(FreqCount.read());
 
 	if (_counting) {
-		//-----------------------------------
-		// v = w r
-		//   = 6.28 f r;  		pulses == p = 60 f
-		// v = 6.28 (p/60) r
-		//   = 0.10467 p r;		r = 1m
-		// v = 0.105 p
-		//-----------------------------------
-		_distance += pulses * 0.105;
+		/*-----------------------------------
+		 v = w r
+		   = 2 PI f r;  			pulses per second == pps = 60 f
+		 v = 6.28 (pps/60) r
+		   = 0.10467 pps r;		r = 1m
+		 v = 0.105 pps
+		 -----------------------------------*/
+		_distance += pps * 0.105;
 	}
 
-	mass_rpm = pulses * 1000.0 / _period;
-	//FreqCount.begin(_period);
+	mass_rpm = pps * 1000.0 / _period;
 	return _last_rpm = mass_rpm;
 }
 
@@ -234,15 +243,21 @@ double BankAnalogInputs::getTime() {
 }
 
 double BankAnalogInputs::getWv() {
-	return wheel_daq_value * calFactors.ka_wheel;
+	double val = wheel_daq_value * calFactors.ka_wheel;
+	return _mmf[IN_WV]->filter(val);
+//	return val;
 }
 
 double BankAnalogInputs::getPh() {
-	return ph_daq_value * calFactors.ka_ph;
+	double val = ph_daq_value * calFactors.ka_ph;
+	return _mmf[IN_PH]->filter(val);
+//	return val;
 }
 
 double BankAnalogInputs::getPf() {
-	return pf_daq_value * calFactors.ka_pf;
+	double val = pf_daq_value * calFactors.ka_pf;
+	return _mmf[IN_PF]->filter(val);
+//	return val;
 }
 
 double BankAnalogInputs::getT1() {
@@ -317,6 +332,14 @@ int BankAnalogInputs::setDisplayVarIndex(int index) {
 
 int BankAnalogInputs::getDisplayVarIndex() {
 	return _display_var;
+}
+
+void BankAnalogInputs::setup() {
+}
+
+void BankAnalogInputs::reset() {
+	_counting = false;
+	_distance = 0;
 }
 
 char* BankAnalogInputs::getDisplayVarName() {

@@ -18,6 +18,7 @@
 #include "Arduino.h"
 #include "Streaming.h"
 
+
 class Printer {
 
 private:
