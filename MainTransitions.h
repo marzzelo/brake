@@ -18,12 +18,15 @@
  */
 
 
+//#define 		VARNAME_BUFF_SIZE	8
+#define 		MSG_BUFF_SIZE		32
+
 extern BankButtons *bankButtons;
 
 double tf;	//<! final braking time
 
-char buff[5];
-char mbuff[16];
+//char buff[VARNAME_BUFF_SIZE] = { 0 };
+char mbuff[MSG_BUFF_SIZE] = { 0 };
 
 extern Timer *timerDisplay;
 extern void daqprint();
@@ -232,7 +235,7 @@ bool tr_speeding_maxvel() {
 
 		tm1638->dispmix("ACEL", bankInputs->getRpm());
 
-		snprintf(mbuff, 16, "Acel %d rpm", round(rpm));
+		snprintf(mbuff, MSG_BUFF_SIZE - 1, "Acel %d rpm", round(rpm));
 		matrix->text(mbuff);
 	}
 	return bankInputs->check(MV_GT_MAX);
@@ -253,7 +256,7 @@ bool tr_maxvel_landing() {
 		PRINTS(" ** ATERRIZAR RUEDA ***");
 
 		displayVar(); // Mass vel
-		snprintf(mbuff, 16, "Aterr %d m/s", round(wheel));
+		snprintf(mbuff, MSG_BUFF_SIZE - 1, "Aterr %d m/s", round(wheel));
 		matrix->text(mbuff);
 	}
 	return bankInputs->check(WV_GE_LANDINGV);
@@ -281,7 +284,7 @@ bool tr_landing_landed() {
 		PRINT(" ** AUMENTAR Ph a ", bankInputs->testParms.ph_threshold);
 
 		displayVar(); // Ph
-		snprintf(mbuff, 16, "PH = %d bar", round(ph));
+		snprintf(mbuff, MSG_BUFF_SIZE - 1, "PH = %d bar", round(ph));
 		matrix->text(mbuff);
 	}
 
@@ -323,7 +326,7 @@ bool tr_landed_brakingvel() {
 			PRINTS(" ** DISMINUIR VELOCIDAD **");
 
 			tm1638->dispmix("REDU", rpm);
-			snprintf(mbuff, 16, "Reduc %d rpm", round(rpm));
+			snprintf(mbuff, MSG_BUFF_SIZE - 1, "Reduc %d rpm", round(rpm));
 			matrix->text(mbuff);
 		}
 	}
@@ -335,7 +338,7 @@ bool tr_landed_brakingvel() {
 			PRINTS(" ** ACELERAR **");
 
 			tm1638->dispmix("ACEL", rpm);
-			snprintf(mbuff, 16, "Acelr %d rpm", round(rpm));
+			snprintf(mbuff, MSG_BUFF_SIZE - 1, "Acelr %d rpm", round(rpm));
 			matrix->text(mbuff);
 		}
 	}
@@ -360,7 +363,7 @@ bool tr_brakingvel_braking() {
 		PRINTS(" ***### APLICAR FRENO ###***");
 
 		tm1638->dispmix("FREN", pf);
-		snprintf(mbuff, 16, "FRENO %d bar", round(pf));
+		snprintf(mbuff, MSG_BUFF_SIZE - 1, "FRENO %d bar", round(pf));
 		matrix->text(mbuff);
 
 
@@ -414,7 +417,7 @@ bool tr_complete_idle() {
 	case 0:
 		if (bankInputs->check(TIMEOUT)) {
 			tm1638->dispmix("tf=", tf, 1);
-			snprintf(mbuff, 16, "Tiempo = %d s", round(tf));
+			snprintf(mbuff, MSG_BUFF_SIZE - 1, "Tiempo = %d s", round(tf));
 			matrix->text(mbuff);
 			bankInputs->setTimeOut(3000);
 			++_msg;
@@ -425,7 +428,7 @@ bool tr_complete_idle() {
 		if (bankInputs->check(TIMEOUT)) {
 			double dist = bankInputs->getDistance();
 			tm1638->dispmix("d=", dist, 1);
-			snprintf(mbuff, 16, "Dist = %d m", round(dist));
+			snprintf(mbuff, MSG_BUFF_SIZE - 1, "Dist = %d m", round(dist));
 			matrix->text(mbuff);
 			bankInputs->setTimeOut(3000);
 			++_msg;
@@ -470,8 +473,6 @@ bool tr_braking_error() {
  */
 bool tr_monitoring_idle() {
 
-	static long t0mon = millis();
-
 	if (bankButtons->read(1) == BankButtons::PRESSED) {
 		bankLeds->beep();
 		bankInputs->nextDisplayVar();
@@ -485,12 +486,11 @@ bool tr_monitoring_idle() {
 	}
 
 
-	if (millis() - t0mon > 500) {
-		t0mon = millis();
-		bankInputs->setTimeOut(250);
+	if (timerDisplay->read()) {
+//		bankInputs->setTimeOut(250);
 
 		double value = displayVar();
-		snprintf(mbuff, 16, "%s = %3d", bankInputs->getDisplayVarName(), round(value));
+		snprintf(mbuff, MSG_BUFF_SIZE - 1, "%s = %d", bankInputs->getDisplayVarName(), round(value));
 		matrix->text(mbuff);
 	}
 

@@ -25,6 +25,7 @@
 #include "EEpromPlus.h"
 #include "MMFilter.h"
 
+#define VARNAME_BUFF_SIZE	8
 
 #define INPUT_MASS		47	// Frequency Counter
 #define INPUT_PF		A0	// Presión de Freno
@@ -133,13 +134,12 @@ private:
 	double _t0 = 0;
 	double _dt = 0;
 	bool _counting;
-	uint32_t _freqBuff[8] = {0};
 	double _angleOffset = 0.0;
 	void (*_checkPosition)();
 	VarNames _display_var = VarNames::ANGLE;
 	EncoderData _encoderData;
 	double _last_rpm = 0.0;				//<! buffers rpm
-	char _buff[5];
+	char _buff[VARNAME_BUFF_SIZE] = {0};
 
 
 public:
@@ -147,13 +147,13 @@ public:
 	CalFactors calFactors;
 	RotaryEncoder *encoder = nullptr;
 
-	volatile double mass_rpm;			//<! velocidad volanta
-//	volatile double angle;				//<! posición angular encoder --> use encoderRead().angle
-	volatile double wheel_daq_value;	//<! Velocidad de rueda (calibrar mediante menú)
-	volatile double ph_daq_value;		//<! Presión de horquilla (calibrar mediante menú)
-	volatile double pf_daq_value;		//<! Presión de freno (calibrar mediante menú)
-	volatile double t1_daq_value;		//<! Temperatura 1
-	volatile double t2_daq_value;		//<! Temperatura 2
+	volatile uint32_t mass_rpm;			//<! velocidad volanta
+//	volatile uint32_t angle;			//<! posición angular encoder --> use encoderRead().angle
+	volatile uint16_t wheel_daq_value;	//<! Velocidad de rueda (calibrar mediante menú)
+	volatile uint16_t ph_daq_value;		//<! Presión de horquilla (calibrar mediante menú)
+	volatile uint16_t pf_daq_value;		//<! Presión de freno (calibrar mediante menú)
+	volatile uint16_t t1_daq_value;		//<! Temperatura 1
+	volatile uint16_t t2_daq_value;		//<! Temperatura 2
 
 
 	BankAnalogInputs(void (*checkPosition)(), int period = 1000, int filter = 1);

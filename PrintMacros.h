@@ -9,7 +9,7 @@
 #define PRINTMACROS_H_
 
 #define DEBUG 0
-#define PDAQ 1
+#define PDAQ  1
 
 #if DEBUG
 #define PRINT(s, x) { Serial.print(F(s)); Serial.print(x); }
@@ -34,15 +34,15 @@
 #endif
 
 #if PDAQ
-#define PDAQ(s, x) { Serial.print(F(s)); Serial.print(x); }
+#define PDAQ(s, x) { Serial.print(F(s)); Serial.print((int)x); }
 #define PDAQS(s) Serial.print(F(s))
-#define PDAQX(x) Serial.print(x)
-#define TPDAQ(s, x) { Serial.print("\t"); Serial.print(F(s)); Serial.print(x); }
+#define PDAQX(x) Serial.print((int)x)
+#define TPDAQ(s, x) { Serial.print("\t"); Serial.print(F(s)); Serial.print((int)x); }
 #define TPDAQS(s) { Serial.print("\t"); Serial.print(F(s)); }
-#define TPDAQX(x) { Serial.print("\t"); Serial.print(x); }
-#define NPDAQ(s, x) { Serial.print("\n"); Serial.print(F(s)); Serial.print(x); }
+#define TPDAQX(x) { Serial.print("\t"); Serial.print((int)x); }
+#define NPDAQ(s, x) { Serial.print("\n"); Serial.print(F(s)); Serial.print((int)x); }
 #define NPDAQS(s) { Serial.print("\n"); Serial.print(F(s)); }
-#define NPDAQX(x) { Serial.print("\n"); Serial.print(x); }
+#define NPDAQX(x) { Serial.print("\n"); Serial.print((int)x); }
 
 //#define PDAQ(s, x) Serial << (F(s)) << _FLOAT(x, 2)
 //#define PDAQS(s) Serial << (F(s))

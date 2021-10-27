@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-10-26 12:30:32
+//This file has been generated on 2021-10-27 07:58:44
 
 #include "Arduino.h"
 #include "PrintMacros.h"
@@ -26,18 +26,18 @@
 #include "Matrix.h"
 #include "MMFilter.h"
 #include "Timer.h"
-#define DATA_REFRESH_PERIOD		200
-#define ZERO_PH				5
-#define ZERO_PF				5
-#define ZERO_MASS_VEL		5
-#define ZERO_WHEEL_VEL		5
+#define DISPLAY_MESSAGES_PERIOD		500
+#define SERIAL_DAQ_PERIOD			250
+#define TEST_PERIOD					500
+#define ZERO_PH				15
+#define ZERO_PF				15
+#define ZERO_MASS_VEL		15
+#define ZERO_WHEEL_VEL		15
 #define STB					10
 #define CLK					11
 #define DIO					12
 #define MAX_DEVICES 		8
 #define CS_PIN    			53
-#define DISPLAY_MESSAGES_PERIOD		500
-#define SERIAL_DAQ_PERIOD			250
 extern BankButtons* bankButtons;
 extern BankLeds* bankLeds;
 extern BankAnalogInputs* bankInputs;
@@ -52,7 +52,6 @@ extern Timer* timerDaq;
 extern LiquidCrystal lcd;
 extern Printer printer;
 extern bool dprint;
-extern double t0;
 #include "MainTransitions.h"
 #include "MainOnEnterings.h"
 #include "MainOnLeavings.h"

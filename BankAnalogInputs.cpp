@@ -233,16 +233,19 @@ double BankAnalogInputs::getTime() {
 double BankAnalogInputs::getWv() {
 	double val = wheel_daq_value * calFactors.ka_wheel;
 	return _mmf[IN_WV]->filter(val);
+//	return val;
 }
 
 double BankAnalogInputs::getPh() {
 	double val = ph_daq_value * calFactors.ka_ph;
 	return _mmf[IN_PH]->filter(val);
+//	return val;
 }
 
 double BankAnalogInputs::getPf() {
 	double val = pf_daq_value * calFactors.ka_pf;
 	return _mmf[IN_PF]->filter(val);
+//	return val;
 }
 
 double BankAnalogInputs::getT1() {
@@ -333,28 +336,28 @@ char* BankAnalogInputs::getDisplayVarName() {
 //	MASS, ANGLE, WHEEL, PH, PF, T1, T2, ERROR, END
 
 	case MASS:
-		sprintf(_buff, "%s", "RPM ");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "RPM ");
 		break;
 	case ANGLE:
-		sprintf(_buff, "%s", "ANGL");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "ANGL");
 		break;
 	case WHEEL:
-		sprintf(_buff, "%s", "RUED");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "RUED");
 		break;
 	case PH:
-		sprintf(_buff, "%s", "Ph.  ");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "Ph. ");
 		break;
 	case PF:
-		sprintf(_buff, "%s", "PFr. ");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "PFr.");
 		break;
 	case T1:
-		sprintf(_buff, "%s", "T1° ");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "T1° ");
 		break;
 	case T2:
-		sprintf(_buff, "%s", "T2° ");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "T2° ");
 		break;
 	default:
-		sprintf(_buff, "%s", "ERR ");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "ERR ");
 		break;
 	}
 

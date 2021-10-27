@@ -36,6 +36,7 @@
 
 #define DISPLAY_MESSAGES_PERIOD		500
 #define SERIAL_DAQ_PERIOD			250
+#define TEST_PERIOD					500
 
 
 #define ZERO_PH				15
@@ -68,13 +69,13 @@ MyTasker 			*tasker;
 Confirmator			*confirmator;
 Matrix	 			*matrix;
 
-Timer				*timerDaq, *timerDisplay;
+Timer				*timerDaq, *timerDisplay, *timerTest;
 
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 Printer printer(60);
 
 bool dprint = false;
-double t0 = double(millis());
+//double t0 = double(millis());
 
 
 
@@ -90,7 +91,7 @@ void setup() {
 
 	bankButtons = 	new BankButtons(onBtn0, onLongBtn0, onBtn1, onLongBtn1);
 	bankLeds = 		new BankLeds();
-	bankInputs = 	new BankAnalogInputs(checkAngle, 500, 8);
+	bankInputs = 	new BankAnalogInputs(checkAngle, 500, 5);
 	bankKp = 		new BankKeyPad(keyPadPressedHandler, keyPadDataReadyHandler);
 	brake = 		new MainFSM(mainTransitions, mainOnEnterings, mainOnLeavings, nullptr);
 	menu =	 		new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
@@ -101,6 +102,7 @@ void setup() {
 
 	timerDaq = 		new Timer(SERIAL_DAQ_PERIOD);
 	timerDisplay = 	new Timer(DISPLAY_MESSAGES_PERIOD);
+	timerTest = 	new Timer(TEST_PERIOD);
 
 	// Timer
 	Timer1.stop();
@@ -144,16 +146,27 @@ void daqprint() {
 	if (!dprint) return;
 
 	if (timerDaq->read()) {
-		NPDAQX((millis() - t0)/1000.0);
-		TPDAQX(brake->GetState());
-		TPDAQX(bankInputs->getRpm());
-		TPDAQX(bankInputs->getWv());
-		TPDAQX(bankInputs->getPh());
-		TPDAQX(bankInputs->getPf());
-		TPDAQX(bankInputs->getT1());
-		TPDAQX(bankInputs->getT2());
-		TPDAQX(bankInputs->getDistance());
-		TPDAQX(bankInputs->encoderRead().angle);
+//		NPDAQX(bankInputs->getTime());
+//		TPDAQX(brake->GetState());
+//		TPDAQX(bankInputs->getRpm());
+//		TPDAQX(bankInputs->getWv());
+//		TPDAQX(bankInputs->getPh());
+//		TPDAQX(bankInputs->getPf());
+//		TPDAQX(bankInputs->getT1());
+//		TPDAQX(bankInputs->getT2());
+//		TPDAQX(bankInputs->getDistance());
+//		TPDAQX(bankInputs->encoderRead().angle);
+
+		Serial << "\n" << bankInputs->getTime();
+		Serial << "\t" << brake->GetState();
+		Serial << "\t" << bankInputs->getRpm();
+		Serial << "\t" << bankInputs->getWv();
+		Serial << "\t" << bankInputs->getPh();
+		Serial << "\t" << bankInputs->getPf();
+		Serial << "\t" << bankInputs->getT1();
+		Serial << "\t" << bankInputs->getT2();
+		Serial << "\t" << bankInputs->getDistance();
+		Serial << "\t" << bankInputs->encoderRead().angle;
 	}
 
 }
