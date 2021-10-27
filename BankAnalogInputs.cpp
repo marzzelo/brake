@@ -158,21 +158,21 @@ void BankAnalogInputs::eePreset() {
 	/*********************************
 	 * CALIBRATION PRESET
 	 *********************************/
-	testParms.max_mass_vel = 500.28;  // 500 rpm
-	testParms.brake_mass_vel_min = 410.28;  // 420 rpm nominal
-	testParms.brake_mass_vel_max = 430.28;
-	testParms.landing_wheel_vel = 500.2;
-	testParms.ph_threshold = 512.28;
-	testParms.pf_threshold = 100.28;
+	testParms.max_mass_vel = 500.0;  // 500 rpm
+	testParms.brake_mass_vel_min = 410.0;  // 420 rpm nominal
+	testParms.brake_mass_vel_max = 430.0;
+	testParms.landing_wheel_vel = 500.0;
+	testParms.ph_threshold = 512.0;
+	testParms.pf_threshold = 500.0;
 	testParms.t1_hot = 60.0;
 	testParms.t2_hot = 60.0;
 
 	calFactors.ka_mass = 1.0;		// ka_mass = 1 rpm/Hz
-	calFactors.ka_wheel = 1.0;
-	calFactors.ka_ph = 1.0;
-	calFactors.ka_pf = 1.0;
-	calFactors.ka_t1 = 1000.0;
-	calFactors.ka_t2 = 1000.0;
+	calFactors.ka_wheel = 0.978;
+	calFactors.ka_ph = 0.978;
+	calFactors.ka_pf = 0.978;
+	calFactors.ka_t1 = 0.4;
+	calFactors.ka_t2 = 0.4;
 	calFactors.kb_alpha = 0.0;
 
 	int eeAddress = 0;  // Bank 0/3 : Cell 0x000/0x3FF
