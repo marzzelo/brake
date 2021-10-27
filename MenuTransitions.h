@@ -5,10 +5,8 @@
  *      Author: valdez
  */
 
-
 #ifndef MENUTRANSITIONS_H_
 #define MENUTRANSITIONS_H_
-
 
 /*
   _____                    _ _   _
@@ -17,10 +15,9 @@
    | || | | (_| | | | \__ \ | |_| | (_) | | | \__ \
    |_||_|  \__,_|_| |_|___/_|\__|_|\___/|_| |_|___/
 
-*/
+ */
 
 #define ADD_TRANSITION_FROM_MAIN_KEY(key) 	[]() { return bankKp->readKey((key)); }
-
 
 bool updateParam(double &param, uint16_t daqValue) {
 	if (bankKp->dataReady()) {
@@ -34,52 +31,79 @@ bool updateParam(double &param, uint16_t daqValue) {
 }
 
 
+
 /**
  * Array of transition functions.
  * NOTE: ORDER MUST FOLLOW THE ENUM  MenuFSM::Transitions
  */
 bool (*menuTransitions[])(void) = {
 
-	//////////////////////////////////////////
-	// IDLE TO MAIN (array index: 0)
-	//////////////////////////////////////////
 	[]() {
-		return bankKp->readKey(1);
+		return bankKp->readKey(1);			// Idle -> Main
 	},
 
 	//////////////////////////////////////////
 	// FACTORES DE CALIBRACIÃ“N
 	//////////////////////////////////////////
-	ADD_TRANSITION_FROM_MAIN_KEY(0),		//  (array index = 1, key = 0)
+	[]() {
+		return bankKp->readKey(0);			// Main -> idle
+	},
 
-	ADD_TRANSITION_FROM_MAIN_KEY(1),		//  (array index = 2, key = 1)
+	[]() {
+		return bankKp->readKey(1);			// Main -> wheel
+	},
 
-	ADD_TRANSITION_FROM_MAIN_KEY(2),
+	[]() {
+		return bankKp->readKey(2);			// Main -> Ph
+	},
 
-	ADD_TRANSITION_FROM_MAIN_KEY(3),
+	[]() {
+		return bankKp->readKey(3);			// Pf
+	},
 
-	ADD_TRANSITION_FROM_MAIN_KEY(4),
 
-	ADD_TRANSITION_FROM_MAIN_KEY(5),
+	[]() {
+		return bankKp->readKey(4);			// Main -> T1
+	},
 
-	ADD_TRANSITION_FROM_MAIN_KEY(6),		//  (array index = 7, key = 6)
+	[]() {
+		return bankKp->readKey(5);			// Main -> T2
+	},
+
+	[]() {
+		return bankKp->readKey(6);			// Main -> Alpha
+	},
 
 	//////////////////////////////////////////
 	// PARÃ�METROS DE ENSAYO
 	//////////////////////////////////////////
-	ADD_TRANSITION_FROM_MAIN_KEY(7),		//  (array index = 8, key = 7)
+	[]() {
+		return bankKp->readKey(7);			// Vel max
+	},
 
-	ADD_TRANSITION_FROM_MAIN_KEY(8),
+	[]() {
+		return bankKp->readKey(8);			// Vel sup
+	},
 
-	ADD_TRANSITION_FROM_MAIN_KEY(9),
+	[]() {
+		return bankKp->readKey(9);			// Vel inf
+	},
 
-	ADD_TRANSITION_FROM_MAIN_KEY(10),
+	[]() {
+		return bankKp->readKey(10);			// Ph nom
+	},
 
-	ADD_TRANSITION_FROM_MAIN_KEY(11),
+	[]() {
+		return bankKp->readKey(11);			// Pf nom
+	},
 
-	ADD_TRANSITION_FROM_MAIN_KEY(12),
+	[]() {
+		return bankKp->readKey(12);			// T1hot
+	},
 
-	ADD_TRANSITION_FROM_MAIN_KEY(13),		//  (array index = 14, key = 13)
+	[]() {
+		return bankKp->readKey(13);			// T2hot
+	},
 
 	//////////////////////////////////////////
 	// RETORNOS A MAIN MENU
@@ -127,7 +151,6 @@ bool (*menuTransitions[])(void) = {
 		return false;  // keep reading keypad
 	},
 
-
 	// MVMAX -> MAIN
 	[]() {
 		return updateParam(bankInputs->testParms.max_mass_vel, 1);
@@ -163,8 +186,6 @@ bool (*menuTransitions[])(void) = {
 		return updateParam(bankInputs->testParms.t2_hot, 1);
 	},
 
-
 };
-
 
 #endif /* MENUTRANSITIONS_H_ */

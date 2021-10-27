@@ -28,6 +28,7 @@ void (*menuOnEnterings[])(void) = {
 		bankKp->start();
 		bankKp->checkCommands = true;
 		bankKp->readKey(0);  // clear eventual buffered event;
+		matrix->text("-* CONFIG *-");
 
 		Serial << "\n\n\n\n\n\n";
 
@@ -80,14 +81,14 @@ void (*menuOnEnterings[])(void) = {
 	[ ] ( ) {
 		printer.print_header("CALIBRACIÓN TEMP 1");
 		printer.print_item("Aplicar temperatura 1 e ingresar valor real:");
-		Serial << "\n\n  Temperatura [°C] ==> ";
+		Serial << "\n\n  Temperatura1 [°C] ==> ";
 	},
 
 	// -> T2CAL
 	[ ] ( ) {
 		printer.print_header("CALIBRACIÓN TEMP 2");
 		printer.print_item("Aplicar temperatura 2 e ingresar valor real:");
-		Serial << "\n\n  Temperatura [°C] ==> ";
+		Serial << "\n\n  Temperatura2 [°C] ==> ";
 	},
 
 	// -> ALPHACAL

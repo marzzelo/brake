@@ -33,7 +33,7 @@
 class BankKeyPad : public KeyPadRX {
 
 private:
-	char keyBuff[40];
+	char keyBuff[40] = { 0 };
 
 	char keys[ROWS * COLS] = { '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#' };
 

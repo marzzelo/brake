@@ -10,6 +10,12 @@
 
 #define PRINT_HEADER() 		PDAQS("\nsep=\t\nt[s]\tSTATE\tMv\tWv\tPh\tPf\tT1\tT2\td\tangle")
 
+#define BUFF_SIZE	80
+
+char str[BUFF_SIZE] = { 0 };
+
+
+
 void ent_idle() {
 	bankLeds->beep();
 	bankLeds->relayOffAll();
@@ -27,7 +33,7 @@ void ent_idle() {
 	tm1638->ledsOff();
 
 	matrix->setMessage("FAdeA - EXPERIMENTAL - ENSAYOS ESTRUCTURALES");
-	printer.print_header("Brake Test v1.0 release 10/2021", true);
+	printer.print_header("Brake Test v1.0 release 10/27/2021", true);
 	printer.print_item("Presionar START para comenzar");
 	printer.print_item("o ingresar   1     para Configurar ensayo");
 	printer.print_item("             2     para Comenzar ensayo");
@@ -45,14 +51,14 @@ void ent_checking() {
 	tm1638->dispstr("Checking");
 
 	PRINTS("\nST_CHECKING_COND... [Esperando condiciones de inicio: Mv=0, Wv=0, Ph=0, Pf=0, T1&T2<Thot]");
-
 }
+
 
 void ent_condok() {
 	PRINTS("\nST_COND_OK... [Esperando Mv > 0]");
 	bankLeds->relayOnly(0);
 	bankLeds->beep();
-	confirmator->reset(3);
+//	confirmator->reset(3);
 
 	PRINT_HEADER();
 	dprint = true;
@@ -70,9 +76,9 @@ void ent_speeding() {
 	tm1638->ledOnly(BankAnalogInputs::MASS);
 	tm1638->dispstr("Acelerar");
 
-	PRINT("\n\nST_SPEEDING... [Esperando Mv >= ", bankInputs->testParms.max_mass_vel);
-	PRINTS(" rpm]");
-
+//	snprintf(str, BUFF_SIZE, "\n\nST_SPEEDING... [Esperando Mv >= %d rpm", round(bankInputs->testParms.max_mass_vel));
+//	Serial << str;
+//	Serial << "\n\nST_SPEEDING... [Esperando Mv >= " << bankInputs->testParms.max_mass_vel << " rpm]";
 }
 
 void ent_maxvel() {
@@ -130,7 +136,7 @@ void ent_error() {
 	bankLeds->beep();
 	bankLeds->relayOffAll();
 	bankLeds->relayStart(7);
-	tm1638->ledOnly(BankAnalogInputs::ERROR);
+	tm1638->ledsOff();
 
 	PRINTS("\n**TEST ERROR** <RESET> para REINICIAR");
 }

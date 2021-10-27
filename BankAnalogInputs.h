@@ -28,11 +28,11 @@
 #define VARNAME_BUFF_SIZE	8
 
 #define INPUT_MASS		47	// Frequency Counter
-#define INPUT_PF		A0	// Presión de Freno
-#define INPUT_WHEEL		A1	// Velocidad de Rueda
-#define INPUT_PH		A2	// Presión de Horquilla
-#define INPUT_T1		A3	// Temp 1
-#define INPUT_T2		A4	// Temp 2
+#define INPUT_PF		A3	// Presión de Freno
+#define INPUT_WHEEL		A4	// Velocidad de Rueda
+#define INPUT_PH		A5	// Presión de Horquilla
+#define INPUT_T1		A6	// Temp 1
+#define INPUT_T2		A7	// Temp 2
 
 /*********************************
  * ROTARY ENCODER PINS
@@ -73,6 +73,8 @@ enum Inputs {
 	IN_WV,
 	IN_PF,
 	IN_PH,
+	IN_T1,
+	IN_T2,
 
 	MAX_INPUTS
 };
@@ -89,7 +91,7 @@ class BankAnalogInputs {
 
 public:
 	enum VarNames {
-		MASS, ANGLE, WHEEL, PH, PF, T1, T2, ERROR, END
+		MASS, ANGLE, WHEEL, PH, PF, T1, T2, DIST, END
 	};
 
 private:
@@ -149,11 +151,11 @@ public:
 
 	volatile uint32_t mass_rpm;			//<! velocidad volanta
 //	volatile uint32_t angle;			//<! posición angular encoder --> use encoderRead().angle
-	volatile uint16_t wheel_daq_value;	//<! Velocidad de rueda (calibrar mediante menú)
-	volatile uint16_t ph_daq_value;		//<! Presión de horquilla (calibrar mediante menú)
-	volatile uint16_t pf_daq_value;		//<! Presión de freno (calibrar mediante menú)
-	volatile uint16_t t1_daq_value;		//<! Temperatura 1
-	volatile uint16_t t2_daq_value;		//<! Temperatura 2
+	volatile uint32_t wheel_daq_value;	//<! Velocidad de rueda (calibrar mediante menú)
+	volatile uint32_t ph_daq_value;		//<! Presión de horquilla (calibrar mediante menú)
+	volatile uint32_t pf_daq_value;		//<! Presión de freno (calibrar mediante menú)
+	volatile uint32_t t1_daq_value;		//<! Temperatura 1
+	volatile uint32_t t2_daq_value;		//<! Temperatura 2
 
 
 	BankAnalogInputs(void (*checkPosition)(), int period = 1000, int filter = 1);

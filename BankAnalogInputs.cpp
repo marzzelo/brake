@@ -231,29 +231,28 @@ double BankAnalogInputs::getTime() {
 }
 
 double BankAnalogInputs::getWv() {
-	double val = wheel_daq_value * calFactors.ka_wheel;
-	return _mmf[IN_WV]->filter(val);
-//	return val;
+	double val = _mmf[IN_WV]->filter((double)wheel_daq_value);
+	return val * calFactors.ka_wheel;
 }
 
 double BankAnalogInputs::getPh() {
 	double val = ph_daq_value * calFactors.ka_ph;
 	return _mmf[IN_PH]->filter(val);
-//	return val;
 }
 
 double BankAnalogInputs::getPf() {
 	double val = pf_daq_value * calFactors.ka_pf;
 	return _mmf[IN_PF]->filter(val);
-//	return val;
 }
 
 double BankAnalogInputs::getT1() {
-	return t1_daq_value * calFactors.ka_t1;
+	double val = t1_daq_value * calFactors.ka_t1;
+	return _mmf[IN_T1]->filter(val);
 }
 
 double BankAnalogInputs::getT2() {
-	return t2_daq_value * calFactors.ka_t2;
+	double val = t2_daq_value * calFactors.ka_t2;
+	return _mmf[IN_T2]->filter(val);
 }
 
 void BankAnalogInputs::startCounting() {
@@ -306,6 +305,10 @@ double BankAnalogInputs::getDisplayVarValue() {
 		return getT1();
 		break;
 
+	case VarNames::DIST:
+		return getDistance();
+		break;
+
 	case VarNames::T2:
 	default:
 		return getT2();
@@ -333,7 +336,7 @@ void BankAnalogInputs::reset() {
 char* BankAnalogInputs::getDisplayVarName() {
 	switch (_display_var) {
 
-//	MASS, ANGLE, WHEEL, PH, PF, T1, T2, ERROR, END
+//	MASS, ANGLE, WHEEL, PH, PF, T1, T2, DIST, END
 
 	case MASS:
 		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "RPM ");
@@ -345,10 +348,10 @@ char* BankAnalogInputs::getDisplayVarName() {
 		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "RUED");
 		break;
 	case PH:
-		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "Ph. ");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "Ph.  ");
 		break;
 	case PF:
-		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "PFr.");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "PFr. ");
 		break;
 	case T1:
 		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "T1° ");
@@ -357,7 +360,7 @@ char* BankAnalogInputs::getDisplayVarName() {
 		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "T2° ");
 		break;
 	default:
-		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "ERR ");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "DIST");
 		break;
 	}
 
@@ -367,7 +370,7 @@ char* BankAnalogInputs::getDisplayVarName() {
 char* BankAnalogInputs::nextDisplayVar() {
 	int dv = (int) _display_var;
 
-	if (++dv == (int) VarNames::ERROR)
+	if (++dv == (int) VarNames::END)
 		dv = 0;
 
 	_display_var = (VarNames) dv;

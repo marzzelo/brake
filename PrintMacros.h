@@ -34,15 +34,15 @@
 #endif
 
 #if PDAQ
-#define PDAQ(s, x) { Serial.print(F(s)); Serial.print((int)x); }
+#define PDAQ(s, x) { Serial.print(F(s)); Serial.print(x); }
 #define PDAQS(s) Serial.print(F(s))
-#define PDAQX(x) Serial.print((int)x)
-#define TPDAQ(s, x) { Serial.print("\t"); Serial.print(F(s)); Serial.print((int)x); }
+#define PDAQX(x) Serial.print(x)
+#define TPDAQ(s, x) { Serial.print("\t"); Serial.print(F(s)); Serial.print(x); }
 #define TPDAQS(s) { Serial.print("\t"); Serial.print(F(s)); }
-#define TPDAQX(x) { Serial.print("\t"); Serial.print((int)x); }
-#define NPDAQ(s, x) { Serial.print("\n"); Serial.print(F(s)); Serial.print((int)x); }
+#define TPDAQX(x) { Serial.print("\t"); Serial.print(x); }
+#define NPDAQ(s, x) { Serial.print("\n"); Serial.print(F(s)); Serial.print(x); }
 #define NPDAQS(s) { Serial.print("\n"); Serial.print(F(s)); }
-#define NPDAQX(x) { Serial.print("\n"); Serial.print((int)x); }
+#define NPDAQX(x) { Serial.print("\n"); Serial.print(x); }
 
 //#define PDAQ(s, x) Serial << (F(s)) << _FLOAT(x, 2)
 //#define PDAQS(s) Serial << (F(s))

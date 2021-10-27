@@ -81,8 +81,7 @@ bool tr_checking_condok() {
 	if (bankInputs->check(MV_GT_0)) {
 		cond_ok = false;
 		if (ttd) {
-			PRINT("\n** DETENER MASA [", bankInputs->getRpm());
-			PRINTS(" rpm]");
+			PRINT("\n** DETENER MASA = ", bankInputs->getRpm());
 
 			tm1638->dispstr("MAS GT 0");
 			matrix->text("ERR VM > 0");
@@ -93,8 +92,7 @@ bool tr_checking_condok() {
 	if (bankInputs->check(WV_GT_0)) {
 		cond_ok = false;
 		if (ttd) {
-			PRINT("\n** DETENER RUEDA [", bankInputs->getWv());
-			PRINTS(" rpm]");
+			PRINT("\n** DETENER RUEDA = ", bankInputs->getWv());
 
 			if (!displaybussy) {
 				tm1638->dispstr("RUE GT 0");
@@ -107,8 +105,7 @@ bool tr_checking_condok() {
 	if (bankInputs->check(PH_GT_0)) {
 		cond_ok = false;
 		if (ttd) {
-			PRINT("\n** REDUCIR PH [", bankInputs->getPh());
-			PRINTS(" bar]");
+			PRINT("\n** REDUCIR PH = ", bankInputs->getPh());
 
 			if (!displaybussy) {
 				tm1638->dispstr("PH  GT 0");
@@ -121,8 +118,7 @@ bool tr_checking_condok() {
 	if (bankInputs->check(PF_GT_0)) {
 		cond_ok = false;
 		if (ttd) {
-			PRINT("\n** REDUCIR PF [", bankInputs->getPf());
-			PRINTS(" bar]");
+			PRINT("\n** REDUCIR PF = ",  bankInputs->getPf());
 
 			if (!displaybussy) {
 				tm1638->dispstr("PF  GT 0");
@@ -136,10 +132,7 @@ bool tr_checking_condok() {
 		cond_ok = false;
 
 		if (ttd) {
-			PRINT("\n** Temp Alta [T1: ", bankInputs->getT1());
-			PRINTS(" °C]");
-			PRINT(" [T2: ", bankInputs->getT2());
-			PRINTS(" °C]");
+			PRINTS("\n** Temp Alta [T1 or T2]");
 
 			if (!displaybussy) {
 				tm1638->dispstr("TMP ALTA");
@@ -153,8 +146,7 @@ bool tr_checking_condok() {
 		cond_ok = false;
 
 		if (ttd) {
-			PRINT("\nCorregir Inclinación [ANG: ", bankInputs->encoderRead().angle);
-			PRINTS(" °]");
+			PRINT("\nCorregir Inclinación ANG = ", bankInputs->encoderRead().angle);
 
 			if (!displaybussy) {
 				tm1638->dispstr("ANG GT 0");
@@ -201,17 +193,12 @@ bool tr_any_idle() {
  * ## Cumplidas las condiciones, esperar inicio de giro de masa
  */
 bool tr_condok_speeding() {
-//	static int _events = 0;
 
 	if (timerDisplay->read()) {
 		double rpm = bankInputs->getRpm();
-		PRINT("\nST_COND_OK> mass vel: ", rpm);
-		PRINTS(" ** INICIAR GIRO **");
+		PRINT("\nmass vel = ", rpm); PRINTS(" ** INICIAR GIRO **");
 
-//		snprintf(mbuff, 16, "Vm = %d rpm", round(rpm));
-//		matrix->text(mbuff);
-
-		return confirmator->confirm(bankInputs->check(MV_GT_0));
+		return bankInputs->check(MV_GT_0);
 	}
 
 	return false;
@@ -230,8 +217,7 @@ bool tr_speeding_maxvel() {
 	if (timerDisplay->read()) {
 		double rpm = bankInputs->getRpm();
 
-		PRINT("\nST_SPEEDING> Mv: ", bankInputs->getRpm());
-		PRINTS(" ** ACELERAR a 500 rpm **");
+		PRINTS("\nST_SPEEDING> ** ACELERAR a 500 rpm **");
 
 		tm1638->dispmix("ACEL", bankInputs->getRpm());
 
@@ -252,7 +238,6 @@ bool tr_speeding_maxvel() {
 bool tr_maxvel_landing() {
 	if (timerDisplay->read()) {
 		double wheel = bankInputs->getWv();
-		PRINT("\nST_MAX_VEL> Wv: ", wheel);
 		PRINTS(" ** ATERRIZAR RUEDA ***");
 
 		displayVar(); // Mass vel
@@ -490,7 +475,7 @@ bool tr_monitoring_idle() {
 //		bankInputs->setTimeOut(250);
 
 		double value = displayVar();
-		snprintf(mbuff, MSG_BUFF_SIZE - 1, "%s = %d", bankInputs->getDisplayVarName(), round(value));
+		snprintf(mbuff, MSG_BUFF_SIZE - 1, "%s = %d", bankInputs->getDisplayVarName(), (unsigned long)value);
 		matrix->text(mbuff);
 	}
 

@@ -62,8 +62,8 @@ public:
 	enum Transitions {
 		TR_IDLE_MAIN = 0,
 
-		TR_MAIN_IDLE,
-		TR_MAIN_WHEELCAL,
+		TR_MAIN_IDLE,		// key: 0
+		TR_MAIN_WHEELCAL,	// key: 1
 		TR_MAIN_PHCAL,
 		TR_MAIN_PFCAL,
 		TR_MAIN_T1CAL,

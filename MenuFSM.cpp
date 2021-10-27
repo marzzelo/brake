@@ -43,7 +43,7 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 
 	AddTransition(ST_MENU_MAIN, ST_MENU_T1_CAL, transitions[TR_MAIN_T1CAL]);
 
-	AddTransition(ST_MENU_MAIN, ST_MENU_T1_CAL, transitions[TR_MAIN_T2CAL]);
+	AddTransition(ST_MENU_MAIN, ST_MENU_T2_CAL, transitions[TR_MAIN_T2CAL]);
 
 	AddTransition(ST_MENU_MAIN, ST_MENU_ALPHA_CAL, transitions[TR_MAIN_ALPHACAL]);
 

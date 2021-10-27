@@ -29,7 +29,7 @@
 #include "MainFSM.h"
 #include "Printer.h"
 #include "TM1638.h"
-#include "Confirmator.h"
+//#include "Confirmator.h"
 #include "Matrix.h"
 #include "MMFilter.h"
 #include "Timer.h"
@@ -66,7 +66,7 @@ MainFSM 			*brake;
 MenuFSM 			*menu;
 TM1638				*tm1638;
 MyTasker 			*tasker;
-Confirmator			*confirmator;
+//Confirmator			*confirmator;
 Matrix	 			*matrix;
 
 Timer				*timerDaq, *timerDisplay, *timerTest;
@@ -97,7 +97,7 @@ void setup() {
 	menu =	 		new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
 	tm1638 = 		new TM1638(STB, CLK, DIO);
 	tasker = 		new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
-	confirmator =	new Confirmator(2);
+//	confirmator =	new Confirmator(2);
 	matrix = 		new Matrix(CS_PIN, MAX_DEVICES);
 
 	timerDaq = 		new Timer(SERIAL_DAQ_PERIOD);
@@ -115,7 +115,7 @@ void setup() {
 	brake->SetState(MainFSM::ST_IDLE, false, true);
 	menu->SetState(MenuFSM::ST_MENU_IDLE, false, false);
 
-//	bank.eePreset();			// default calibration/parameter values
+//	bankInputs->eePreset();			// default calibration/parameter values
 
 	bankInputs->loadSettings();	// Loads calibration/test parameters from EEprom
 	bankInputs->start(); 		// Enables DAQ
@@ -146,27 +146,16 @@ void daqprint() {
 	if (!dprint) return;
 
 	if (timerDaq->read()) {
-//		NPDAQX(bankInputs->getTime());
-//		TPDAQX(brake->GetState());
-//		TPDAQX(bankInputs->getRpm());
-//		TPDAQX(bankInputs->getWv());
-//		TPDAQX(bankInputs->getPh());
-//		TPDAQX(bankInputs->getPf());
-//		TPDAQX(bankInputs->getT1());
-//		TPDAQX(bankInputs->getT2());
-//		TPDAQX(bankInputs->getDistance());
-//		TPDAQX(bankInputs->encoderRead().angle);
-
-		Serial << "\n" << bankInputs->getTime();
-		Serial << "\t" << brake->GetState();
-		Serial << "\t" << bankInputs->getRpm();
-		Serial << "\t" << bankInputs->getWv();
-		Serial << "\t" << bankInputs->getPh();
-		Serial << "\t" << bankInputs->getPf();
-		Serial << "\t" << bankInputs->getT1();
-		Serial << "\t" << bankInputs->getT2();
-		Serial << "\t" << bankInputs->getDistance();
-		Serial << "\t" << bankInputs->encoderRead().angle;
+		NPDAQX(bankInputs->getTime());
+		TPDAQX(brake->GetState());
+		TPDAQX(bankInputs->getRpm());
+		TPDAQX(bankInputs->getWv());
+		TPDAQX(bankInputs->getPh());
+		TPDAQX(bankInputs->getPf());
+		TPDAQX(bankInputs->getT1());
+		TPDAQX(bankInputs->getT2());
+		TPDAQX(bankInputs->getDistance());
+		TPDAQX(bankInputs->encoderRead().angle);
 	}
 
 }
