@@ -339,7 +339,7 @@ char* BankAnalogInputs::getDisplayVarName() {
 //	MASS, ANGLE, WHEEL, PH, PF, T1, T2, DIST, END
 
 	case MASS:
-		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "RPM ");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "RPM");
 		break;
 	case ANGLE:
 		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "ANGL");
@@ -348,16 +348,16 @@ char* BankAnalogInputs::getDisplayVarName() {
 		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "RUED");
 		break;
 	case PH:
-		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "Ph.  ");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "Ph");
 		break;
 	case PF:
-		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "PFr. ");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "PFr");
 		break;
 	case T1:
-		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "T1° ");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "T1°");
 		break;
 	case T2:
-		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "T2° ");
+		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "T2°");
 		break;
 	default:
 		snprintf(_buff, VARNAME_BUFF_SIZE - 1, "%s", "DIST");

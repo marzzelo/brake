@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-10-28 11:15:11
+//This file has been generated on 2021-10-28 13:00:31
 
 #include "Arduino.h"
 #include "PrintMacros.h"
@@ -46,8 +46,8 @@ extern MenuFSM* menu;
 extern TM1638* tm1638;
 extern MyTasker* tasker;
 extern Matrix* matrix;
+extern LiquidCrystal* lcd;
 extern Timer* timerDaq;
-extern LiquidCrystal lcd;
 extern Printer printer;
 extern bool dprint;
 #include "MainTransitions.h"

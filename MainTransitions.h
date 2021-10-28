@@ -18,14 +18,14 @@
  */
 
 
-//#define 		VARNAME_BUFF_SIZE	8
+#define 		DOUBLE_BUFF_SIZE	10
 #define 		MSG_BUFF_SIZE		32
 
 extern BankButtons *bankButtons;
 
 double tf;	//<! final braking time
 
-//char buff[VARNAME_BUFF_SIZE] = { 0 };
+char dbuff[DOUBLE_BUFF_SIZE] = { 0 };
 char mbuff[MSG_BUFF_SIZE] = { 0 };
 
 extern Timer *timerDisplay;
@@ -474,7 +474,8 @@ bool tr_monitoring_idle() {
 //		bankInputs->setTimeOut(250);
 
 		double value = displayVar();
-		snprintf(mbuff, MSG_BUFF_SIZE - 1, "%s = %d", bankInputs->getDisplayVarName(), (unsigned long)value);
+		dtostrf(value, 0, 1, dbuff);
+		snprintf(mbuff, MSG_BUFF_SIZE - 1, "%s = %s", bankInputs->getDisplayVarName(), dbuff);
 		matrix->text(mbuff);
 	}
 

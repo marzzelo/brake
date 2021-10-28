@@ -66,10 +66,9 @@ MenuFSM 			*menu;
 TM1638				*tm1638;
 MyTasker 			*tasker;
 Matrix	 			*matrix;
+LiquidCrystal 		*lcd;
 
 Timer				*timerDaq, *timerDisplay, *timerTest;
-
-LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 Printer printer(60);
 
 bool dprint = false;
@@ -95,6 +94,7 @@ void setup() {
 	tm1638 = 		new TM1638(STB, CLK, DIO);
 	tasker = 		new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
 	matrix = 		new Matrix(CS_PIN, MAX_DEVICES);
+	lcd = 			new LiquidCrystal(19, 18, 17, 16, 15, 14);
 
 	timerDaq = 		new Timer(SERIAL_DAQ_PERIOD);
 	timerDisplay = 	new Timer(DISPLAY_MESSAGES_PERIOD);

@@ -37,8 +37,8 @@
 /*********************************
  * ROTARY ENCODER PINS
  *********************************/
-#define PIN_IN1 		18	// Green // SELECT PINS 2, 3, 18, 19, 20 or 21
-#define PIN_IN2 		19	// White // SELECT PINS 2, 3, 18, 19, 20 or 21
+#define PIN_IN1 		20	// Green // SELECT PINS 2, 3, 18, 19, 20 or 21
+#define PIN_IN2 		21	// White // SELECT PINS 2, 3, 18, 19, 20 or 21
 
 
 #define ZERO_PH				10
@@ -132,10 +132,10 @@ private:
 	volatile bool _daq_enabled;
 	MMFilter *_mmf[MAX_INPUTS];
 
-	volatile double _distance;			//<! Distancia recorrida durante el frenado
+	volatile double _distance = 0;			//<! Distancia recorrida durante el frenado
 	double _t0 = 0;
 	double _dt = 0;
-	bool _counting;
+	bool _counting = false;
 	double _angleOffset = 0.0;
 	void (*_checkPosition)();
 	VarNames _display_var = VarNames::ANGLE;
@@ -149,13 +149,13 @@ public:
 	CalFactors calFactors;
 	RotaryEncoder *encoder = nullptr;
 
-	volatile uint32_t mass_rpm;			//<! velocidad volanta
-//	volatile uint32_t angle;			//<! posición angular encoder --> use encoderRead().angle
-	volatile uint32_t wheel_daq_value;	//<! Velocidad de rueda (calibrar mediante menú)
-	volatile uint32_t ph_daq_value;		//<! Presión de horquilla (calibrar mediante menú)
-	volatile uint32_t pf_daq_value;		//<! Presión de freno (calibrar mediante menú)
-	volatile uint32_t t1_daq_value;		//<! Temperatura 1
-	volatile uint32_t t2_daq_value;		//<! Temperatura 2
+	volatile uint32_t mass_rpm = 0;			//<! velocidad volanta
+//	volatile uint32_t angle = 0;			//<! posición angular encoder --> use encoderRead().angle
+	volatile uint32_t wheel_daq_value = 0;	//<! Velocidad de rueda (calibrar mediante menú)
+	volatile uint32_t ph_daq_value = 0;		//<! Presión de horquilla (calibrar mediante menú)
+	volatile uint32_t pf_daq_value = 0;		//<! Presión de freno (calibrar mediante menú)
+	volatile uint32_t t1_daq_value = 0;		//<! Temperatura 1
+	volatile uint32_t t2_daq_value = 0; 	//<! Temperatura 2
 
 
 	BankAnalogInputs(void (*checkPosition)(), int period = 1000, int filter = 1);
