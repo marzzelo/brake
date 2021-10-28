@@ -34,11 +34,16 @@ class MainFSM: public StateMachine {
 
 private:
 	void (*_onUpdate)(void);
+	bool _paused;
 
 public:
 	MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void (*onLeavings[])(void), void (*onUpdate)(void));
 
 	bool Update();
+
+	void pause() { _paused = true; }
+
+	void restart()  { _paused = false; }
 
 
 	/**

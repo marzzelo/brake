@@ -166,6 +166,8 @@ void ent_monitoring() {
 
 	dprint = true;
 
+	//matrix->setEffects(PA_CENTER, 35, 2000, PA_SCROLL_DOWN, PA_SCROLL_UP);
+
 	bankInputs->setDisplayVarIndex(BankAnalogInputs::MASS);
 	displayVar();
 

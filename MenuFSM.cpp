@@ -66,6 +66,12 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 	AddTransition(ST_MENU_MAIN, ST_MENU_T2HOT_PAR, transitions[TR_MAIN_T2HOT]);
 
 
+	/////////////////////////////
+	// FACTORY RESET
+	/////////////////////////////
+	AddTransition(ST_MENU_MAIN, ST_MENU_FACTORYRESET, transitions[TR_MAIN_FRESET]);
+
+
 	//////////////////////////////////////////
 	// RETORNOS A MAIN MENU
 	//////////////////////////////////////////
@@ -97,6 +103,7 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 
 	AddTransition(ST_MENU_T2HOT_PAR, ST_MENU_MAIN, transitions[TR_T2HOT_MAIN]);
 
+	AddTransition(ST_MENU_FACTORYRESET, ST_MENU_MAIN, transitions[TR_FRESET_MAIN]);
 
 
 //	  _         _

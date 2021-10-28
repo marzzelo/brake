@@ -18,15 +18,17 @@
 #include "Arduino.h"
 #include "Streaming.h"
 
+#define TXT_BUFF_SIZE	80
+#define NUM_BUFF_SIZE	10
 
 class Printer {
 
 private:
 	uint8_t _columns, _defaultCols;
 
-	char _spaces[80] = { ' ' };
-	char _text[80];
-	char _num[10];
+	char _spaces[TXT_BUFF_SIZE] = { ' ' };
+	char _text[TXT_BUFF_SIZE] = { 0 };
+	char _num[NUM_BUFF_SIZE] = { 0 };
 
 public:
 	Printer(uint8_t defaultColumns);

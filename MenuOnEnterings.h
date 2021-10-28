@@ -18,6 +18,7 @@ void (*menuOnEnterings[])(void) = {
 	[]() {
 		bankKp->asterisk('*');
 		bankKp->checkCommands = true;
+		brake->restart();
 		brake->SetState(MainFSM::ST_IDLE, false, true);
 	},
 
@@ -29,6 +30,9 @@ void (*menuOnEnterings[])(void) = {
 		bankKp->checkCommands = true;
 		bankKp->readKey(0);  // clear eventual buffered event;
 		matrix->text("-* CONFIG *-");
+
+
+		//AddTransition(ST_IDLE, ST_MONITORING, transitions[TR_IDLE_MONITORING]);
 
 		Serial << "\n\n\n\n\n\n";
 
@@ -51,6 +55,7 @@ void (*menuOnEnterings[])(void) = {
 		printer.make_item("11.Presión Nom de Freno: %s bar", bankInputs->testParms.pf_threshold);
 		printer.make_item("12.Temperatura T1: %s °C", bankInputs->testParms.t1_hot);
 		printer.make_item("13.Temperatura T2: %s °C", bankInputs->testParms.t2_hot);
+		printer.print_item("14.Factory Reset");
 
 		printer.print_header("0. Salir del Menú");
 		Serial << "\n\n==> ";

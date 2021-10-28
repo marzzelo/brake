@@ -29,7 +29,6 @@
 #include "MainFSM.h"
 #include "Printer.h"
 #include "TM1638.h"
-//#include "Confirmator.h"
 #include "Matrix.h"
 #include "MMFilter.h"
 #include "Timer.h"
@@ -66,7 +65,6 @@ MainFSM 			*brake;
 MenuFSM 			*menu;
 TM1638				*tm1638;
 MyTasker 			*tasker;
-//Confirmator			*confirmator;
 Matrix	 			*matrix;
 
 Timer				*timerDaq, *timerDisplay, *timerTest;
@@ -75,7 +73,6 @@ LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 Printer printer(60);
 
 bool dprint = false;
-//double t0 = double(millis());
 
 
 
@@ -97,7 +94,6 @@ void setup() {
 	menu =	 		new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
 	tm1638 = 		new TM1638(STB, CLK, DIO);
 	tasker = 		new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
-//	confirmator =	new Confirmator(2);
 	matrix = 		new Matrix(CS_PIN, MAX_DEVICES);
 
 	timerDaq = 		new Timer(SERIAL_DAQ_PERIOD);
@@ -110,19 +106,13 @@ void setup() {
 	Timer1.attachInterrupt(T1_ISR);
 	Timer1.start();
 
-
-	// State Machines GO IDLE!
 	brake->SetState(MainFSM::ST_IDLE, false, true);
 	menu->SetState(MenuFSM::ST_MENU_IDLE, false, false);
-
-//	bankInputs->eePreset();			// default calibration/parameter values
 
 	bankInputs->loadSettings();	// Loads calibration/test parameters from EEprom
 	bankInputs->start(); 		// Enables DAQ
 	bankInputs->setTimeOut(250);
 
-//	matrix->begin();
-//	matrix->setEffects(PA_LEFT, 35, 1000, PA_SCROLL_LEFT, PA_SCROLL_UP);
 	matrix->setMessage("FAdeA - EXPERIMENTAL - ENSAYOS ESTRUCTURALES");
 }
 

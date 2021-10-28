@@ -18,7 +18,7 @@
 MainFSM::MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void (*onLeavings[])(void), void (*onUpdate)(void)) :
 		StateMachine(State::COUNT, N_TRANSITIONS), _onUpdate(onUpdate) {
 
-
+	_paused = false;
 
 //	  __                  ___
 //	 (_ _|_  _. _|_  _     | ._ _. ._   _ o _|_ o  _  ._   _
@@ -147,6 +147,8 @@ MainFSM::MainFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 
 
 bool MainFSM::Update() {
+
+	if (_paused) return false;
 
 	if (_onUpdate != nullptr) _onUpdate();
 	return StateMachine::Update();

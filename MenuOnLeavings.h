@@ -19,7 +19,7 @@ void (*menuOnLeavings[])(void) = {
 
 	// IDLE ->
 	[] () {
-		// Serial << "\n------\nLEAVING ST_MENU_IDLE\n\n";
+		brake->pause();	// avoid responding to keyboard commands
 	},
 
 	// MENU MAIN ->

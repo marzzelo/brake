@@ -30,7 +30,7 @@ void Printer::print_item(String s) {
 
 void Printer::make_item(char *fmt, double value) {
 	dtostrf(value, 0, 3, _num);
-	sprintf(_text, fmt, _num);
+	snprintf(_text, TXT_BUFF_SIZE - 1, fmt, _num);
 	print_item(_text);
 }
 

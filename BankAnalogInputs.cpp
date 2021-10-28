@@ -42,7 +42,7 @@ BankAnalogInputs::BankAnalogInputs(void (*checkPosition)(), int period,
 
 	// prepare input signals filters
 	for (int i = 0; i < MAX_INPUTS; ++i) {
-		_mmf[i] = new MMFilter(filter);
+		_mmf[i] = new MMFilter(filter, 100, 3);
 	}
 
 }

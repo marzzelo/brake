@@ -41,8 +41,7 @@ double displayVar(int index = NULL) {
 	}
 
 	double value = bankInputs->getDisplayVarValue();
-	tm1638->dispmix(bankInputs->getDisplayVarName(),
-			value);
+	tm1638->dispmix(bankInputs->getDisplayVarName(), value);
 	tm1638->ledOnly(bankInputs->getDisplayVarIndex());
 	return value;
 }

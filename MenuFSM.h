@@ -55,6 +55,8 @@ public:
 		ST_MENU_T1HOT_PAR,		//!< Submenú para establecer temp1 hot
 		ST_MENU_T2HOT_PAR,		//!< Submenú para establecer temp2 hot
 
+		ST_MENU_FACTORYRESET,	//!< Submenú para restablecimiento a parámetros por default
+
 		MENU_COUNT				//!< reserved
 	};
 
@@ -78,6 +80,8 @@ public:
 		TR_MAIN_T1HOT,
 		TR_MAIN_T2HOT,
 
+		TR_MAIN_FRESET,		// key: 14
+
 		TR_WHEELCAL_MAIN,
 		TR_PHCAL_MAIN,
 		TR_PFCAL_MAIN,
@@ -91,8 +95,9 @@ public:
 		TR_PHLIM_MAIN,
 		TR_PFLIM_MAIN,
 		TR_T1HOT_MAIN,
-		TR_T2HOT_MAIN
+		TR_T2HOT_MAIN,
 
+		TR_FRESET_MAIN,
 	};
 
 

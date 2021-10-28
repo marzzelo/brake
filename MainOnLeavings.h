@@ -35,6 +35,7 @@ void (*mainOnLeavings[])(void) = {
 	[] () {
 		bankLeds->relayStopAll();
 		dprint = false;
+		//matrix->setEffects(PA_LEFT, 35, 1000, PA_SCROLL_LEFT, PA_SCROLL_UP);
 	}
 };
 

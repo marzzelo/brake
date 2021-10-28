@@ -9,10 +9,10 @@
 #define MENUTRANSITIONS_H_
 
 /*
-  _____                    _ _   _
+ _____                    _ _   _
  |_   _| __ __ _ _ __  ___(_) |_(_) ___  _ __  ___
-   | || '__/ _` | '_ \/ __| | __| |/ _ \| '_ \/ __|
-   | || | | (_| | | | \__ \ | |_| | (_) | | | \__ \
+ | || '__/ _` | '_ \/ __| | __| |/ _ \| '_ \/ __|
+ | || | | (_| | | | \__ \ | |_| | (_) | | | \__ \
    |_||_|  \__,_|_| |_|___/_|\__|_|\___/|_| |_|___/
 
  */
@@ -29,8 +29,6 @@ bool updateParam(double &param, uint16_t daqValue) {
 	}
 	return false;  // keep reading keypad
 }
-
-
 
 /**
  * Array of transition functions.
@@ -60,7 +58,6 @@ bool (*menuTransitions[])(void) = {
 	[]() {
 		return bankKp->readKey(3);			// Pf
 	},
-
 
 	[]() {
 		return bankKp->readKey(4);			// Main -> T1
@@ -103,6 +100,13 @@ bool (*menuTransitions[])(void) = {
 
 	[]() {
 		return bankKp->readKey(13);			// T2hot
+	},
+
+	//////////////////////////////////////////
+	// FACTORY RESET
+	//////////////////////////////////////////
+	[]() {
+		return bankKp->readKey(14);			// T2hot
 	},
 
 	//////////////////////////////////////////
@@ -184,6 +188,16 @@ bool (*menuTransitions[])(void) = {
 	// T2HOT -> MAIN
 	[]() {
 		return updateParam(bankInputs->testParms.t2_hot, 1);
+	},
+
+	// FACTORY RESET -> MAIN
+	[]() {
+		matrix->text("** RESET **");
+		tm1638->dispstr("FACTORY RESET");
+		bankInputs->eePreset();			// default calibration/parameter values
+		bankInputs->loadSettings();// Loads calibration/test parameters from EEprom
+		bankInputs->start();// Enables DAQ
+		return true;// go inmediately to main menu
 	},
 
 };
