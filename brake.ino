@@ -50,6 +50,7 @@
 #define MAX_DEVICES 		8
 #define CS_PIN    			53  // DATA: 51,  CLK: 52
 
+#define LCD_PIN_CONFIG		14,15,16,17,18,19
 
 
 
@@ -94,7 +95,10 @@ void setup() {
 	tm1638 = 		new TM1638(STB, CLK, DIO);
 	tasker = 		new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
 	matrix = 		new Matrix(CS_PIN, MAX_DEVICES);
-	lcd = 			new LiquidCrystal(19, 18, 17, 16, 15, 14);
+//	lcd = 			new LiquidCrystal(rs, enable, d0, d1, d2, d3);
+	lcd = 			new LiquidCrystal(7,  6,      5,4,3,2);
+
+	lcd->begin(20, 4);
 
 	timerDaq = 		new Timer(SERIAL_DAQ_PERIOD);
 	timerDisplay = 	new Timer(DISPLAY_MESSAGES_PERIOD);
@@ -115,7 +119,6 @@ void setup() {
 
 	matrix->setMessage("FAdeA - EXPERIMENTAL - ENSAYOS ESTRUCTURALES");
 }
-
 
 //
 //	 |   _   _  ._

@@ -10,14 +10,14 @@
 
 #include "SuperLed.h"
 
-#define RELAY0	2
-#define RELAY1	3
-#define RELAY2	4
-#define RELAY3	5
-#define RELAY4	6
-#define RELAY5	7
-#define RELAY6	8
-#define RELAY7	9
+#define RELAY0	22
+#define RELAY1	24
+#define RELAY2	26
+#define RELAY3	28
+#define RELAY4	30
+#define RELAY5	32
+#define RELAY6	34
+#define RELAY7	36
 
 #define BUZZ	38
 

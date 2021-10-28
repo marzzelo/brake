@@ -40,6 +40,12 @@ void ent_idle() {
 	printer.print_item("             5     para Monitoreo de variables");
 	printer.print_separator();
 	Serial << "\n\n==> ";
+
+	lcd->clear();
+	lcd->setCursor(0,0); lcd->print("FAdeA BANCO DE FRENO");
+	lcd->setCursor(0,1); lcd->print("1# Configuracion");
+	lcd->setCursor(0,2); lcd->print("2# Comenzar Test");
+	lcd->setCursor(0,3); lcd->print("5# Monitoreo Senales");
 }
 
 
@@ -51,6 +57,11 @@ void ent_checking() {
 	tm1638->dispstr("Checking");
 
 	PRINTS("\nST_CHECKING_COND... [Esperando condiciones de inicio: Mv=0, Wv=0, Ph=0, Pf=0, T1&T2<Thot]");
+	lcd->clear();
+	//								 $$$$$$$$$$$$$$$$$$$$
+	lcd->setCursor(0,1); lcd->print("ST: CHECKING_COND");
+	lcd->setCursor(0,2); lcd->print("Mv=0, Wv=0, Ph=0");
+	lcd->setCursor(0,3); lcd->print("Pf=0, T1&T2 < Thot");
 }
 
 
