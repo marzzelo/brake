@@ -48,16 +48,16 @@ private:
 
 	int getCmd(char *strCmd, const char *table[]);
 
-	char const *cmdTable[26] = {
+	char const *cmdTable[32] = {
 			"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
-			"*0", "*1", "*2", "*3", "*4", "*5", "*6", "*7", "*8", "*9" };
+			"*0", "*1", "*2", "*3", "*4", "*5", "*6", "*7", "*8", "*9", "*10", "*11", "*12", "*13", "*14", "*15" };
 
 
 public:
 
 	enum CmdEnum {
-		KEY0, KEY1, KEY2, KEY3, KEY4, KEY5, KEY6, KEY7, KEY8, KEY9, KEY10, KEY11, KEY12, KEY13, KEY14, KEY15,
-		CMD0, CMD1, CMD2, CMD3, CMD4, CMD5, CMD6, CMD7, CMD8, CMD9,
+		KEY0=0, KEY1, KEY2, KEY3, KEY4, KEY5, KEY6, KEY7, KEY8, KEY9, KEY10, KEY11, KEY12, KEY13, KEY14, KEY15,
+		CMD0, CMD1, CMD2, CMD3, CMD4, CMD5, CMD6, CMD7, CMD8, CMD9, CMD10, CMD11, CMD12, CMD13, CMD14, CMD15,
 		_END
 	};
 
@@ -65,14 +65,16 @@ public:
 
 	bool checkCommands;
 
-	bool ev_key[16] = { false };
-	bool ev_cmd[11] = { false };
+	bool ev_key[_END] = { false };
+	bool ev_cmd[_END] = { false };
 
 	int BankKeyPad::getCommand();
 
 	bool readKey(int key);
 
 	bool readCmd(int cmd);
+
+	void clearAll();
 
 };
 

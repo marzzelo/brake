@@ -8,7 +8,7 @@
 #ifndef PRINTMACROS_H_
 #define PRINTMACROS_H_
 
-#define DEBUG 0
+#define DEBUG 1
 #define PDAQ  1
 
 #if DEBUG

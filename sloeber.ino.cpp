@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-10-28 13:00:31
+//This file has been generated on 2021-10-29 09:07:00
 
 #include "Arduino.h"
 #include "PrintMacros.h"
@@ -14,6 +14,7 @@
 #include "MyTasker.h"
 #include "StateMachineLib.h"
 #include "LiquidCrystal.h"
+#include "HC20040IC.h"
 #include "bankButtons.h"
 #include "BankLeds.h"
 #include "BankAnalogInputs.h"
@@ -37,6 +38,7 @@
 #define DIO					12
 #define MAX_DEVICES 		8
 #define CS_PIN    			53
+#define LCD_PIN_CONFIG		14,15,16,17,18,19
 extern BankButtons* bankButtons;
 extern BankLeds* bankLeds;
 extern BankAnalogInputs* bankInputs;
@@ -46,7 +48,7 @@ extern MenuFSM* menu;
 extern TM1638* tm1638;
 extern MyTasker* tasker;
 extern Matrix* matrix;
-extern LiquidCrystal* lcd;
+extern HC20040IC* lcd;
 extern Timer* timerDaq;
 extern Printer printer;
 extern bool dprint;

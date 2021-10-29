@@ -21,18 +21,21 @@ void ent_idle() {
 	bankLeds->relayOffAll();
 	dprint = false;
 
+	bankKp->clearAll();
 	bankKp->checkCommands = true;
 	bankKp->start();
 
 	bankButtons->reset();
 	bankInputs->reset();
 
+
 	tm1638->setShiftVel(TM1638::VEL_FAST);
 	tm1638->setBrightness(TM1638::BRI_INTENSE);
 	tm1638->dispstr("FAdEA-21 bAnco dE FrEno - EnSAYOS EStructurALES");
 	tm1638->ledsOff();
 
-	matrix->setMessage("FAdeA - EXPERIMENTAL - ENSAYOS ESTRUCTURALES");
+	matrix->setMessage("v1.0.0 Beta");
+
 	printer.print_header("Brake Test v1.0 release 10/27/2021", true);
 	printer.print_item("Presionar START para comenzar");
 	printer.print_item("o ingresar   1     para Configurar ensayo");
@@ -41,11 +44,12 @@ void ent_idle() {
 	printer.print_separator();
 	Serial << "\n\n==> ";
 
-	lcd->clear();
-	lcd->setCursor(0,0); lcd->print("FAdeA BANCO DE FRENO");
-	lcd->setCursor(0,1); lcd->print("1# Configuracion");
-	lcd->setCursor(0,2); lcd->print("2# Comenzar Test");
-	lcd->setCursor(0,3); lcd->print("5# Monitoreo Senales");
+	const char *l4[] = {"FAdeA BANCO DE FRENO",
+			"1# Configuracion",
+			"2# Comenzar Test",
+			"5# Monitoreo Senales"};
+
+	lcd->write4l(l4);
 }
 
 
@@ -58,10 +62,13 @@ void ent_checking() {
 
 	PRINTS("\nST_CHECKING_COND... [Esperando condiciones de inicio: Mv=0, Wv=0, Ph=0, Pf=0, T1&T2<Thot]");
 	lcd->clear();
-	//								 $$$$$$$$$$$$$$$$$$$$
-	lcd->setCursor(0,1); lcd->print("ST: CHECKING_COND");
-	lcd->setCursor(0,2); lcd->print("Mv=0, Wv=0, Ph=0");
-	lcd->setCursor(0,3); lcd->print("Pf=0, T1&T2 < Thot");
+
+	const char *l4[] = {"Poner todo a cero   ",
+			            "Mv, Wv, Ph, T1, T2  ",
+						"",
+				        "RESET cancela ensayo"};
+
+	lcd->write4l(l4);
 }
 
 
@@ -76,6 +83,12 @@ void ent_condok() {
 
 	tm1638->dispstr("Iniciar ");
 	matrix->setMessage("Iniciar Giro");
+
+//	      		         $$$$$$$$$$$$$$$$$$$$
+	const char *l4[] = {"",
+						"Iniciar Giro de Masa"};
+
+	lcd->write4l(l4, 2);
 }
 
 void ent_speeding() {
@@ -87,9 +100,11 @@ void ent_speeding() {
 	tm1638->ledOnly(BankAnalogInputs::MASS);
 	tm1638->dispstr("Acelerar");
 
-//	snprintf(str, BUFF_SIZE, "\n\nST_SPEEDING... [Esperando Mv >= %d rpm", round(bankInputs->testParms.max_mass_vel));
-//	Serial << str;
-//	Serial << "\n\nST_SPEEDING... [Esperando Mv >= " << bankInputs->testParms.max_mass_vel << " rpm]";
+//	                     $$$$$$$$$$$$$$$$$$$$
+	const char *l4[] = {"",
+				        "Acelerar hasta Vmax"};
+
+	lcd->write4l(l4, 2);
 }
 
 void ent_maxvel() {
@@ -99,6 +114,12 @@ void ent_maxvel() {
 	displayVar(BankAnalogInputs::WHEEL);
 	PRINT("\n\nST_MAX_VEL... [Esperando Wv > ", bankInputs->testParms.landing_wheel_vel);
 	PRINTS(" m/s]");
+
+//	                     $$$$$$$$$$$$$$$$$$$$
+	const char *l4[] = {"",
+						"Esperando aterrizaje"};
+
+	lcd->write4l(l4, 2);
 }
 
 void ent_landing() {
@@ -106,10 +127,16 @@ void ent_landing() {
 	bankLeds->relayOnly(3);
 
 	displayVar(BankAnalogInputs::PH);
-#if (DEBUG)
+
 	PRINT("\n\nST_LANDING... [Esperando PH >= ", bankInputs->testParms.ph_threshold);
 	PRINTS(" bar]");
-#endif
+
+//	                     $$$$$$$$$$$$$$$$$$$$
+	const char *l4[] = {"",
+						"Esperando Ph max"};
+
+	lcd->write4l(l4, 2);
+
 }
 
 void ent_landed() {
@@ -121,6 +148,13 @@ void ent_landed() {
 	PRINT("\n\nST_LANDED... [Esperando ", bankInputs->testParms.brake_mass_vel_min);
 	PRINT(" < Mv < ", bankInputs->testParms.brake_mass_vel_max);
 	PRINTS("]");
+
+//	                     $$$$$$$$$$$$$$$$$$$$
+	const char *l4[] = {"",
+						"Esperando Velocidad",
+	                    "de frenado"};
+
+	lcd->write4l(l4, 3);
 }
 
 void ent_brakingvel() {
@@ -131,6 +165,12 @@ void ent_brakingvel() {
 
 	PRINT("\n\nST_BRAKING_VEL... [Esperando PF >= ", bankInputs->testParms.pf_threshold);
 	PRINTS(" bar]");
+
+//	                     $$$$$$$$$$$$$$$$$$$$
+	const char *l4[] = {"",
+						"-- APLICAR FRENO --"};
+
+	lcd->write4l(l4, 2);
 }
 
 void ent_braking() {
@@ -139,8 +179,15 @@ void ent_braking() {
 	bankInputs->startCounting();
 
 	displayVar(BankAnalogInputs::WHEEL);
-	matrix->setMessage("** MANTENER Pf HASTA DETENER **");
+	matrix->text("-- MANTENER Pf --");
 	PRINTS("\n\nST_BRAKING... [Esperando Wv = 0 & Mv = 0]");
+
+//	                     $$$$$$$$$$$$$$$$$$$$
+	const char *l4[] = {"",
+						"-- << FRENANDO >> --",
+						"Esperando detencion"};
+
+	lcd->write4l(l4, 3);
 }
 
 void ent_error() {
@@ -150,6 +197,12 @@ void ent_error() {
 	tm1638->ledsOff();
 
 	PRINTS("\n**TEST ERROR** <RESET> para REINICIAR");
+
+//	                     $$$$$$$$$$$$$$$$$$$$
+	const char *l4[] = {"",
+						"ERROR DURANTE ENSAYO"};
+
+	lcd->write4l(l4, 2);
 }
 
 void ent_complete() {
@@ -166,8 +219,27 @@ void ent_complete() {
 
 	bankInputs->setTimeOut(3000);
 
+	double dist = bankInputs->getDistance();
+
 	tm1638->dispstr("-FINAL- ");
 	matrix->text("--- FINAL ---");
+
+	char buff_tf[10] = { 0 };
+	char buff_dist[10] = { 0 };
+
+	dtostrf(tf, 0, 1, buff_tf);
+	dtostrf(dist, 0, 1, buff_dist);
+
+	snprintf(str, 20, "Tiempo = %s", buff_tf);
+	snprintf(str+40, 20, "Dist = %s", buff_dist);
+
+//	                     $$$$$$$$$$$$$$$$$$$$
+	const char *l4[] = {"--<< FINALIZADO >>--",
+						str,
+						str+40,
+						"RESET para reiniciar"};
+
+	lcd->write4l(l4, 4);
 }
 
 void ent_monitoring() {
@@ -183,6 +255,14 @@ void ent_monitoring() {
 	displayVar();
 
 	PRINT_HEADER();
+
+//	                     $$$$$$$$$$$$$$$$$$$$
+	const char *l4[] = {"---  Monitoreo  ---",
+						"SELECT: Sig. param.",
+						"RESET: terminar",
+						"BOTONES: elegir var"};
+
+	lcd->write4l(l4, 4);
 }
 
 /**

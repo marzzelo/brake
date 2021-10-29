@@ -28,7 +28,49 @@ double tf;	//<! final braking time
 char dbuff[DOUBLE_BUFF_SIZE] = { 0 };
 char mbuff[MSG_BUFF_SIZE] = { 0 };
 
-extern Timer *timerDisplay;
+char *banner[] = {
+		"Banco de Freno",
+
+		"1.0.0 Beta",
+
+		"Experimental",
+		"FAdeA S.A.",
+		"ENSAYOS",
+		"Estructurales",
+		"28/10/2021",
+		"10:21 am",
+		"T26°C H56%",
+		"1USD = $199"
+};
+
+textEffect_t  effect[] =
+{ 		PA_DISSOLVE,
+		PA_CLOSING_CURSOR,
+  PA_PRINT,
+//  PA_SCAN_HORIZ,
+  PA_SCROLL_LEFT,
+  PA_WIPE,
+  PA_SCROLL_UP_LEFT,
+  PA_SCROLL_UP,
+  PA_OPENING_CURSOR,
+  PA_GROW_UP,
+  PA_MESH,
+  PA_SCROLL_UP_RIGHT,
+  PA_BLINDS,
+  PA_CLOSING,
+  PA_RANDOM,
+  PA_GROW_DOWN,
+  PA_SCAN_VERT,
+  PA_SCROLL_DOWN_LEFT,
+  PA_WIPE_CURSOR,
+  PA_OPENING,
+  PA_SCROLL_DOWN_RIGHT,
+  PA_SCROLL_RIGHT,
+//  PA_SLICE,
+  PA_SCROLL_DOWN,
+};
+
+extern Timer *timerDisplay, *timerBanner;
 extern void daqprint();
 
 /**
@@ -55,6 +97,24 @@ double displayVar(int index = NULL) {
  * ## Presionando el botón START o keyPad 2 se inicia el ensayo.
  */
 bool tr_idle_checking() {
+	static int k = 0;
+	static int ef = 0;
+
+	if(matrix->ready()) {
+		matrix->resetFlag();
+		if (k == 0) {
+			matrix->setEffects(PA_CENTER, 25, 2000, effect[ef], effect[ef]);
+
+			PRINT(" - Effect CODE ", effect[ef]);
+			ef = (ef + 1) % ARRAY_SIZE(effect);
+		}
+		matrix->setMessage(banner[k]);
+
+		PRINT("\nBanner N° ", k);
+		k = (k + 1) % ARRAY_SIZE(banner);
+
+	}
+
 	return (bankButtons->read(0) || bankKp->readKey(2));
 }
 
@@ -180,7 +240,7 @@ bool tr_any_idle() {
 		return true;
 	}
 
-	return (bankButtons->read(0) == BankButtons::LONG_PRESSED);
+	return (bankButtons->read(0) == BankButtons::LONG_PRESSED) || bankKp->readKey(0);
 }
 
 /*****************************************************
@@ -222,6 +282,8 @@ bool tr_speeding_maxvel() {
 
 		snprintf(mbuff, MSG_BUFF_SIZE - 1, "Acel %d rpm", round(rpm));
 		matrix->text(mbuff);
+
+		lcd->setCursor(0, 3); lcd->print(mbuff);
 	}
 	return bankInputs->check(MV_GT_MAX);
 }
@@ -312,6 +374,8 @@ bool tr_landed_brakingvel() {
 			tm1638->dispmix("REDU", rpm);
 			snprintf(mbuff, MSG_BUFF_SIZE - 1, "Reduc %d rpm", round(rpm));
 			matrix->text(mbuff);
+
+			lcd->setCursor(0, 3); lcd->print("DISMINUIR VELOCIDAD");
 		}
 	}
 	if (!bankInputs->check(MV_GE_BRAKEV_MIN)) {
@@ -324,6 +388,7 @@ bool tr_landed_brakingvel() {
 			tm1638->dispmix("ACEL", rpm);
 			snprintf(mbuff, MSG_BUFF_SIZE - 1, "Acelr %d rpm", round(rpm));
 			matrix->text(mbuff);
+			lcd->setCursor(0, 3); lcd->print("AUMENTAR VELOCIDAD");
 		}
 	}
 	return (bankInputs->check(MV_LE_BRAKEV_MAX)
@@ -423,8 +488,8 @@ bool tr_complete_idle() {
 		if (bankInputs->check(TIMEOUT)) {
 			bankLeds->beep();
 			tm1638->dispstr("PRESS RESET TO CONTINUE");
-			matrix->setMessage("PRESS RESET TO CONTINUE");
-			bankInputs->setTimeOut(8000);
+			matrix->setMessage("-- TEST FINALIZADO --");
+			bankInputs->setTimeOut(5000);
 			_msg = 0;
 		}
 		break;
@@ -479,7 +544,7 @@ bool tr_monitoring_idle() {
 		matrix->text(mbuff);
 	}
 
-	return (bankButtons->read(0) == BankButtons::LONG_PRESSED);
+	return (bankButtons->read(0) == BankButtons::LONG_PRESSED || bankKp->readKey(0));
 }
 
 /**

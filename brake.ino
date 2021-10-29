@@ -20,7 +20,8 @@
 #include "KeyPadRx.h"
 #include "MyTasker.h"
 #include "StateMachineLib.h"
-#include "LiquidCrystal.h"
+//#include "LiquidCrystal.h"
+#include "HC20040IC.h"
 #include "bankButtons.h"
 #include "BankLeds.h"
 #include "BankAnalogInputs.h"
@@ -36,6 +37,7 @@
 #define DISPLAY_MESSAGES_PERIOD		500
 #define SERIAL_DAQ_PERIOD			250
 #define TEST_PERIOD					500
+#define BANNER_PERIOD				6000
 
 
 #define ZERO_PH				15
@@ -67,9 +69,10 @@ MenuFSM 			*menu;
 TM1638				*tm1638;
 MyTasker 			*tasker;
 Matrix	 			*matrix;
-LiquidCrystal 		*lcd;
+//LiquidCrystal 		*lcd;
+HC20040IC			*lcd;
 
-Timer				*timerDaq, *timerDisplay, *timerTest;
+Timer				*timerDaq, *timerDisplay, *timerTest, *timerBanner;
 Printer printer(60);
 
 bool dprint = false;
@@ -96,13 +99,15 @@ void setup() {
 	tasker = 		new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
 	matrix = 		new Matrix(CS_PIN, MAX_DEVICES);
 //	lcd = 			new LiquidCrystal(rs, enable, d0, d1, d2, d3);
-	lcd = 			new LiquidCrystal(7,  6,      5,4,3,2);
+//	lcd = 			new LiquidCrystal(7,  6,      5,4,3,2);
+	lcd = 			new HC20040IC(7,  6,      5,4,3,2);
 
-	lcd->begin(20, 4);
+//	lcd->begin(20, 4);
 
 	timerDaq = 		new Timer(SERIAL_DAQ_PERIOD);
 	timerDisplay = 	new Timer(DISPLAY_MESSAGES_PERIOD);
 	timerTest = 	new Timer(TEST_PERIOD);
+	timerBanner =   new Timer(BANNER_PERIOD);
 
 	// Timer
 	Timer1.stop();
@@ -117,7 +122,7 @@ void setup() {
 	bankInputs->start(); 		// Enables DAQ
 	bankInputs->setTimeOut(250);
 
-	matrix->setMessage("FAdeA - EXPERIMENTAL - ENSAYOS ESTRUCTURALES");
+//	matrix->setMessage("v1.0.0 Beta");
 }
 
 //

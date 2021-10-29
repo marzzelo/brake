@@ -53,3 +53,9 @@ bool BankKeyPad::readCmd(int cmd) {
 	return state;
 }
 
+void BankKeyPad::clearAll() {
+	for (int i = 0; i < _END; ++i) {
+		ev_key[i] = false;
+		ev_cmd[i] = false;
+	}
+}
