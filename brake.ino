@@ -20,7 +20,6 @@
 #include "KeyPadRx.h"
 #include "MyTasker.h"
 #include "StateMachineLib.h"
-//#include "LiquidCrystal.h"
 #include "HC20040IC.h"
 #include "bankButtons.h"
 #include "BankLeds.h"
@@ -33,6 +32,8 @@
 #include "Matrix.h"
 #include "MMFilter.h"
 #include "Timer.h"
+
+#define VERSION				"1.0.0 Beta"
 
 #define DISPLAY_MESSAGES_PERIOD		500
 #define SERIAL_DAQ_PERIOD			250
@@ -69,7 +70,6 @@ MenuFSM 			*menu;
 TM1638				*tm1638;
 MyTasker 			*tasker;
 Matrix	 			*matrix;
-//LiquidCrystal 		*lcd;
 HC20040IC			*lcd;
 
 Timer				*timerDaq, *timerDisplay, *timerTest, *timerBanner;
@@ -94,15 +94,11 @@ void setup() {
 	bankInputs = 	new BankAnalogInputs(checkAngle, 500, 5);
 	bankKp = 		new BankKeyPad(keyPadPressedHandler, keyPadDataReadyHandler);
 	brake = 		new MainFSM(mainTransitions, mainOnEnterings, mainOnLeavings, nullptr);
-	menu =	 		new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings);
+	menu =	 		new MenuFSM(menuTransitions, menuOnEnterings, menuOnLeavings, ARRAY_SIZE(lines));
 	tm1638 = 		new TM1638(STB, CLK, DIO);
 	tasker = 		new MyTasker(Task1ms, Task10ms, Task100ms, NULL);
 	matrix = 		new Matrix(CS_PIN, MAX_DEVICES);
-//	lcd = 			new LiquidCrystal(rs, enable, d0, d1, d2, d3);
-//	lcd = 			new LiquidCrystal(7,  6,      5,4,3,2);
 	lcd = 			new HC20040IC(7,  6,      5,4,3,2);
-
-//	lcd->begin(20, 4);
 
 	timerDaq = 		new Timer(SERIAL_DAQ_PERIOD);
 	timerDisplay = 	new Timer(DISPLAY_MESSAGES_PERIOD);
@@ -122,7 +118,6 @@ void setup() {
 	bankInputs->start(); 		// Enables DAQ
 	bankInputs->setTimeOut(250);
 
-//	matrix->setMessage("v1.0.0 Beta");
 }
 
 //
@@ -212,6 +207,7 @@ void keyPadDataReadyHandler() {
 
 void keyPadPressedHandler(char key) {
 	Serial << ((key == '*') ? bankKp->getAsterisk() : key);
+	lcd->cwrite((key == '*') ? bankKp->getAsterisk() : key);
 	bankLeds->beep(20, 1, 1);
 }
 

@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-10-29 09:07:00
+//This file has been generated on 2021-11-02 13:01:04
 
 #include "Arduino.h"
 #include "PrintMacros.h"
@@ -13,7 +13,6 @@
 #include "KeyPadRx.h"
 #include "MyTasker.h"
 #include "StateMachineLib.h"
-#include "LiquidCrystal.h"
 #include "HC20040IC.h"
 #include "bankButtons.h"
 #include "BankLeds.h"
@@ -26,9 +25,11 @@
 #include "Matrix.h"
 #include "MMFilter.h"
 #include "Timer.h"
+#define VERSION				"1.0.0 Beta"
 #define DISPLAY_MESSAGES_PERIOD		500
 #define SERIAL_DAQ_PERIOD			250
 #define TEST_PERIOD					500
+#define BANNER_PERIOD				6000
 #define ZERO_PH				15
 #define ZERO_PF				15
 #define ZERO_MASS_VEL		15

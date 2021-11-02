@@ -37,7 +37,15 @@ bool updateParam(double &param, uint16_t daqValue) {
 bool (*menuTransitions[])(void) = {
 
 	[]() {
-		return bankKp->readKey(1);			// Idle -> Main
+		return bankKp->readKey(1) || (bankButtons->read(BankButtons::BTN_SELECT_TARE) == BankButtons::PRESSED );			// Idle -> Main
+	},
+
+	[]() {
+		if (bankButtons->read(BankButtons::BTN_SELECT_TARE) == BankButtons::PRESSED) {
+			menu->nextPage();
+			return true;					// Main -> Main
+		}
+		return false;
 	},
 
 	//////////////////////////////////////////

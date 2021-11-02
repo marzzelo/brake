@@ -16,9 +16,10 @@
 #include "MenuFSM.h"
 
 
-MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void (*onLeavings[])(void))
+MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void (*onLeavings[])(void), uint8_t numPages)
 		: StateMachine(MenuState::MENU_COUNT, N_TRANSITIONS) {
 
+	_num_pages = numPages;
 
 //	  __                  ___
 //	 (_ _|_  _. _|_  _     | ._ _. ._   _ o _|_ o  _  ._   _
@@ -29,6 +30,8 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 	// IDLE TO MAIN (index: 0)
 	/////////////////////////////
 	AddTransition(ST_MENU_IDLE, ST_MENU_MAIN, transitions[TR_IDLE_MAIN]);
+
+	AddTransition(ST_MENU_MAIN, ST_MENU_MAIN, transitions[TR_MAIN_MAIN]);
 
 	/////////////////////////////
 	// FACTORES DE CALIBRACIÓN
@@ -159,4 +162,18 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 
 }
 
+uint8_t MenuFSM::getPage() {
+	return _lcd_menu_page;
+}
 
+uint8_t MenuFSM::nextPage() {
+	return _lcd_menu_page = (_lcd_menu_page + 1) % _num_pages;
+}
+
+void MenuFSM::setPages(uint8_t numPages) {
+	_num_pages = numPages;
+}
+
+void MenuFSM::setPage(uint8_t page) {
+	_lcd_menu_page = page;
+}

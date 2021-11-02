@@ -9,14 +9,13 @@
 #define MAINTRANSITIONS_H_
 
 /*
-  _____                    _ _   _
+ _____                    _ _   _
  |_   _| __ __ _ _ __  ___(_) |_(_) ___  _ __  ___
-   | || '__/ _` | '_ \/ __| | __| |/ _ \| '_ \/ __|
-   | || | | (_| | | | \__ \ | |_| | (_) | | | \__ \
+ | || '__/ _` | '_ \/ __| | __| |/ _ \| '_ \/ __|
+ | || | | (_| | | | \__ \ | |_| | (_) | | | \__ \
    |_||_|  \__,_|_| |_|___/_|\__|_|\___/|_| |_|___/
 
  */
-
 
 #define 		DOUBLE_BUFF_SIZE	10
 #define 		MSG_BUFF_SIZE		32
@@ -24,6 +23,7 @@
 extern BankButtons *bankButtons;
 
 double tf;	//<! final braking time
+int resultIndex;
 
 char dbuff[DOUBLE_BUFF_SIZE] = { 0 };
 char mbuff[MSG_BUFF_SIZE] = { 0 };
@@ -31,44 +31,47 @@ char mbuff[MSG_BUFF_SIZE] = { 0 };
 char *banner[] = {
 		"Banco de Freno",
 
-		"1.0.0 Beta",
+		VERSION,
 
 		"Experimental",
 		"FAdeA S.A.",
-		"ENSAYOS",
-		"Estructurales",
-		"28/10/2021",
+		"Ensayos Estructurales",
+		"10/12/2021",
 		"10:21 am",
 		"T26°C H56%",
-		"1USD = $199"
+		"PRESIONAR START PARA INICIAR ENSAYO"
 };
 
-textEffect_t  effect[] =
-{ 		PA_DISSOLVE,
-		PA_CLOSING_CURSOR,
-  PA_PRINT,
-//  PA_SCAN_HORIZ,
-  PA_SCROLL_LEFT,
-  PA_WIPE,
-  PA_SCROLL_UP_LEFT,
-  PA_SCROLL_UP,
-  PA_OPENING_CURSOR,
-  PA_GROW_UP,
-  PA_MESH,
-  PA_SCROLL_UP_RIGHT,
-  PA_BLINDS,
-  PA_CLOSING,
-  PA_RANDOM,
-  PA_GROW_DOWN,
-  PA_SCAN_VERT,
-  PA_SCROLL_DOWN_LEFT,
-  PA_WIPE_CURSOR,
-  PA_OPENING,
-  PA_SCROLL_DOWN_RIGHT,
-  PA_SCROLL_RIGHT,
-//  PA_SLICE,
-  PA_SCROLL_DOWN,
+textEffect_t effect[] = {
+		PA_SCROLL_LEFT,	// "Banco de Freno",
+		PA_DISSOLVE, 	// "1.0.0 Beta",
+		PA_CLOSING_CURSOR, // "Experimental",
+		PA_WIPE_CURSOR,  //"FAdeA S.A.",
+		PA_SCROLL_LEFT, // "Ensayos Estructurales",
+		PA_SCAN_VERT,
+		PA_BLINDS,
+		PA_SCROLL_UP_RIGHT,
+		PA_SCROLL_LEFT,
 };
+
+//char *banner[] = { "PA_DISSOLVE", "PA_CLOSING_CURSOR", "PA_PRINT",
+//		//  "PA_SCAN_HORIZ",
+//		"PA_SCROLL_LEFT", "PA_WIPE", "PA_SCROLL_UP_LEFT", "PA_SCROLL_UP",
+//		"PA_OPENING_CURSOR", "PA_GROW_UP", "PA_MESH", "PA_SCROLL_UP_RIGHT",
+//		"PA_BLINDS", "PA_CLOSING", "PA_RANDOM", "PA_GROW_DOWN", "PA_SCAN_VERT",
+//		"PA_SCROLL_DOWN_LEFT", "PA_WIPE_CURSOR", "PA_OPENING",
+//		"PA_SCROLL_DOWN_RIGHT", "PA_SCROLL_RIGHT",
+//		//  "PA_SLICE",
+//		"PA_SCROLL_DOWN", };
+
+//textEffect_t effect[] = { PA_DISSOLVE, PA_CLOSING_CURSOR, PA_PRINT,
+//		//  PA_SCAN_HORIZ,
+//		PA_SCROLL_LEFT, PA_WIPE, PA_SCROLL_UP_LEFT, PA_SCROLL_UP,
+//		PA_OPENING_CURSOR, PA_GROW_UP, PA_MESH, PA_SCROLL_UP_RIGHT, PA_BLINDS,
+//		PA_CLOSING, PA_RANDOM, PA_GROW_DOWN, PA_SCAN_VERT, PA_SCROLL_DOWN_LEFT,
+//		PA_WIPE_CURSOR, PA_OPENING, PA_SCROLL_DOWN_RIGHT, PA_SCROLL_RIGHT,
+//		//  PA_SLICE,
+//		PA_SCROLL_DOWN, };
 
 extern Timer *timerDisplay, *timerBanner;
 extern void daqprint();
@@ -97,22 +100,15 @@ double displayVar(int index = NULL) {
  * ## Presionando el botón START o keyPad 2 se inicia el ensayo.
  */
 bool tr_idle_checking() {
-	static int k = 0;
 	static int ef = 0;
 
-	if(matrix->ready()) {
+	if (matrix->ready()) {
 		matrix->resetFlag();
-		if (k == 0) {
-			matrix->setEffects(PA_CENTER, 25, 2000, effect[ef], effect[ef]);
 
-			PRINT(" - Effect CODE ", effect[ef]);
-			ef = (ef + 1) % ARRAY_SIZE(effect);
-		}
-		matrix->setMessage(banner[k]);
+		ef = (ef + 1) % ARRAY_SIZE(effect);
+		matrix->setEffects(PA_CENTER, 25, 2000, effect[ef], effect[ef]);
 
-		PRINT("\nBanner N° ", k);
-		k = (k + 1) % ARRAY_SIZE(banner);
-
+		matrix->setMessage(banner[ef]);
 	}
 
 	return (bankButtons->read(0) || bankKp->readKey(2));
@@ -134,7 +130,7 @@ bool tr_idle_checking() {
 bool tr_checking_condok() {
 
 	bool cond_ok = true;
-	bool ttd = timerDisplay->read();	// limit message printing to every DATA_REFRESH_PERIOD useconds
+	bool ttd = timerDisplay->read();// limit message printing to every DATA_REFRESH_PERIOD useconds
 	bool displaybussy = false;
 
 	if (bankInputs->check(MV_GT_0)) {
@@ -143,7 +139,7 @@ bool tr_checking_condok() {
 			PRINT("\n** DETENER MASA = ", bankInputs->getRpm());
 
 			tm1638->dispstr("MAS GT 0");
-			matrix->text("ERR VM > 0");
+			matrix->text("Error Vm > 0");
 			displaybussy = true;
 		}
 	}
@@ -155,7 +151,7 @@ bool tr_checking_condok() {
 
 			if (!displaybussy) {
 				tm1638->dispstr("RUE GT 0");
-				matrix->text("ERR VR > 0");
+				matrix->text("Error Vr > 0");
 				displaybussy = true;
 			}
 		}
@@ -168,7 +164,7 @@ bool tr_checking_condok() {
 
 			if (!displaybussy) {
 				tm1638->dispstr("PH  GT 0");
-				matrix->text("ERR Ph > 0");
+				matrix->text("Error Ph > 0");
 				displaybussy = true;
 			}
 		}
@@ -177,11 +173,11 @@ bool tr_checking_condok() {
 	if (bankInputs->check(PF_GT_0)) {
 		cond_ok = false;
 		if (ttd) {
-			PRINT("\n** REDUCIR PF = ",  bankInputs->getPf());
+			PRINT("\n** REDUCIR PF = ", bankInputs->getPf());
 
 			if (!displaybussy) {
 				tm1638->dispstr("PF  GT 0");
-				matrix->text("ERR Pf > 0");
+				matrix->text("Error Pf > 0");
 				displaybussy = true;
 			}
 		}
@@ -195,7 +191,7 @@ bool tr_checking_condok() {
 
 			if (!displaybussy) {
 				tm1638->dispstr("TMP ALTA");
-				matrix->text("ERR Temp ALTA");
+				matrix->text("Error T° >>");
 				displaybussy = true;
 			}
 		}
@@ -205,11 +201,12 @@ bool tr_checking_condok() {
 		cond_ok = false;
 
 		if (ttd) {
-			PRINT("\nCorregir Inclinación ANG = ", bankInputs->encoderRead().angle);
+			PRINT("\nCorregir Inclinación ANG = ",
+					bankInputs->encoderRead().angle);
 
 			if (!displaybussy) {
 				tm1638->dispstr("ANG GT 0");
-				matrix->text("ERR Angulo > 0");
+				matrix->text("Error Ang > 0");
 				displaybussy = true;
 			}
 		}
@@ -227,7 +224,7 @@ bool tr_checking_condok() {
  * ## Presionando keypad "5" se ingresa a monitoreo de variables
  */
 bool tr_idle_monitoring() {
-	return bankKp->readKey(5);
+	return bankKp->readKey(3);
 }
 
 /**
@@ -240,7 +237,8 @@ bool tr_any_idle() {
 		return true;
 	}
 
-	return (bankButtons->read(0) == BankButtons::LONG_PRESSED) || bankKp->readKey(0);
+	return (bankButtons->read(0) == BankButtons::LONG_PRESSED)
+			|| bankKp->readKey(0);
 }
 
 /*****************************************************
@@ -255,7 +253,8 @@ bool tr_condok_speeding() {
 
 	if (timerDisplay->read()) {
 		double rpm = bankInputs->getRpm();
-		PRINT("\nmass vel = ", rpm); PRINTS(" ** INICIAR GIRO **");
+		PRINT("\nmass vel = ", rpm);
+		PRINTS(" ** INICIAR GIRO **");
 
 		return bankInputs->check(MV_GT_0);
 	}
@@ -280,10 +279,11 @@ bool tr_speeding_maxvel() {
 
 		tm1638->dispmix("ACEL", bankInputs->getRpm());
 
-		snprintf(mbuff, MSG_BUFF_SIZE - 1, "Acel %d rpm", round(rpm));
-		matrix->text(mbuff);
+		snprintf(mbuff, MSG_BUFF_SIZE - 1, "Acelerar %d rpm", round(rpm));
+		matrix->setMessage(mbuff);
 
-		lcd->setCursor(0, 3); lcd->print(mbuff);
+		lcd->setCursor(0, 3);
+		lcd->print(mbuff);
 	}
 	return bankInputs->check(MV_GT_MAX);
 }
@@ -302,8 +302,8 @@ bool tr_maxvel_landing() {
 		PRINTS(" ** ATERRIZAR RUEDA ***");
 
 		displayVar(); // Mass vel
-		snprintf(mbuff, MSG_BUFF_SIZE - 1, "Aterr %d m/s", round(wheel));
-		matrix->text(mbuff);
+		snprintf(mbuff, MSG_BUFF_SIZE - 1, "Aterrizar %d m/s", round(wheel));
+		matrix->setMessage(mbuff);
 	}
 	return bankInputs->check(WV_GE_LANDINGV);
 }
@@ -330,8 +330,8 @@ bool tr_landing_landed() {
 		PRINT(" ** AUMENTAR Ph a ", bankInputs->testParms.ph_threshold);
 
 		displayVar(); // Ph
-		snprintf(mbuff, MSG_BUFF_SIZE - 1, "PH = %d bar", round(ph));
-		matrix->text(mbuff);
+		snprintf(mbuff, MSG_BUFF_SIZE - 1, "Ph = %d bar", round(ph));
+		matrix->setMessage(mbuff);
 	}
 
 	return bankInputs->check(PH_GE_PH1);
@@ -372,10 +372,11 @@ bool tr_landed_brakingvel() {
 			PRINTS(" ** DISMINUIR VELOCIDAD **");
 
 			tm1638->dispmix("REDU", rpm);
-			snprintf(mbuff, MSG_BUFF_SIZE - 1, "Reduc %d rpm", round(rpm));
-			matrix->text(mbuff);
+			snprintf(mbuff, MSG_BUFF_SIZE - 1, "Reducir %d rpm", round(rpm));
+			matrix->setMessage(mbuff);
 
-			lcd->setCursor(0, 3); lcd->print("DISMINUIR VELOCIDAD");
+			lcd->setCursor(0, 3);
+			lcd->print("DISMINUIR VELOCIDAD");
 		}
 	}
 	if (!bankInputs->check(MV_GE_BRAKEV_MIN)) {
@@ -386,9 +387,10 @@ bool tr_landed_brakingvel() {
 			PRINTS(" ** ACELERAR **");
 
 			tm1638->dispmix("ACEL", rpm);
-			snprintf(mbuff, MSG_BUFF_SIZE - 1, "Acelr %d rpm", round(rpm));
-			matrix->text(mbuff);
-			lcd->setCursor(0, 3); lcd->print("AUMENTAR VELOCIDAD");
+			snprintf(mbuff, MSG_BUFF_SIZE - 1, "Acelerar %d rpm", round(rpm));
+			matrix->setMessage(mbuff);
+			lcd->setCursor(0, 3);
+			lcd->print("AUMENTAR VELOCIDAD");
 		}
 	}
 	return (bankInputs->check(MV_LE_BRAKEV_MAX)
@@ -412,10 +414,8 @@ bool tr_brakingvel_braking() {
 		PRINTS(" ***### APLICAR FRENO ###***");
 
 		tm1638->dispmix("FREN", pf);
-		snprintf(mbuff, MSG_BUFF_SIZE - 1, "FRENO %d bar", round(pf));
-		matrix->text(mbuff);
-
-
+		snprintf(mbuff, MSG_BUFF_SIZE - 1, "FRENAR %d bar", round(pf));
+		matrix->setMessage(mbuff);
 	}
 
 	return bankInputs->check(PF_GE_PF1);
@@ -453,44 +453,44 @@ bool tr_braking_complete() {
 		PRINT(" (Pf: ", bankInputs->getPf());
 
 		displayVar();  // Wheel
-//		snprintf(mbuff, 16, "Rueda %d m/s", round(wheel));
-//		matrix->text(mbuff);
 	}
+
 	return (bankInputs->check(WV_EQ_0));
 }
 
 bool tr_complete_idle() {
-	static int _msg = 0;
 
-	switch (_msg) {
+	switch (resultIndex) {
 	case 0:
-		if (bankInputs->check(TIMEOUT)) {
+		if (matrix->ready()) {
 			tm1638->dispmix("tf=", tf, 1);
 			snprintf(mbuff, MSG_BUFF_SIZE - 1, "Tiempo = %d s", round(tf));
-			matrix->text(mbuff);
-			bankInputs->setTimeOut(3000);
-			++_msg;
+			matrix->setEffects(PA_CENTER, 25, 4000, PA_MESH, PA_WIPE_CURSOR);
+			matrix->setMessage(mbuff);
+
+			++resultIndex;
 		}
 		break;
 
 	case 1:
-		if (bankInputs->check(TIMEOUT)) {
+		if (matrix->ready()) {
 			double dist = bankInputs->getDistance();
 			tm1638->dispmix("d=", dist, 1);
 			snprintf(mbuff, MSG_BUFF_SIZE - 1, "Dist = %d m", round(dist));
-			matrix->text(mbuff);
-			bankInputs->setTimeOut(3000);
-			++_msg;
+			matrix->setMessage(mbuff);
+
+			++resultIndex;
 		}
 		break;
 
 	case 2:
-		if (bankInputs->check(TIMEOUT)) {
-			bankLeds->beep();
+		if (matrix->ready()) {
 			tm1638->dispstr("PRESS RESET TO CONTINUE");
-			matrix->setMessage("-- TEST FINALIZADO --");
-			bankInputs->setTimeOut(5000);
-			_msg = 0;
+			strncpy(mbuff, "Presione RESET para continuar", MSG_BUFF_SIZE - 1);
+			matrix->setEffects(PA_CENTER, 25, 4000, PA_SCROLL_LEFT, PA_SCROLL_LEFT);
+			matrix->setMessage(mbuff);
+
+			resultIndex = 0;
 		}
 		break;
 	}
@@ -534,17 +534,18 @@ bool tr_monitoring_idle() {
 		bankInputs->setDisplayVarIndex(btn);
 	}
 
-
 	if (timerDisplay->read()) {
 //		bankInputs->setTimeOut(250);
 
 		double value = displayVar();
 		dtostrf(value, 0, 1, dbuff);
-		snprintf(mbuff, MSG_BUFF_SIZE - 1, "%s = %s", bankInputs->getDisplayVarName(), dbuff);
-		matrix->text(mbuff);
+		snprintf(mbuff, MSG_BUFF_SIZE - 1, "%s = %s",
+				bankInputs->getDisplayVarName(), dbuff);
+		matrix->setMessage(mbuff);
 	}
 
-	return (bankButtons->read(0) == BankButtons::LONG_PRESSED || bankKp->readKey(0));
+	return (bankButtons->read(0) == BankButtons::LONG_PRESSED
+			|| bankKp->readKey(0));
 }
 
 /**

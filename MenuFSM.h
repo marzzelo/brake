@@ -30,7 +30,7 @@
 class MenuFSM : public StateMachine {
 
 public:
-	MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void (*onLeavings[])(void));
+	MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void (*onLeavings[])(void), uint8_t numPages);
 
 
 	/**
@@ -64,6 +64,7 @@ public:
 	enum Transitions {
 		TR_IDLE_MAIN = 0,
 
+		TR_MAIN_MAIN,		// force st_main_on_entering() execution
 		TR_MAIN_IDLE,		// key: 0
 		TR_MAIN_WHEELCAL,	// key: 1
 		TR_MAIN_PHCAL,
@@ -127,9 +128,18 @@ public:
 
 	};
 
+	void setPages(uint8_t numPages);
+
+	uint8_t getPage();
+
+	uint8_t nextPage();
+
+	void setPage(uint8_t page);
 
 private:
+	uint8_t _lcd_menu_page = 0;
 
+	uint8_t _num_pages;
 
 };
 

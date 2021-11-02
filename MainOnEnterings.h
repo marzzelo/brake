@@ -31,23 +31,23 @@ void ent_idle() {
 
 	tm1638->setShiftVel(TM1638::VEL_FAST);
 	tm1638->setBrightness(TM1638::BRI_INTENSE);
-	tm1638->dispstr("FAdEA-21 bAnco dE FrEno - EnSAYOS EStructurALES");
+	tm1638->dispstr("Banco de Freno - " VERSION);
 	tm1638->ledsOff();
 
-	matrix->setMessage("v1.0.0 Beta");
+	matrix->setMessage("Experimental - FAdeA");
 
 	printer.print_header("Brake Test v1.0 release 10/27/2021", true);
 	printer.print_item("Presionar START para comenzar");
 	printer.print_item("o ingresar   1     para Configurar ensayo");
 	printer.print_item("             2     para Comenzar ensayo");
-	printer.print_item("             5     para Monitoreo de variables");
+	printer.print_item("             3     para Monitoreo de variables");
 	printer.print_separator();
 	Serial << "\n\n==> ";
 
 	const char *l4[] = {"FAdeA BANCO DE FRENO",
 			"1# Configuracion",
 			"2# Comenzar Test",
-			"5# Monitoreo Senales"};
+			"3# Monitoreo Senales"};
 
 	lcd->write4l(l4);
 }
@@ -69,6 +69,9 @@ void ent_checking() {
 				        "RESET cancela ensayo"};
 
 	lcd->write4l(l4);
+
+	matrix->setEffects(PA_CENTER, 25, 4000, PA_PRINT, PA_PRINT);
+	matrix->setMessage("S T A R T");
 }
 
 
@@ -82,6 +85,7 @@ void ent_condok() {
 	dprint = true;
 
 	tm1638->dispstr("Iniciar ");
+	matrix->setEffects(PA_CENTER, 25, 4000, PA_MESH, PA_SCROLL_RIGHT);
 	matrix->setMessage("Iniciar Giro");
 
 //	      		         $$$$$$$$$$$$$$$$$$$$
@@ -105,6 +109,7 @@ void ent_speeding() {
 				        "Acelerar hasta Vmax"};
 
 	lcd->write4l(l4, 2);
+	matrix->setEffects(PA_CENTER, 25, 4000, PA_PRINT, PA_PRINT);
 }
 
 void ent_maxvel() {
@@ -179,7 +184,10 @@ void ent_braking() {
 	bankInputs->startCounting();
 
 	displayVar(BankAnalogInputs::WHEEL);
-	matrix->text("-- MANTENER Pf --");
+
+	matrix->setEffects(PA_CENTER, 25, 4000, PA_SCROLL_DOWN_RIGHT, PA_SCROLL_UP_RIGHT);
+	matrix->setMessage("MANTENER Pf");
+
 	PRINTS("\n\nST_BRAKING... [Esperando Wv = 0 & Mv = 0]");
 
 //	                     $$$$$$$$$$$$$$$$$$$$
@@ -195,6 +203,7 @@ void ent_error() {
 	bankLeds->relayOffAll();
 	bankLeds->relayStart(7);
 	tm1638->ledsOff();
+	matrix->setEffects(PA_CENTER, 25, 4000, PA_PRINT, PA_PRINT);
 
 	PRINTS("\n**TEST ERROR** <RESET> para REINICIAR");
 
@@ -222,7 +231,8 @@ void ent_complete() {
 	double dist = bankInputs->getDistance();
 
 	tm1638->dispstr("-FINAL- ");
-	matrix->text("--- FINAL ---");
+	matrix->setEffects(PA_CENTER, 25, 4000, PA_MESH, PA_WIPE_CURSOR);
+	matrix->setMessage("--- FINAL ---");
 
 	char buff_tf[10] = { 0 };
 	char buff_dist[10] = { 0 };
@@ -240,6 +250,7 @@ void ent_complete() {
 						"RESET para reiniciar"};
 
 	lcd->write4l(l4, 4);
+	resultIndex = 0;
 }
 
 void ent_monitoring() {
@@ -260,9 +271,10 @@ void ent_monitoring() {
 	const char *l4[] = {"---  Monitoreo  ---",
 						"SELECT: Sig. param.",
 						"RESET: terminar",
-						"BOTONES: elegir var"};
+						"SWITCHES: elegir var"};
 
 	lcd->write4l(l4, 4);
+	matrix->setEffects(PA_CENTER, 25, 4000, PA_PRINT, PA_PRINT);
 }
 
 /**

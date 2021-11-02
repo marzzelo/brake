@@ -28,6 +28,11 @@ public:
 		LONG_PRESSED,
 	};
 
+	enum ButtonNames {
+		BTN_START_RESET = 0,
+		BTN_SELECT_TARE
+	};
+
 	Button *btn[2];
 
 	BankButtons(
