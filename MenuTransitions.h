@@ -36,24 +36,29 @@ bool updateParam(double &param, uint16_t daqValue) {
  */
 bool (*menuTransitions[])(void) = {
 
-	[]() {
+	[]() {									// Idle -> Main
 		return bankKp->readKey(1) || (bankButtons->read(BankButtons::BTN_SELECT_TARE) == BankButtons::PRESSED );			// Idle -> Main
 	},
 
-	[]() {
+	[]() {									// Main -> Main
 		if (bankButtons->read(BankButtons::BTN_SELECT_TARE) == BankButtons::PRESSED) {
 			menu->nextPage();
-			return true;					// Main -> Main
+			return true;
+		}
+		if (bankButtons->read(BankButtons::BTN_START_RESET, BankButtons::LONG_PRESSED) == BankButtons::PRESSED) {
+			menu->prevPage();
+			return true;
 		}
 		return false;
 	},
 
-	//////////////////////////////////////////
-	// FACTORES DE CALIBRACIÃ“N
-	//////////////////////////////////////////
-	[]() {
-		return bankKp->readKey(0);			// Main -> idle
+	[]() {									// Main -> Idle
+		return bankKp->readKey(0) || (bankButtons->read(BankButtons::BTN_START_RESET) == BankButtons::LONG_PRESSED);			// Main -> idle
 	},
+
+	//////////////////////////////////////////
+	// FACTORES DE CALIBRACIÓN
+	//////////////////////////////////////////
 
 	[]() {
 		return bankKp->readKey(1);			// Main -> wheel

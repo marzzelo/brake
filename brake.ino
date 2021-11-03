@@ -33,7 +33,7 @@
 #include "MMFilter.h"
 #include "Timer.h"
 
-#define VERSION				"1.0.0 Beta"
+#define VERSION				"1.0.0"
 
 #define DISPLAY_MESSAGES_PERIOD		500
 #define SERIAL_DAQ_PERIOD			250
@@ -163,7 +163,7 @@ void onBtn0() {
 
 void onLongBtn0() {
 	bankButtons->setLongPressed(0);
-//	Serial << "\nbtn0 long-pressed!";
+	Serial << "\nbtn0 long-pressed!";
 }
 
 void onBtn1() {

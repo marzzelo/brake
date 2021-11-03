@@ -8,22 +8,19 @@
 #ifndef HC20040IC_H_
 #define HC20040IC_H_
 
-#include "LiquidCrystal.h"
+#include "Lcd20x4.h"
+#include "Arduino.h"
+#include "Util.h"
+#include "PrintMacros.h"
 
-class HC20040IC: public LiquidCrystal { // @suppress("Class has a virtual method and non-virtual destructor")
-private:
-	bool _writeEnabled = false;
+
+class HC20040IC: public Lcd20x4 { // @suppress("Class has a virtual method and non-virtual destructor")
 
 public:
-	HC20040IC(uint8_t rs,  uint8_t enable,
-		     uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3);
 
-	void write4l(char const *lines[], uint8_t nl = 4);
+	HC20040IC(uint8_t rs,  uint8_t enable, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3);
 
-	// conditional write
-	void cwrite(char key);
-
-	void enableCWrite(bool enable = true);
+	void correct(uint8_t page);
 
 };
 

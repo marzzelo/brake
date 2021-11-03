@@ -9,31 +9,29 @@
 
 HC20040IC::HC20040IC(uint8_t rs, uint8_t enable, uint8_t d0, uint8_t d1,
 		uint8_t d2, uint8_t d3) :
-		LiquidCrystal(rs, enable, d0, d1, d2, d3) {
-	begin(20, 4);
-
-	_writeEnabled = false;
+		Lcd20x4(rs, enable, d0, d1, d2, d3) {
 }
 
-void HC20040IC::write4l(char const *lines[], uint8_t nl = 4) {
-	clear();
-	noCursor();
-	for (int i = 0; i < nl; ++i) {
-		setCursor(0, i);
-		print(lines[i]);
+
+void HC20040IC::correct(uint8_t page) {
+	switch (page) {
+	case 1:
+		writeSymbol(12, 1, ATILDE);
+		writeSymbol(14, 2, ATILDE);
+		writeSymbol(11, 3, ITILDE);
+		break;
+
+	case 2:
+		writeSymbol(11, 0, ITILDE);
+		writeSymbol(16, 3, ATILDE);
+		break;
+
+	case 3:
+		writeSymbol(16, 0, ATILDE);
+		break;
+
+	default:
+		break;
 	}
 }
 
-void HC20040IC::cwrite(char key) {
-	if (_writeEnabled) {
-		print(key);
-	}
-}
-
-void HC20040IC::enableCWrite(bool enable) {
-	_writeEnabled = enable;
-	if (enable)
-		cursor();
-	else
-		noCursor();
-}

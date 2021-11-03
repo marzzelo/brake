@@ -111,7 +111,7 @@ bool tr_idle_checking() {
 		matrix->setMessage(banner[ef]);
 	}
 
-	return (bankButtons->read(0) || bankKp->readKey(2));
+	return ((bankButtons->read(BankButtons::BTN_START_RESET) == BankButtons::PRESSED) || bankKp->readKey(2));
 }
 
 /*****************************************************
@@ -237,7 +237,7 @@ bool tr_any_idle() {
 		return true;
 	}
 
-	return (bankButtons->read(0) == BankButtons::LONG_PRESSED)
+	return (bankButtons->read(BankButtons::BTN_START_RESET) == BankButtons::LONG_PRESSED)
 			|| bankKp->readKey(0);
 }
 

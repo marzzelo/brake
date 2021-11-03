@@ -44,12 +44,14 @@ void ent_idle() {
 	printer.print_separator();
 	Serial << "\n\n==> ";
 
-	const char *l4[] = {"FAdeA BANCO DE FRENO",
+	const char *l4[] = {"BANCO DE FRENO " VERSION,
 			"1# Configuracion",
 			"2# Comenzar Test",
 			"3# Monitoreo Senales"};
 
 	lcd->write4l(l4);
+	lcd->setCursor(14, 1);	lcd->write((byte) HC20040IC::OTILDE);
+	lcd->setCursor(15, 3);	lcd->write((byte) HC20040IC::EGNE);
 }
 
 

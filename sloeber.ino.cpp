@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2021-11-02 13:01:04
+//This file has been generated on 2021-11-03 12:54:31
 
 #include "Arduino.h"
 #include "PrintMacros.h"
@@ -25,7 +25,7 @@
 #include "Matrix.h"
 #include "MMFilter.h"
 #include "Timer.h"
-#define VERSION				"1.0.0 Beta"
+#define VERSION				"1.0.0"
 #define DISPLAY_MESSAGES_PERIOD		500
 #define SERIAL_DAQ_PERIOD			250
 #define TEST_PERIOD					500

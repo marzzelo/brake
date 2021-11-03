@@ -22,18 +22,23 @@ BankButtons::BankButtons(
 
 }
 
-uint8_t BankButtons::read(int btnIndex) {
+uint8_t BankButtons::read(int btnIndex, ButtonState keep_state = RELEASED) {
 
 	int state = RELEASED;
 
-	if (btn_pressed[btnIndex])
+	if (btn_pressed[btnIndex]) {
 		state = PRESSED;
+	}
 
-	if (btn_longpressed[btnIndex])
+	if (btn_longpressed[btnIndex]) {
 		state = LONG_PRESSED;
+	}
 
-	btn_pressed[btnIndex] = false;
-	btn_longpressed[btnIndex] = false;
+	if ((keep_state & PRESSED) == 0)
+		btn_pressed[btnIndex] = false;
+
+	if ((keep_state & LONG_PRESSED) == 0)
+		btn_longpressed[btnIndex] = false;
 
 	return state;
 }

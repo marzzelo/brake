@@ -134,6 +134,8 @@ public:
 
 	uint8_t nextPage();
 
+	uint8_t prevPage();
+
 	void setPage(uint8_t page);
 
 private:

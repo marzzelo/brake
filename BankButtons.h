@@ -24,13 +24,13 @@ public:
 
 	enum ButtonState {
 		RELEASED = 0,
-		PRESSED,
-		LONG_PRESSED,
+		PRESSED = 1,
+		LONG_PRESSED = 2,   // DO NOT CHANGE (USED IN BINARY COMPOSITION FLAGS)
 	};
 
 	enum ButtonNames {
 		BTN_START_RESET = 0,
-		BTN_SELECT_TARE
+		BTN_SELECT_TARE = 1,
 	};
 
 	Button *btn[2];
@@ -42,7 +42,7 @@ public:
 		Button::ButtonPressedHandler onLongBtn1
 	);
 
-	uint8_t read(int btnIndex);
+	uint8_t read(int btnIndex, ButtonState keep_state = RELEASED);
 
 	void setPressed(int btnIndex);
 

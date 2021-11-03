@@ -170,9 +170,14 @@ uint8_t MenuFSM::nextPage() {
 	return _lcd_menu_page = (_lcd_menu_page + 1) % _num_pages;
 }
 
+uint8_t MenuFSM::prevPage() {
+	return _lcd_menu_page = _lcd_menu_page ? (_lcd_menu_page - 1) : (_num_pages - 1);
+}
+
 void MenuFSM::setPages(uint8_t numPages) {
 	_num_pages = numPages;
 }
+
 
 void MenuFSM::setPage(uint8_t page) {
 	_lcd_menu_page = page;
