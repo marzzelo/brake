@@ -44,14 +44,14 @@ void ent_idle() {
 	printer.print_separator();
 	Serial << "\n\n==> ";
 
-	const char *l4[] = {"BANCO DE FRENO " VERSION,
-			"1# Configuracion",
+	char *l4[] = {"BANCO DE FRENO " VERSION,
+			"1# Configuración",
 			"2# Comenzar Test",
-			"3# Monitoreo Senales"};
+			"3# Monitoreo Señales"};
 
 	lcd->write4l(l4);
-	lcd->setCursor(14, 1);	lcd->write((byte) HC20040IC::OTILDE);
-	lcd->setCursor(15, 3);	lcd->write((byte) HC20040IC::EGNE);
+//	lcd->setCursor(14, 1);	lcd->write((byte) HC20040IC::OTILDE);
+//	lcd->setCursor(15, 3);	lcd->write((byte) HC20040IC::EGNE);
 }
 
 
@@ -65,7 +65,7 @@ void ent_checking() {
 	PRINTS("\nST_CHECKING_COND... [Esperando condiciones de inicio: Mv=0, Wv=0, Ph=0, Pf=0, T1&T2<Thot]");
 	lcd->clear();
 
-	const char *l4[] = {"Poner todo a cero   ",
+	char *l4[] = {"Poner todo a cero   ",
 			            "Mv, Wv, Ph, T1, T2  ",
 						"",
 				        "RESET cancela ensayo"};
@@ -91,7 +91,7 @@ void ent_condok() {
 	matrix->setMessage("Iniciar Giro");
 
 //	      		         $$$$$$$$$$$$$$$$$$$$
-	const char *l4[] = {"",
+	char *l4[] = {"",
 						"Iniciar Giro de Masa"};
 
 	lcd->write4l(l4, 2);
@@ -107,8 +107,8 @@ void ent_speeding() {
 	tm1638->dispstr("Acelerar");
 
 //	                     $$$$$$$$$$$$$$$$$$$$
-	const char *l4[] = {"",
-				        "Acelerar hasta Vmax"};
+	char *l4[] = {"",
+				        "Acelerar hasta Vmáx"};
 
 	lcd->write4l(l4, 2);
 	matrix->setEffects(PA_CENTER, 25, 4000, PA_PRINT, PA_PRINT);
@@ -123,7 +123,7 @@ void ent_maxvel() {
 	PRINTS(" m/s]");
 
 //	                     $$$$$$$$$$$$$$$$$$$$
-	const char *l4[] = {"",
+	char *l4[] = {"",
 						"Esperando aterrizaje"};
 
 	lcd->write4l(l4, 2);
@@ -139,8 +139,8 @@ void ent_landing() {
 	PRINTS(" bar]");
 
 //	                     $$$$$$$$$$$$$$$$$$$$
-	const char *l4[] = {"",
-						"Esperando Ph max"};
+	char *l4[] = {"",
+						"Esperando Ph máx"};
 
 	lcd->write4l(l4, 2);
 
@@ -157,7 +157,7 @@ void ent_landed() {
 	PRINTS("]");
 
 //	                     $$$$$$$$$$$$$$$$$$$$
-	const char *l4[] = {"",
+	char *l4[] = {"",
 						"Esperando Velocidad",
 	                    "de frenado"};
 
@@ -174,7 +174,7 @@ void ent_brakingvel() {
 	PRINTS(" bar]");
 
 //	                     $$$$$$$$$$$$$$$$$$$$
-	const char *l4[] = {"",
+	char *l4[] = {"",
 						"-- APLICAR FRENO --"};
 
 	lcd->write4l(l4, 2);
@@ -193,9 +193,9 @@ void ent_braking() {
 	PRINTS("\n\nST_BRAKING... [Esperando Wv = 0 & Mv = 0]");
 
 //	                     $$$$$$$$$$$$$$$$$$$$
-	const char *l4[] = {"",
+	char *l4[] = {"",
 						"-- << FRENANDO >> --",
-						"Esperando detencion"};
+						"Esperando detención"};
 
 	lcd->write4l(l4, 3);
 }
@@ -210,7 +210,7 @@ void ent_error() {
 	PRINTS("\n**TEST ERROR** <RESET> para REINICIAR");
 
 //	                     $$$$$$$$$$$$$$$$$$$$
-	const char *l4[] = {"",
+	char *l4[] = {"",
 						"ERROR DURANTE ENSAYO"};
 
 	lcd->write4l(l4, 2);
@@ -246,12 +246,12 @@ void ent_complete() {
 	snprintf(str+40, 20, "Dist = %s", buff_dist);
 
 //	                     $$$$$$$$$$$$$$$$$$$$
-	const char *l4[] = {"--<< FINALIZADO >>--",
+	char *l4[] = {"--<< FINALIZADO >>--",
 						str,
 						str+40,
 						"RESET para reiniciar"};
 
-	lcd->write4l(l4, 4);
+	lcd->write4l(l4, (unsigned)4);
 	resultIndex = 0;
 }
 
@@ -270,8 +270,8 @@ void ent_monitoring() {
 	PRINT_HEADER();
 
 //	                     $$$$$$$$$$$$$$$$$$$$
-	const char *l4[] = {"---  Monitoreo  ---",
-						"SELECT: Sig. param.",
+	char *l4[] = {"---  Monitoreo  ---",
+						"SELECT: Sig. parám.",
 						"RESET: terminar",
 						"SWITCHES: elegir var"};
 

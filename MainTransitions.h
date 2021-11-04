@@ -102,6 +102,9 @@ double displayVar(int index = NULL) {
 bool tr_idle_checking() {
 	static int ef = 0;
 
+	if (menu->GetState() == MenuFSM::ST_MENU_IDLE)
+		return false;
+
 	if (matrix->ready()) {
 		matrix->resetFlag();
 
@@ -221,7 +224,7 @@ bool tr_checking_condok() {
 }
 
 /**
- * ## Presionando keypad "5" se ingresa a monitoreo de variables
+ * ## Presionando keypad "3" se ingresa a monitoreo de variables
  */
 bool tr_idle_monitoring() {
 	return bankKp->readKey(3);
@@ -522,7 +525,7 @@ bool tr_braking_error() {
  */
 bool tr_monitoring_idle() {
 
-	if (bankButtons->read(1) == BankButtons::PRESSED) {
+	if (bankButtons->read(BankButtons::BTN_SELECT_TARE) == BankButtons::PRESSED) {
 		bankLeds->beep();
 		bankInputs->nextDisplayVar();
 	}
@@ -544,7 +547,7 @@ bool tr_monitoring_idle() {
 		matrix->setMessage(mbuff);
 	}
 
-	return (bankButtons->read(0) == BankButtons::LONG_PRESSED
+	return (bankButtons->read(BankButtons::BTN_START_RESET) == BankButtons::LONG_PRESSED
 			|| bankKp->readKey(0));
 }
 

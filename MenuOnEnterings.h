@@ -16,16 +16,16 @@ char *lines[][4] = {
 		"4# Calibrar T1",
 	},	{
 		"5# Calibrar T2",
-		"6# Calibrar Angulo",
-		"7# Set Vmasa Maxima",
-		"8# Set Vf lim super.",
+		"6# Calibrar ángulo",
+		"7# Set Vmasa Máxima",
+		"8# Set Vf lím super.",
 	}, 	{
-		"9# Set Vf lim infer.",
+		"9# Set Vf lím infer.",
 		"10# Set Ph nominal",
 		"11# Set Pf nominal",
-		"12# T1 inicial max.",
+		"12# T1 inicial máx.",
 	}, 	{
-		"13# T2 inicial max.",
+		"13# T2 inicial máx.",
 		"14# Factory Reset",
 		"",
 		"0# Finalizar config.",
@@ -66,26 +66,26 @@ char *lines2[][4] = {
 		{
 		//		"12345678901234567890"
 				"CALIBR. ANGULO",
-				"Fijar Angulo de ref.",
+				"Fijar ángulo de ref.",
 				"Angulo [grados]:",
 				"==>",
 		},
 		{
-				"Establecer Vm Maxima",
+				"Establecer Vm Máxima",
 				"                    ",
-				"Vm Max [rpm]:",
+				"Vm Máx [rpm]:",
 				"==>",
 		},
 		{
-				"Set Vm Limite sup.",
+				"Set Vm Límite sup.",
 				"Actual:          rpm",
-				"Vm Lim Sup [rpm]:",
+				"Vm Lím Sup [rpm]:",
 				"==>",
 		},
 		{
-				"Set Vm Limite inf.",
+				"Set Vm Límite inf.",
 				"Actual:          rpm",
-				"Vm Lim Inf [rpm]:",
+				"Vm Lím Inf [rpm]:",
 				"==>",
 		},
 		{
@@ -101,15 +101,15 @@ char *lines2[][4] = {
 				"==>",
 		},
 		{
-				"Set T1 max inicio",
+				"Set T1 máx inicio",
 				"Actual:          Cel",
-				"T1 Max ini [Cel]:",
+				"T1 Máx ini [Cel]:",
 				"==>",
 		},
 		{
-				"Set T2 max inicio",
+				"Set T2 máx inicio",
 				"Actual:          Cel",
-				"T2 Max ini [Cel]:",
+				"T2 Máx ini [Cel]:",
 				"==>",
 		},
 
@@ -173,7 +173,7 @@ void (*menuOnEnterings[])(void) = {
 //		PRINTS("\n\n==> ");
 
 		lcd->write4l(lines[menu->getPage()]);
-		lcd->correct(menu->getPage());
+//		lcd->correct(menu->getPage());
 
 	},
 
@@ -192,7 +192,6 @@ void (*menuOnEnterings[])(void) = {
 //		PRINTS("Aplicar presión de Horquilla cte. e ingresar valor real:");
 //		PRINTS("\n\n  Presión H [bar] ==> ");
 		lcd->write4l(lines2[1], 4);
-		lcd->writeSymbol(13, 1, HC20040IC::OTILDE);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
 		lcd->setCursor(3,3);
 	},
@@ -204,7 +203,6 @@ void (*menuOnEnterings[])(void) = {
 //		PRINTS("\n\n  Presión F [bar] ==> ");
 		lcd->write4l(lines2[2], 4);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
-		lcd->writeSymbol(13, 1, HC20040IC::OTILDE);
 		lcd->setCursor(3,3);
 	},
 
@@ -248,8 +246,6 @@ void (*menuOnEnterings[])(void) = {
 		sprintf((char *)lines2[6][1], "Actual: %s rpm", strval);
 		lcd->write4l(lines2[6], 4);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
-		lcd->writeSymbol(15, 0, HC20040IC::ATILDE);
-		lcd->writeSymbol(4, 2, HC20040IC::ATILDE);
 		lcd->setCursor(3,3);
 	},
 
@@ -263,8 +259,6 @@ void (*menuOnEnterings[])(void) = {
 		sprintf(lines2[7][1], "Actual: %s rpm", strval);
 		lcd->write4l(lines2[7], 4);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
-		lcd->writeSymbol(8, 0, HC20040IC::ITILDE);
-		lcd->writeSymbol(4, 2, HC20040IC::ITILDE);
 		lcd->setCursor(3,3);
 	},
 
@@ -278,8 +272,6 @@ void (*menuOnEnterings[])(void) = {
 		sprintf(lines2[8][1], "Actual: %s rpm", strval);
 		lcd->write4l(lines2[8], 4);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
-		lcd->writeSymbol(8, 0, HC20040IC::ITILDE);
-		lcd->writeSymbol(4, 2, HC20040IC::ITILDE);
 		lcd->setCursor(3,3);
 	},
 
@@ -315,8 +307,6 @@ void (*menuOnEnterings[])(void) = {
 		sprintf(lines2[11][1], "Actual: %s Cel", strval);
 		lcd->write4l(lines2[11], 4);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
-		lcd->writeSymbol(8, 0, HC20040IC::ATILDE);
-		lcd->writeSymbol(4, 2, HC20040IC::ATILDE);
 		lcd->setCursor(3,3);
 	},
 
@@ -328,8 +318,6 @@ void (*menuOnEnterings[])(void) = {
 		sprintf(lines2[12][1], "Actual: %s Cel", strval);
 		lcd->write4l(lines2[12], 4);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
-		lcd->writeSymbol(8, 0, HC20040IC::ATILDE);
-		lcd->writeSymbol(4, 2, HC20040IC::ATILDE);
 		lcd->setCursor(3,3);
 	},
 
