@@ -69,10 +69,10 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 	AddTransition(ST_MENU_MAIN, ST_MENU_T2HOT_PAR, transitions[TR_MAIN_T2HOT]);
 
 
-	/////////////////////////////
 	// FACTORY RESET
-	/////////////////////////////
 	AddTransition(ST_MENU_MAIN, ST_MENU_FACTORYRESET, transitions[TR_MAIN_FRESET]);
+	// LED INTENSITY
+	AddTransition(ST_MENU_MAIN, ST_MENU_INTENSITY, transitions[TR_MAIN_INTENSITY]);
 
 
 	//////////////////////////////////////////
@@ -107,6 +107,8 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 	AddTransition(ST_MENU_T2HOT_PAR, ST_MENU_MAIN, transitions[TR_T2HOT_MAIN]);
 
 	AddTransition(ST_MENU_FACTORYRESET, ST_MENU_MAIN, transitions[TR_FRESET_MAIN]);
+
+	AddTransition(ST_MENU_INTENSITY, ST_MENU_MAIN, transitions[TR_INTENSITY_MAIN]);
 
 
 //	  _         _
@@ -147,6 +149,7 @@ MenuFSM::MenuFSM(bool (*transitions[])(void), void (*onEnterings[])(void), void 
 
 	SetOnEntering (ST_MENU_T2HOT_PAR, onEnterings[ENT_T2HOT]);
 
+	SetOnEntering (ST_MENU_INTENSITY, onEnterings[ENT_INTENSITY]);
 
 //	  _
 //	 / \ ._    |   _   _.    o ._   _

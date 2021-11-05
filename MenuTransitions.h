@@ -56,6 +56,7 @@ bool (*menuTransitions[])(void) = {
 	},
 
 	[]() {									// Main -> Idle
+		matrix->setMessageIfReady("-|  CONFIG  |-");
 		return bankKp->readKey(0) || (bankButtons->read(BankButtons::BTN_START_RESET) == BankButtons::LONG_PRESSED);			// Main -> idle
 	},
 
@@ -118,11 +119,12 @@ bool (*menuTransitions[])(void) = {
 		return bankKp->readKey(13);			// T2hot
 	},
 
-	//////////////////////////////////////////
-	// FACTORY RESET
-	//////////////////////////////////////////
 	[]() {
-		return bankKp->readKey(14);			// T2hot
+		return bankKp->readKey(14);			// Factory Reset
+	},
+
+	[]() {
+		return bankKp->readKey(15);			// Led Intensity
 	},
 
 	//////////////////////////////////////////
@@ -208,12 +210,26 @@ bool (*menuTransitions[])(void) = {
 
 	// FACTORY RESET -> MAIN
 	[]() {
-		matrix->text("** RESET **");
+		matrix->setEffects(PA_CENTER, 50, 4000, PA_FADE, PA_DISSOLVE);
+		matrix->setMessage("** RESET **");
 		tm1638->dispstr("FACTORY RESET");
 		bankInputs->eePreset();			// default calibration/parameter values
 		bankInputs->loadSettings();// Loads calibration/test parameters from EEprom
 		bankInputs->start();// Enables DAQ
+		menu->setPage(0);
 		return true;// go inmediately to main menu
+	},
+
+	// LED_INTENSITY -> MAIN
+	[]() {
+		if (bankKp->dataReady()) {
+			bankLeds->beep(100, 1, 1);
+			int level = String(bankKp->buffer()).toInt();
+			matrix->setIntensity((uint8_t)level);
+			matrix->setMessage("############");
+			return true;  // --> to main menu
+		}
+		return false;  // keep reading keypad
 	},
 
 };

@@ -8,8 +8,16 @@
 #ifndef PRINTMACROS_H_
 #define PRINTMACROS_H_
 
-#define DEBUG 0
-#define PDAQ  1
+#define DEBUG 	0		// VERBOSE MODE
+#define PDAQ  	0		// CSV DAQ TO TERMINAL
+#define STATES	1		// ECHOES STATES (DEBUG MODE, BREAKS CSV FORMAT!)
+
+#if STATES
+#define PRINTSA(s) Serial.print(F(s))	// PRINTS ALWAYS
+#else
+#define PRINTSA(s)
+#endif
+
 
 #if DEBUG
 #define PRINT(s, x) { Serial.print(F(s)); Serial.print(x); }

@@ -34,15 +34,14 @@ void ent_idle() {
 	tm1638->dispstr("Banco de Freno - " VERSION);
 	tm1638->ledsOff();
 
-	matrix->setMessage("Experimental - FAdeA");
+	matrix->setEffects(PA_CENTER, 25, 4000, PA_PRINT, PA_SCROLL_UP);
+	matrix->setMessage("loading...");
 
-	printer.print_header("Brake Test v1.0 release 10/27/2021", true);
 	printer.print_item("Presionar START para comenzar");
 	printer.print_item("o ingresar   1     para Configurar ensayo");
 	printer.print_item("             2     para Comenzar ensayo");
 	printer.print_item("             3     para Monitoreo de variables");
 	printer.print_separator();
-	Serial << "\n\n==> ";
 
 	char *l4[] = {"BANCO DE FRENO " VERSION,
 			"1# Configuración",
@@ -50,8 +49,8 @@ void ent_idle() {
 			"3# Monitoreo Señales"};
 
 	lcd->write4l(l4);
-//	lcd->setCursor(14, 1);	lcd->write((byte) HC20040IC::OTILDE);
-//	lcd->setCursor(15, 3);	lcd->write((byte) HC20040IC::EGNE);
+
+	PRINTSA("\n -> IDLE");
 }
 
 
@@ -74,6 +73,8 @@ void ent_checking() {
 
 	matrix->setEffects(PA_CENTER, 25, 4000, PA_PRINT, PA_PRINT);
 	matrix->setMessage("S T A R T");
+
+	PRINTSA("\n -> CHECKING_CONDITINOS");
 }
 
 
@@ -81,7 +82,6 @@ void ent_condok() {
 	PRINTS("\nST_COND_OK... [Esperando Mv > 0]");
 	bankLeds->relayOnly(0);
 	bankLeds->beep();
-//	confirmator->reset(3);
 
 	PRINT_HEADER();
 	dprint = true;
@@ -95,6 +95,8 @@ void ent_condok() {
 						"Iniciar Giro de Masa"};
 
 	lcd->write4l(l4, 2);
+
+	PRINTSA("\n -> COND_OK");
 }
 
 void ent_speeding() {
@@ -112,6 +114,8 @@ void ent_speeding() {
 
 	lcd->write4l(l4, 2);
 	matrix->setEffects(PA_CENTER, 25, 4000, PA_PRINT, PA_PRINT);
+
+	PRINTSA("\n -> SPEEDING");
 }
 
 void ent_maxvel() {
@@ -127,6 +131,8 @@ void ent_maxvel() {
 						"Esperando aterrizaje"};
 
 	lcd->write4l(l4, 2);
+
+	PRINTSA("\n -> MAX_VEL");
 }
 
 void ent_landing() {
@@ -144,6 +150,7 @@ void ent_landing() {
 
 	lcd->write4l(l4, 2);
 
+	PRINTSA("\n -> LANDING");
 }
 
 void ent_landed() {
@@ -162,6 +169,8 @@ void ent_landed() {
 	                    "de frenado"};
 
 	lcd->write4l(l4, 3);
+
+	PRINTSA("\n -> LANDED");
 }
 
 void ent_brakingvel() {
@@ -178,6 +187,8 @@ void ent_brakingvel() {
 						"-- APLICAR FRENO --"};
 
 	lcd->write4l(l4, 2);
+
+	PRINTSA("\n -> BRAKING_VEL");
 }
 
 void ent_braking() {
@@ -198,6 +209,8 @@ void ent_braking() {
 						"Esperando detención"};
 
 	lcd->write4l(l4, 3);
+
+	PRINTSA("\n -> BRAKING");
 }
 
 void ent_error() {
@@ -214,6 +227,8 @@ void ent_error() {
 						"ERROR DURANTE ENSAYO"};
 
 	lcd->write4l(l4, 2);
+
+	PRINTSA("\n -> ERROR");
 }
 
 void ent_complete() {
@@ -223,11 +238,6 @@ void ent_complete() {
 	tm1638->ledsOff();
 
 	bankInputs->stopCounting();
-
-#if (DEBUG)
-	printer.print_header("TEST FINALIZADO");
-#endif
-
 	bankInputs->setTimeOut(3000);
 
 	double dist = bankInputs->getDistance();
@@ -253,7 +263,11 @@ void ent_complete() {
 
 	lcd->write4l(l4, (unsigned)4);
 	resultIndex = 0;
+
+	PRINTSA("\n -> COMPLETE");
 }
+
+
 
 void ent_monitoring() {
 	bankLeds->beep();
@@ -261,8 +275,6 @@ void ent_monitoring() {
 	bankInputs->setTimeOut(500);
 
 	dprint = true;
-
-	//matrix->setEffects(PA_CENTER, 35, 2000, PA_SCROLL_DOWN, PA_SCROLL_UP);
 
 	bankInputs->setDisplayVarIndex(BankAnalogInputs::MASS);
 	displayVar();
@@ -277,6 +289,8 @@ void ent_monitoring() {
 
 	lcd->write4l(l4, 4);
 	matrix->setEffects(PA_CENTER, 25, 4000, PA_PRINT, PA_PRINT);
+
+	PRINTSA("\n -> MONITORING");
 }
 
 /**

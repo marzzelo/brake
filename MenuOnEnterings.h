@@ -27,89 +27,96 @@ char *lines[][4] = {
 	}, 	{
 		"13# T2 inicial máx.",
 		"14# Factory Reset",
-		"",
+		"15# Intensidad Leds",
 		"0# Finalizar config.",
 	}
 };
 
 char *lines2[][4] = {
-		{
+		{	// #0
 		//		"12345678901234567890"
 				"CALIBRACION V. RUEDA",
 				"Girar rueda a Vr cte",
 				"Vrueda [rpm]:",
 				"==>",
-		}, {
+		},
+		{	// #1
 				"CALIBR. HORQUILLA",
 				"Aplicar presión cte.",
 				"Ph [bar]:",
 				"==>",
 		},
-		{
+		{	// #2
 				"CALIBR. PRES. FRENO",
 				"Aplicar presión cte.",
 				"Pf [bar]:",
 				"==>",
 		},
-		{
+		{	// #3
 				"CALIBR. TEMP 1",
 				"Aplicar temp. cte.",
 				"T1 [Celsius]:",
 				"==>",
 		},
-		{
+		{	// #4
 				"CALIBR. TEMP 2",
 				"Aplicar temp. cte.",
 				"T2 [Celsius]:",
 				"==>",
 		},
-		{
+		{	// #5
 		//		"12345678901234567890"
 				"CALIBR. ANGULO",
 				"Fijar ángulo de ref.",
 				"Angulo [grados]:",
 				"==>",
 		},
-		{
+		{	// #6
 				"Establecer Vm Máxima",
 				"                    ",
 				"Vm Máx [rpm]:",
 				"==>",
 		},
-		{
+		{	// #7
 				"Set Vm Límite sup.",
 				"Actual:          rpm",
 				"Vm Lím Sup [rpm]:",
 				"==>",
 		},
-		{
+		{	// #8
 				"Set Vm Límite inf.",
 				"Actual:          rpm",
 				"Vm Lím Inf [rpm]:",
 				"==>",
 		},
-		{
+		{	// #9
 				"Set Ph nominal",
 				"Actual:          bar",
 				"Ph nom [bar]:",
 				"==>",
 		},
-		{
+		{	// #10
 				"Set Pf nominal",
 				"Actual:          bar",
 				"Pf nom [bar]:",
 				"==>",
 		},
-		{
+		{	// #11
 				"Set T1 máx inicio",
 				"Actual:          Cel",
 				"T1 Máx ini [Cel]:",
 				"==>",
 		},
-		{
+		{	// #12
 				"Set T2 máx inicio",
 				"Actual:          Cel",
 				"T2 Máx ini [Cel]:",
+				"==>",
+		},
+		{	// #13
+				"INTENSIDAD LEDS",
+				"Actual:             ",
+				"Nueva [0-15]:",
 				"==>",
 		},
 
@@ -129,6 +136,7 @@ void (*menuOnEnterings[])(void) = {
 		bankKp->checkCommands = true;
 		brake->restart();
 		brake->SetState(MainFSM::ST_IDLE, false, true);
+		menu->setPage(0);
 	},
 
 
@@ -141,8 +149,6 @@ void (*menuOnEnterings[])(void) = {
 		bankKp->checkCommands = true;
 		bankKp->readKey(0);  // clear eventual buffered event;
 		matrix->setEffects(PA_CENTER, 25, 4000, PA_MESH, PA_SCROLL_RIGHT);
-		matrix->setMessage("-|  CONFIG  |-");
-
 
 		//AddTransition(ST_IDLE, ST_MONITORING, transitions[TR_IDLE_MONITORING]);
 
@@ -173,7 +179,6 @@ void (*menuOnEnterings[])(void) = {
 //		PRINTS("\n\n==> ");
 
 		lcd->write4l(lines[menu->getPage()]);
-//		lcd->correct(menu->getPage());
 
 	},
 
@@ -193,7 +198,6 @@ void (*menuOnEnterings[])(void) = {
 //		PRINTS("\n\n  Presión H [bar] ==> ");
 		lcd->write4l(lines2[1], 4);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
-		lcd->setCursor(3,3);
 	},
 
 	// -> PFCAL
@@ -203,7 +207,6 @@ void (*menuOnEnterings[])(void) = {
 //		PRINTS("\n\n  Presión F [bar] ==> ");
 		lcd->write4l(lines2[2], 4);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
-		lcd->setCursor(3,3);
 	},
 
 	// -> T1CAL
@@ -246,7 +249,6 @@ void (*menuOnEnterings[])(void) = {
 		sprintf((char *)lines2[6][1], "Actual: %s rpm", strval);
 		lcd->write4l(lines2[6], 4);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
-		lcd->setCursor(3,3);
 	},
 
 	// -> VBMAX
@@ -259,7 +261,6 @@ void (*menuOnEnterings[])(void) = {
 		sprintf(lines2[7][1], "Actual: %s rpm", strval);
 		lcd->write4l(lines2[7], 4);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
-		lcd->setCursor(3,3);
 	},
 
 	// -> VBMIN
@@ -272,7 +273,6 @@ void (*menuOnEnterings[])(void) = {
 		sprintf(lines2[8][1], "Actual: %s rpm", strval);
 		lcd->write4l(lines2[8], 4);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
-		lcd->setCursor(3,3);
 	},
 
 	// -> PHLIM
@@ -307,7 +307,6 @@ void (*menuOnEnterings[])(void) = {
 		sprintf(lines2[11][1], "Actual: %s Cel", strval);
 		lcd->write4l(lines2[11], 4);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
-		lcd->setCursor(3,3);
 	},
 
 	// -> T2HOT
@@ -318,7 +317,14 @@ void (*menuOnEnterings[])(void) = {
 		sprintf(lines2[12][1], "Actual: %s Cel", strval);
 		lcd->write4l(lines2[12], 4);
 		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
-		lcd->setCursor(3,3);
+	},
+
+	// -> LED_INTENSITY
+	[ ] ( ) {
+//		dtostrf(bankInputs->testParms.t2_hot, 8, 1, strval);
+		sprintf(lines2[13][1], "Actual: %d", matrix->getIntensity());
+		lcd->write4l(lines2[13], 4);
+		lcd->enableCWrite();  // la lectura del keypad se realiza en updateParam() @ MenuTransitions.h
 	},
 
 };

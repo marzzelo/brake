@@ -30,21 +30,19 @@ char mbuff[MSG_BUFF_SIZE] = { 0 };
 
 char *banner[] = {
 		"Banco de Freno",
-
-		VERSION,
-
+		"v" VERSION RELEASE,
 		"Experimental",
 		"FAdeA S.A.",
 		"Ensayos Estructurales",
 		"10/12/2021",
 		"10:21 am",
 		"T26°C H56%",
-		"PRESIONAR START PARA INICIAR ENSAYO"
+		"Press START to begin"
 };
 
 textEffect_t effect[] = {
 		PA_SCROLL_LEFT,	// "Banco de Freno",
-		PA_DISSOLVE, 	// "1.0.0 Beta",
+		PA_DISSOLVE, 	// "v1.0.0 Beta",
 		PA_CLOSING_CURSOR, // "Experimental",
 		PA_WIPE_CURSOR,  //"FAdeA S.A.",
 		PA_SCROLL_LEFT, // "Ensayos Estructurales",
@@ -102,9 +100,6 @@ double displayVar(int index = NULL) {
 bool tr_idle_checking() {
 	static int ef = 0;
 
-	if (menu->GetState() == MenuFSM::ST_MENU_IDLE)
-		return false;
-
 	if (matrix->ready()) {
 		matrix->resetFlag();
 
@@ -113,6 +108,9 @@ bool tr_idle_checking() {
 
 		matrix->setMessage(banner[ef]);
 	}
+
+	if (menu->GetState() != MenuFSM::ST_MENU_IDLE)
+		return false;
 
 	return ((bankButtons->read(BankButtons::BTN_START_RESET) == BankButtons::PRESSED) || bankKp->readKey(2));
 }

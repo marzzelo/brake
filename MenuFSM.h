@@ -56,6 +56,7 @@ public:
 		ST_MENU_T2HOT_PAR,		//!< Submenú para establecer temp2 hot
 
 		ST_MENU_FACTORYRESET,	//!< Submenú para restablecimiento a parámetros por default
+		ST_MENU_INTENSITY,		//!< Submenú control intensidad display de leds
 
 		MENU_COUNT				//!< reserved
 	};
@@ -82,6 +83,7 @@ public:
 		TR_MAIN_T2HOT,
 
 		TR_MAIN_FRESET,		// key: 14
+		TR_MAIN_INTENSITY,
 
 		TR_WHEELCAL_MAIN,
 		TR_PHCAL_MAIN,
@@ -99,6 +101,7 @@ public:
 		TR_T2HOT_MAIN,
 
 		TR_FRESET_MAIN,
+		TR_INTENSITY_MAIN,
 	};
 
 
@@ -119,6 +122,8 @@ public:
 		ENT_PFLIM,
 		ENT_T1HOT,
 		ENT_T2HOT,
+
+		ENT_INTENSITY,
 	};
 
 
