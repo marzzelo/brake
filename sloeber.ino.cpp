@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2022-02-23 10:32:37
+//This file has been generated on 2022-03-09 10:22:15
 
 #include "Arduino.h"
 #include "PrintMacros.h"
@@ -25,7 +25,7 @@
 #include "Matrix.h"
 #include "MMFilter.h"
 #include "Timer.h"
-#define VERSION				"1.0.0"
+#define VERSION				"1.0.1"
 #define RELEASE				" Beta"
 #define DISPLAY_MESSAGES_PERIOD		500
 #define SERIAL_DAQ_PERIOD			250
@@ -40,7 +40,7 @@
 #define DIO					12
 #define MAX_DEVICES 		8
 #define CS_PIN    			53
-#define LCD_PIN_CONFIG		14,15,16,17,18,19
+#define LCD_PIN_CONFIG		7,6,5,4,3,2
 extern BankButtons* bankButtons;
 extern BankLeds* bankLeds;
 extern BankAnalogInputs* bankInputs;
