@@ -31,7 +31,7 @@ void ent_idle() {
 
 	tm1638->setShiftVel(TM1638::VEL_FAST);
 	tm1638->setBrightness(TM1638::BRI_INTENSE);
-	tm1638->dispstr("Banco de Freno - " VERSION);
+	tm1638->dispstr("Banco de Freno " VERSION " ");
 	tm1638->ledsOff();
 
 	matrix->setEffects(PA_CENTER, 25, 4000, PA_PRINT, PA_SCROLL_UP);

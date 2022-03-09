@@ -34,10 +34,10 @@ char *banner[] = {
 		"Experimental",
 		"FAdeA S.A.",
 		"Ensayos Estructurales",
-		"10/12/2021",
+		"31/12/2023",
 		"10:21 am",
 		"T26°C H56%",
-		"Press START to begin"
+		"Presionar START para comenzar"
 };
 
 textEffect_t effect[] = {
